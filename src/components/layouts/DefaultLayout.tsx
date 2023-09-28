@@ -1,9 +1,12 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faPlus, faQuestion } from "@fortawesome/free-solid-svg-icons";
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Dialog from "../dialog/Dialog";
 import { IRoute, OPTIONS_MENU_ON_APPBAR } from "@/common/constants/routes";
 import { useRouter } from "next/router";
+import { API_SERVICES } from "@/common/services/service";
+import { IUser } from "@/common/interfaces/user";
+import { IBase, IResponseBody } from "@/common/interfaces/base";
 
 type DefaultLayoutProps = {
   children: React.ReactNode
@@ -13,11 +16,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
 
   const router = useRouter();
 
-  const [currentUser, setCurrentUser] = useState<any>({
-    id: 1,
-    name: "Khai Dat",
-    photoUrl: ""
-  });
+  const [currentUser, setCurrentUser] = useState<IUser & IBase>();
 
   const [isToggle, setIsToggle] = useState<boolean>(false);
 
@@ -27,11 +26,29 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
   }
 
   const selectMenuItem = (path: string) => {
+    if (path === '/logout') {
+      localStorage.clear();
+    }
     router.push(path);
   }
 
+  const fetchMe = async () => {
+    try {
+      const response = await API_SERVICES.me();
+      if (response) {
+        setCurrentUser(response.data);
+      }
+    } catch (error) {
+      console.log(error);
+
+    }
+  }
+
+  useEffect(() => {
+    fetchMe();
+  }, [currentUser?.id]);
+
   return <>
-    <Dialog />
     <div className='vdt-w-100 vdt-h-screen'>
       <div className='vdt-h-14 vdt-bg-green-500 vdt-flex vdt-justify-center vdt-items-center'>
         <div className='vdt-container vdt-flex vdt-justify-between vdt-items-center'>
@@ -40,7 +57,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
           </div>
           <div className='vdt-relative'>
             <div onClick={toggleContextMenu} className="vdt-flex vdt-items-center vdt-space-x-4 vdt-cursor-pointer">
-              <span className="vdt-text-white vdt-font-semibold vdt-text-sm">{currentUser.name}</span>
+              <span className="vdt-text-white vdt-font-semibold vdt-text-sm">{currentUser?.fullName}</span>
               <div className='vdt-w-10 vdt-h-10 vdt-bg-white vdt-overflow-hidden vdt-rounded-full'></div>
             </div>
             {
