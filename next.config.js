@@ -2,7 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   env: {
-    URL: 'http://localhost:3000/'
+    URL: 'http://localhost:3000/',
+    SERVER: "http://localhost:3200"
   },
   async redirects() {
     return [
