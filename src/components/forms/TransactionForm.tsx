@@ -70,7 +70,7 @@ const TransactionForm: React.FC<TransactionFormProps> = () => {
 
             <div className="vdt-flex vdt-justify-end vdt-space-x-4">
                 <button className="vdt-bg-slate-500 vdt-py-2 vdt-px-6 vdt-rounded vdt-text-white hover:vdt-bg-slate-600 vdt-inline vdt-text-sm">Cancel</button>
-                <button className="vdt-bg-green-500 vdt-py-2 vdt-px-6 vdt-rounded vdt-text-white hover:vdt-bg-green-600 vdt-inline vdt-text-sm">Save</button>
+                <button className="vdt-bg-blue-500 vdt-py-2 vdt-px-6 vdt-rounded vdt-text-white hover:vdt-bg-green-600 vdt-inline vdt-text-sm">Save</button>
             </div>
         </div>
     </>);

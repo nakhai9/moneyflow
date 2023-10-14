@@ -31,9 +31,9 @@ const RegisterPage: NextPage = () => {
                 </div>
                 <div className="vdt-flex vdt-flex-col vdt-space-y-2">
                     <div className="vdt-flex vdt-justify-end">
-                        <p className="vdt-text-sm vdt-text-blue-500 hover:vdt-text-green-500"><Link href={"/auth/login"}>Have a account. Go to log in</Link></p>
+                        <p className="vdt-text-sm vdt-text-blue-500 hover:vdt-text-blue-500"><Link href={"/auth/login"}>Have a account. Go to log in</Link></p>
                     </div>
-                    <button className="vdt-bg-green-500 vdt-py-2 vdt-w-full vdt-text-sm vdt-px-6 vdt-rounded vdt-text-white hover:vdt-bg-green-600 ">Sign up</button>
+                    <button className="vdt-bg-blue-500 vdt-py-2 vdt-w-full vdt-text-sm vdt-px-6 vdt-rounded vdt-text-white hover:vdt-bg-green-600 ">Sign up</button>
                 </div>
             </form>
         </AuthLayout> */}

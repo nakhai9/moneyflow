@@ -60,10 +60,10 @@ const LoginPage: NextPage = () => {
                 </div>
                 <div className="vdt-flex vdt-flex-col  vdt-space-y-2">
                     <div className="vdt-flex vdt-justify-between">
-                        <p className="vdt-text-xs vdt-text-slate-500 hover:vdt-text-green-500"><Link href={"/auth/register"}>New account</Link></p>
+                        <p className="vdt-text-xs vdt-text-slate-500 hover:vdt-text-blue-500"><Link href={"/auth/register"}>New account</Link></p>
                         <p className="vdt-text-xs vdt-text-slate-500 hover:vdt-text-blue-500"><Link href={"/forgot-password"}>Forgot password?</Link></p>
                     </div>
-                    <button className="vdt-bg-green-500 vdt-py-2 vdt-w-full vdt-text-sm vdt-px-6 vdt-rounded vdt-text-white hover:vdt-bg-green-600 ">Sign in</button>
+                    <button className="vdt-bg-blue-500 vdt-py-2 vdt-w-full vdt-text-sm vdt-px-6 vdt-rounded vdt-text-white hover:vdt-bg-green-600 ">Sign in</button>
                 </div>
             </form>
         </AuthLayout> */}
@@ -83,7 +83,7 @@ const LoginPage: NextPage = () => {
 
                     <Stack className="vdt-flex vdt-flex-col vdt-space-y-2">
                         <div className="vdt-flex vdt-justify-between">
-                            <p className="vdt-text-xs vdt-text-slate-500 hover:vdt-text-green-500"><Link href={"/auth/register"}>New account</Link></p>
+                            <p className="vdt-text-xs vdt-text-slate-500 hover:vdt-text-blue-500"><Link href={"/auth/register"}>New account</Link></p>
                             <p className="vdt-text-xs vdt-text-slate-500 hover:vdt-text-blue-500"><Link href={"/forgot-password"}>Forgot password?</Link></p>
                         </div>
                         <Button type="submit" className="vdt-bg-green-500 vdt-w-full hover:vdt-bg-green-600" variant="contained">Login</Button>

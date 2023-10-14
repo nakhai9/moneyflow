@@ -1,5 +1,4 @@
-import DefaultLayout from '@/components/layouts/DefaultLayout'
-import '@/styles/globals.css'
+import '@/styles/globals.scss'
 import { ThemeProvider, createTheme } from '@mui/material'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
