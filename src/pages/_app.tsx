@@ -8,12 +8,12 @@ import { useEffect } from 'react'
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/auth/login");
-    }
-  }, [])
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     router.push("/auth/login");
+  //   }
+  // }, [])
   return <>
     <Head>
       <title>Wallet NextJS</title>
