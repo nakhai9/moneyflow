@@ -1,5 +1,6 @@
 import '@/styles/globals.scss'
-import { ThemeProvider, createTheme } from '@mui/material'
+import theme from '@/styles/theme'
+import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
@@ -18,6 +19,9 @@ export default function App({ Component, pageProps }: AppProps) {
     <Head>
       <title>Wallet NextJS</title>
     </Head>
-    <Component {...pageProps} />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Component {...pageProps} />
+    </ThemeProvider>
   </>
 }
