@@ -4,3 +4,11 @@ export enum TransactionType {
     TRANSFER = 'transfer',
     DEFAULT = 'expense'
 }
+
+export enum WalletType {
+    CASH = 'cash',
+    CREDIT = 'credit',
+    LOAN = 'loan',
+    DEBT = 'debt',
+    SAVING = 'saving'
+}

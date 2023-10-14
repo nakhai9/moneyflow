@@ -14,7 +14,7 @@ const WalletDetailPage: NextPage = () => {
                 </div>
                 {/* <table className="vdt-w-full vdt-table-fixed vdt-text-sm vdt-rounded-xl">
                     <thead className="vdt-overflow-hidden">
-                        <tr className="vdt-overflow-hidden vdt-bg-green-500 vdt-text-white">
+                        <tr className="vdt-overflow-hidden vdt-bg-blue-500 vdt-text-white">
                             <th className="vdt-w-8"><input type="checkbox" /></th>
                             <th>Category</th>
                             <th>Wallet</th>
