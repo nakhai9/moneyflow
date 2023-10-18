@@ -5,221 +5,92 @@ import { useState } from "react";
 type ComponentsProps = {}
 const Components: React.FC<ComponentsProps> = () => {
     const [fullWidth, setFullWidth] = useState(true);
-    const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('lg');
+    const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('xs');
     const [color, setColor] = useState('');
     const colors = ['Red', 'Blue', 'Green'];
 
-    const chooseType = (type: TransactionType) => {
+    const [open, setOpen] = useState<boolean>(true);
 
+    const chooseType = (type: TransactionType) => {}
+
+    const close = () => {
+        setOpen(!open);
     }
-    return <Dialog open={true} fullWidth={fullWidth} maxWidth={maxWidth}>
+    return <Dialog open={open} fullWidth={fullWidth} maxWidth={maxWidth}>
         <DialogTitle>Create wallet / transaction </DialogTitle>
         <DialogContent>
-            <Box>
-                <ButtonGroup variant="contained" >
-                    <Button type="button" onClick={() => { chooseType(TransactionType.EXPENSE) }}>{TransactionType.EXPENSE}</Button>
-                    <Button type="button" onClick={() => { chooseType(TransactionType.INCOME) }}>{TransactionType.INCOME}</Button>
-                    <Button type="button" onClick={() => { chooseType(TransactionType.TRANSFER) }}>{TransactionType.TRANSFER}</Button>
-                </ButtonGroup>
-            </Box>
-            <Box component="form" sx={{ '& > :not(style)': { m: 1 } }}>
-                <FormControl variant="outlined" margin="dense">
-                    <InputLabel id="cat-label" size="small">Category</InputLabel>
-                    <Select
-                        labelId="cat-label"
-                        id="cat-select"
-                        value={color}
-                        label=""
-                        size="small"
-                    >
-                        {Object.values(WalletType).map((type) => (
-                            <MenuItem key={type} value={type}>
-                                {type}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                <TextField
-                    id="name"
-                    type="datetime-local"
-                    variant="outlined"
-                    size="small"
-                    margin="dense"
-                    autoFocus
-                />
-                <TextField
-                    id="name"
-                    type="text"
-                    label="Description"
-                    variant="outlined"
-                    size="small"
-                    margin="dense"
-                    autoFocus
-                />
-                <TextField
-                    id="name"
-                    type="text"
-                    label="Amount"
-                    variant="outlined"
-                    size="small"
-                    margin="dense"
-                    autoFocus
-                />
-                <FormControl variant="outlined" margin="dense">
-                    <InputLabel id="color-label" size="small">Type</InputLabel>
-                    <Select
-                        labelId="color-label"
-                        id="color-select"
-                        value={color}
-                        label="Color"
-                        size="small"
-                    >
-                        {Object.values(WalletType).map((type) => (
-                            <MenuItem key={type} value={type}>
-                                {type}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Box>
-            <Grid container spacing={2}>
-                <Grid item>
-                    <FormControl fullWidth variant="outlined" margin="dense">
-                        <InputLabel id="cat-label" size="small">Category</InputLabel>
-                        <Select
-                            labelId="cat-label"
-                            id="cat-select"
-                            value={color}
-                            label=""
-                            size="small"
-                        >
-                            {Object.values(WalletType).map((type) => (
-                                <MenuItem key={type} value={type}>
-                                    {type}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                </Grid>
-                <Grid item>
-                    <TextField
-                        id="name"
-                        type="datetime-local"
-                        variant="outlined"
-                        size="small"
-                        margin="dense"
-                        autoFocus
-                    />
-                </Grid>
-                <Grid item>
-                    <TextField
-                        id="name"
-                        type="text"
-                        label="Description"
-                        variant="outlined"
-                        size="small"
-                        margin="dense"
-                        autoFocus
-                    />
-                </Grid>
-                <Grid item>
-                    <TextField
-                        id="name"
-                        type="text"
-                        label="Amount"
-                        variant="outlined"
-                        size="small"
-                        margin="dense"
-                        autoFocus
-                    />
-                </Grid>
-                <Grid item>
-                    <FormControl variant="outlined" margin="dense">
-                        <InputLabel id="color-label" size="small">Type</InputLabel>
-                        <Select
-                            labelId="color-label"
-                            id="color-select"
-                            value={color}
-                            label="Color"
-                            size="small"
-                        >
-                            {Object.values(WalletType).map((type) => (
-                                <MenuItem key={type} value={type}>
-                                    {type}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                </Grid>
-            </Grid>
-            {/* <TextField
-                id="name"
-                type="text"
-                label="Name"
-                variant="outlined"
-                size="small"
-                margin="dense"
-                autoFocus
-                fullWidth
-            />
-            <div className="vdt-flex">
-                <TextField
-                    id="initial"
-                    type="text"
-                    label="Amount"
-                    variant="outlined"
-                    size="small"
-                    margin="dense"
-                    autoFocus
-                    fullWidth
-                />
-                <FormControl fullWidth variant="outlined" margin="dense">
-                    <InputLabel id="color-label" size="small">Type</InputLabel>
-                    <Select
-                        labelId="color-label"
-                        id="color-select"
-                        value={color}
-                        label="Color"
-                        size="small"
-                    >
-                        {Object.values(WalletType).map((type) => (
-                            <MenuItem key={type} value={type}>
-                                {type}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </div>
-            <TextField
-                id="description"
-                type="text"
-                label="Description"
-                variant="outlined"
-                size="small"
-                margin="dense"
-                autoFocus
-                fullWidth
-            />
-            <FormControl fullWidth variant="outlined" margin="dense">
-                <InputLabel id="color-label" size="small">Type</InputLabel>
-                <Select
-                    labelId="color-label"
-                    id="color-select"
-                    value={color}
-                    label="Color"
-                    size="small"
-                >
-                    {colors.map((c) => (
-                        <MenuItem key={c} value={c}>
-                            {c}
+
+            {/* <form action="">
+                <TextField select label="Type" margin="dense" size="small" fullWidth>
+                    {Object.values(WalletType).map((type) => (
+                        <MenuItem key={type} value={type}>
+                            {type}
                         </MenuItem>
                     ))}
-                </Select>
-            </FormControl> */}
+                </TextField>
+                <TextField id="name" type="datetime-local" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
+                <TextField id="name" type="text" label="Description" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
+                <TextField id="name" type="text" label="Amount" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
+                <TextField select label="Type" margin="dense" size="small" fullWidth>
+                    {Object.values(WalletType).map((type) => (
+                        <MenuItem key={type} value={type}>
+                            {type}
+                        </MenuItem>
+                    ))}
+                </TextField>
+            </form> */}
+
+            {/* <Box mb={2}>
+                <ButtonGroup variant="contained" >
+                    <Button type="button" color="primary" onClick={() => { chooseType(TransactionType.EXPENSE) }}>{TransactionType.EXPENSE}</Button>
+                    <Button type="button" color="error" onClick={() => { chooseType(TransactionType.INCOME) }}>{TransactionType.INCOME}</Button>
+                    <Button type="button" color="success" onClick={() => { chooseType(TransactionType.TRANSFER) }}>{TransactionType.TRANSFER}</Button>
+                </ButtonGroup>
+            </Box>
+            <form>
+                <Grid container spacing={1}>
+                    <Grid item xs={12} md={2}>
+                        <TextField select label="Category" margin="dense" size="small" fullWidth>
+                            {Object.values(WalletType).map((type) => (
+                                <MenuItem key={type} value={type}>
+                                    {type}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                        <TextField id="name" type="datetime-local" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                        <TextField id="name" type="text" label="Description" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                        <TextField id="name" type="text" label="Amount" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                        <TextField select label="Type" margin="dense" size="small" fullWidth>
+                            {Object.values(WalletType).map((type) => (
+                                <MenuItem key={type} value={type}>
+                                    {type}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                        <TextField select label="Payment method" margin="dense" size="small" fullWidth>
+                            {Object.values(WalletType).map((type) => (
+                                <MenuItem key={type} value={type}>
+                                    {type}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </Grid>
+                </Grid>
+            </form> */}
 
         </DialogContent>
         <DialogActions>
-            <Button type="button" variant="contained" color="inherit">Cancel</Button>
+            <Button type="button" onClick={close} variant="contained" color="inherit">Cancel</Button>
             <Button type="button" variant="contained" color="primary">Create</Button>
         </DialogActions>
     </Dialog>
