@@ -39,6 +39,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
           <div className="vdt-flex-1">
             {/* <button type="button" className="vdt-text-white vdt-text-sm vdt-text-semibold"> <FontAwesomeIcon icon={faPlus} className="" /> Add transaction </button> */}
             <Link className="vdt-text-white" href={"transactions"} >Transactions</Link>
+            <Link className="vdt-text-white" href={"components"} >Components</Link>
           </div>
           <div className='vdt-relative'>
             <div onClick={toggleContextMenu} className="vdt-flex vdt-items-center vdt-space-x-4 vdt-cursor-pointer">
