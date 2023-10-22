@@ -1,4 +1,10 @@
 /** @type {import('next').NextConfig} */
+
+const BLOCK_ROUTES = [
+  { source: '/auth', destination: '/auth/login', permanent: false },
+  { source: '/wallet', destination: '/', permanent: false }
+]
+
 const nextConfig = {
   reactStrictMode: true,
   env: {
@@ -6,13 +12,7 @@ const nextConfig = {
     SERVER: "http://localhost:3200"
   },
   async redirects() {
-    return [
-      {
-        source: '/auth',
-        destination: '/auth/login',
-        permanent: false
-      }
-    ]
+    return BLOCK_ROUTES;
   }
 }
 

@@ -37,7 +37,6 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
       <div className='vdt-h-14 vdt-bg-blue-500 vdt-flex vdt-justify-center vdt-items-center'>
         <div className='vdt-container vdt-flex vdt-justify-between vdt-items-center'>
           <div className="vdt-flex-1">
-            {/* <button type="button" className="vdt-text-white vdt-text-sm vdt-text-semibold"> <FontAwesomeIcon icon={faPlus} className="" /> Add transaction </button> */}
             <Link className="vdt-text-white" href={"transactions"} >Transactions</Link>
             <Link className="vdt-text-white" href={"components"} >Components</Link>
           </div>
