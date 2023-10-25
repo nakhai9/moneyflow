@@ -10,6 +10,7 @@ export interface ITransaction {
     amount: number;
     paymentMethod: PaymentMethod;
     type: TransactionType;
+    label?: string;
     createdAt?: Date;
     updatedAt?: Date;
     icon?: any;

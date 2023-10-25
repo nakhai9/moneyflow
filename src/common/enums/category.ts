@@ -1,4 +1,5 @@
 export enum Category {
+    NONE = 'None',
     SHOPPING = 'Shopping',
     FOOD_DRINK = 'Food and Drink',
     TRAVEL = 'Travel',
