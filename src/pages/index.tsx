@@ -82,8 +82,8 @@ const Home: NextPage = () => {
 
   return (
     <>
-      <Dialog open={open} fullWidth={true} maxWidth={maxWidth} onSubmit={handleSubmit(onSubmit)}>
-        <form >
+      <Dialog open={open} fullWidth={true} maxWidth={maxWidth}>
+        <form onSubmit={handleSubmit(onSubmit)} >
           <DialogTitle>Create wallet</DialogTitle>
           <DialogContent>
             <Controller control={control} name="name" rules={{ required: true }}

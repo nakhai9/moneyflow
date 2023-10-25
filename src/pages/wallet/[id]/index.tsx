@@ -1,44 +1,19 @@
+import { Category } from "@/common/enums/category";
+import { ModalType } from "@/common/enums/modal-type.enum";
+import { PaymentMethod } from "@/common/enums/payment-method";
+import { TransactionType, WalletType } from "@/common/enums/transaction-type";
+import { ITransaction } from "@/common/interfaces/transaction";
 import DefaultLayout from "@/components/layouts/DefaultLayout";
+import AddIcon from '@mui/icons-material/Add';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { Box, Button, ButtonGroup, Container, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, IconButton, MenuItem, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from "@mui/material";
-import { red } from "@mui/material/colors";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import AddIcon from '@mui/icons-material/Add';
-import { Category } from "@/common/enums/category";
-import { TransactionType, WalletType } from "@/common/enums/transaction-type";
-import { PaymentMethod } from "@/common/enums/payment-method";
-import { ITransaction } from "@/common/interfaces/transaction";
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useState } from "react";
-import { ModalType } from "@/common/enums/modal-type.enum";
-import SettingsIcon from '@mui/icons-material/Settings';
-
-const STATISTICS = [
-    {
-        label: "Current Wallet Balance",
-        value: 157000,
-        locale: "vi-VN",
-        currency: "VND"
-    },
-    {
-        label: "Total Period Change",
-        value: 0,
-        locale: "vi-VN",
-        currency: "VND"
-    },
-    {
-        label: "Current Wallet Balance",
-        value: 0,
-        locale: "vi-VN",
-        currency: "VND"
-    },
-    {
-        label: "Current Wallet Balance",
-        value: 0,
-        locale: "vi-VN",
-        currency: "VND"
-    }
-];
+import { Controller, useForm } from "react-hook-form";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from "@mui/x-date-pickers";
 
 const columns = ['Category', 'Wallet', 'Description', 'Payment method', 'Amount'];
 
@@ -119,19 +94,59 @@ const transactions: ITransaction[] = [
         description: "Cho Nhường mượn",
         type: TransactionType.TRANSFER,
         createdAt: new Date("2023-10-9")
+    },
+    {
+        id: 9,
+        category: Category.LOAN,
+        walletName: "My Wallet",
+        paymentMethod: PaymentMethod.TRANSFER,
+        amount: 100000,
+        description: "Cho Nhường mượn",
+        type: TransactionType.TRANSFER,
+        createdAt: new Date("2023-10-25")
     }
 ];
 
+type TransactionSubmitForm = {
+    transactionType: TransactionType,
+    category: Category,
+    date: Date,
+    paymentMethod: PaymentMethod
+    amount: number,
+    label?: string,
+    description?: string,
+}
 
 const WalletDetailPage: NextPage = () => {
     const router = useRouter();
+    // wallet id
     const { id } = router.query;
     const [fullWidth, setFullWidth] = useState(true);
     const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('lg');
     const categories = Object.values(Category);
     const [open, setOpen] = useState<boolean>(false);
+    const [walletBalance, setWalletBalance] = useState<number>(3000000);
+    const [locale, setLocale] = useState<string>('vi-Vi');
+    const [currency, setCurrency] = useState<string>('VND');
+    const [currentType, setCurrentType] = useState<TransactionType>(TransactionType.DEFAULT);
 
-    const chooseType = (type: TransactionType) => { }
+    const [initialForm, setInitialForm] = useState<TransactionSubmitForm>({
+        transactionType: TransactionType.EXPENSE,
+        category: Category.NONE,
+        date: new Date("2023-10-23"),
+        paymentMethod: PaymentMethod.CASH,
+        amount: 0,
+        description: '',
+        label: ''
+    })
+
+    const { register, handleSubmit, watch, control, setValue, formState: { errors } } = useForm<TransactionSubmitForm>({
+        defaultValues: initialForm,
+    })
+
+    const chooseType = (type: TransactionType) => {
+        setCurrentType(type);
+    }
 
     const close = () => {
         setOpen(!open);
@@ -144,66 +159,201 @@ const WalletDetailPage: NextPage = () => {
         return Intl.NumberFormat(locale, option);
     }
 
-    const openTransactionModal = (type: ModalType, transactionId?: number) => {
+    const openTransactionModal = (type: ModalType, transaction?: ITransaction) => {
         setOpen(!open);
+        if (transaction) {
+            const transactionDetail: TransactionSubmitForm = {
+                amount: transaction.amount,
+                category: transaction.category,
+                date: transaction.createdAt as Date,
+                paymentMethod: transaction.paymentMethod,
+                transactionType: transaction.type,
+                description: transaction.description,
+                label: transaction.label
+            }
+            setCurrentType(transaction.type);
+            setValue("amount", transaction.amount);
+            setValue("category", transaction.category);
+            setValue("date", (transaction.createdAt) as Date);
+            setValue("paymentMethod", transaction.paymentMethod);
+            setValue("description", transaction.description);
+            setValue("label", transaction.label);
+        }
+
     }
+
+    const gettotalPeriodExpenseValue = (): number => {
+        let totalPeriodExpense: number = 0;
+        transactions
+            .filter((item) => {
+                return item.type === TransactionType.EXPENSE
+            })
+            .forEach(item => {
+                totalPeriodExpense += item.amount
+            })
+
+        return totalPeriodExpense;
+    }
+
+    const gettotalPeriodIncomeValue = (): number => {
+        let totalPeriodIncome: number = 0;
+        transactions
+            .filter((item) => {
+                return item.type === TransactionType.INCOME
+            })
+            .forEach(item => {
+                totalPeriodIncome += item.amount
+            })
+
+        return totalPeriodIncome;
+    }
+
+    const onCreateTransaction = async (data: TransactionSubmitForm) => {
+        console.log(data);
+    }
+
     return (
         <>
             <Dialog open={open} fullWidth={fullWidth} maxWidth={maxWidth}>
-                <DialogTitle>Transaction</DialogTitle>
-                <DialogContent>
-                    <Box mb={2}>
-                        <ButtonGroup variant="contained" >
-                            <Button type="button" color="primary" onClick={() => { chooseType(TransactionType.EXPENSE) }}>{TransactionType.EXPENSE}</Button>
-                            <Button type="button" color="error" onClick={() => { chooseType(TransactionType.INCOME) }}>{TransactionType.INCOME}</Button>
-                            <Button type="button" color="success" onClick={() => { chooseType(TransactionType.TRANSFER) }}>{TransactionType.TRANSFER}</Button>
-                        </ButtonGroup>
-                    </Box>
-                    <form>
+                <form onSubmit={handleSubmit(onCreateTransaction)}>
+                    <DialogTitle>Transaction</DialogTitle>
+                    <DialogContent>
+                        <Box mb={2}>
+                            <ButtonGroup variant="contained" >
+                                <Button type="button" color={currentType === TransactionType.EXPENSE ? "primary" : "inherit"} onClick={() => { chooseType(TransactionType.EXPENSE) }}>{TransactionType.EXPENSE}</Button>
+                                <Button type="button" color={currentType === TransactionType.INCOME ? "error" : "inherit"} onClick={() => { chooseType(TransactionType.INCOME) }}>{TransactionType.INCOME}</Button>
+                                <Button type="button" color={currentType === TransactionType.TRANSFER ? "success" : "inherit"} onClick={() => { chooseType(TransactionType.TRANSFER) }}>{TransactionType.TRANSFER}</Button>
+                            </ButtonGroup>
+                        </Box>
                         <Grid container spacing={1}>
                             <Grid item xs={12} md={2}>
-                                <TextField select label="Category" margin="dense" size="small" fullWidth>
-                                    {Object.values(WalletType).map((type) => (
-                                        <MenuItem key={type} value={type}>
-                                            {type}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
+                                <Controller control={control} name="category" rules={{ required: true }}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            select
+                                            size="small"
+                                            fullWidth
+                                            label="Category"
+                                            margin="dense"
+                                            error={!!errors.category}
+                                            helperText={
+                                                errors.category && `${errors.category.message}`
+                                            }>
+                                            {Object.values(Category).map((category, index) => (
+                                                <MenuItem key={index} value={category}>
+                                                    {category}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
+                                    )}
+                                />
                             </Grid>
                             <Grid item xs={12} md={2}>
-                                <TextField id="name" type="datetime-local" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
+                                <Controller control={control} name="date" rules={{ required: true }}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            type="datetime-local"
+                                            size="small"
+                                            fullWidth
+                                            margin="dense"
+                                            autoFocus
+                                            error={!!errors.date}
+                                            helperText={
+                                                errors.date && `${errors.date.message}`
+                                            }
+                                        />
+                                    )}
+                                />
                             </Grid>
                             <Grid item xs={12} md={2}>
-                                <TextField id="name" type="text" label="Description" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
+                                <Controller control={control} name="description" rules={{ required: false }}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            label="Description (optional)"
+                                            type="text"
+                                            size="small"
+                                            fullWidth
+                                            margin="dense"
+                                            autoFocus
+                                            error={!!errors.description}
+                                            helperText={
+                                                errors.description && `${errors.description.message}`
+                                            }
+                                        />
+                                    )}
+                                />
                             </Grid>
                             <Grid item xs={12} md={2}>
-                                <TextField id="name" type="text" label="Amount" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
+                                <Controller control={control} name="amount" rules={{ required: true }}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            label="Amount"
+                                            type="number"
+                                            size="small"
+                                            fullWidth
+                                            margin="dense"
+                                            autoFocus
+                                            error={!!errors.amount}
+                                            helperText={
+                                                errors.amount && `${errors.amount.message}`
+                                            }
+                                        />
+                                    )}
+                                />
                             </Grid>
                             <Grid item xs={12} md={2}>
-                                <TextField select label="Type" margin="dense" size="small" fullWidth>
-                                    {Object.values(WalletType).map((type) => (
-                                        <MenuItem key={type} value={type}>
-                                            {type}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
+                                <Controller control={control} name="label" rules={{ required: false }}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            label="Label (optional)"
+                                            type="text"
+                                            size="small"
+                                            fullWidth
+                                            margin="dense"
+                                            autoFocus
+                                            error={!!errors.label}
+                                            helperText={
+                                                errors.label && `${errors.label.message}`
+                                            }
+                                        />
+                                    )}
+                                />
                             </Grid>
                             <Grid item xs={12} md={2}>
-                                <TextField select label="Payment method" margin="dense" size="small" fullWidth>
-                                    {Object.values(WalletType).map((type) => (
-                                        <MenuItem key={type} value={type}>
-                                            {type}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
+                                <Controller control={control} name="paymentMethod" rules={{ required: true }}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            select
+                                            size="small"
+                                            fullWidth
+                                            label="Payment method"
+                                            margin="dense"
+                                            error={!!errors.paymentMethod}
+                                            helperText={
+                                                errors.paymentMethod && `${errors.paymentMethod.message}`
+                                            }>
+                                            {Object.values(PaymentMethod).map((paymentMethod, index) => (
+                                                <MenuItem key={index} value={paymentMethod}>
+                                                    {paymentMethod}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
+                                    )}
+                                />
                             </Grid>
                         </Grid>
-                    </form>
-                </DialogContent>
-                <DialogActions>
-                    <Button type="button" onClick={close} variant="contained" color="inherit">Cancel</Button>
-                    <Button type="button" variant="contained" color="primary">Create</Button>
-                </DialogActions>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button type="button" onClick={close} variant="contained" color="inherit">Cancel</Button>
+                        <Button type="submit" variant="contained" color="primary">Create</Button>
+                    </DialogActions>
+                </form>
             </Dialog>
             <DefaultLayout>
                 <Container>
@@ -219,16 +369,40 @@ const WalletDetailPage: NextPage = () => {
                             </Grid>
                             <Grid container item mb={2}>
                                 <Grid container spacing={2}>
-                                    {
-                                        STATISTICS.map((item, index) => (<Grid item xs={6} md={3} key={index}>
-                                            <Paper sx={{ backgroundColor: red, width: "100%", padding: 2, cursor: "pointer" }} >
-                                                <Typography variant="body2" className="vdt-font-semibold">{item.label}</Typography>
-                                                <div>
-                                                    <Typography variant="h6" color="primary">{numberAsCurrency(item.locale, item.currency).format(item.value).toString()}</Typography>
-                                                </div>
-                                            </Paper>
-                                        </Grid>))
-                                    }
+                                    <Grid item xs={6} md={3}>
+                                        <Paper sx={{ width: "100%", padding: 2, cursor: "pointer" }} >
+                                            <Typography variant="body2" className="vdt-font-semibold">Current Wallet Balance</Typography>
+                                            <div>
+                                                <Typography variant="h6" color="primary">{numberAsCurrency(locale, currency).format(walletBalance)}</Typography>
+                                            </div>
+                                        </Paper>
+                                    </Grid>
+                                    <Grid item xs={6} md={3}>
+                                        <Paper sx={{ width: "100%", padding: 2, cursor: "pointer" }} >
+                                            <Typography variant="body2" className="vdt-font-semibold">Total Period Change</Typography>
+                                            <div>
+                                                <Typography variant="h6" color="primary">
+                                                    {numberAsCurrency(locale, currency).format(gettotalPeriodExpenseValue() + gettotalPeriodIncomeValue())}
+                                                </Typography>
+                                            </div>
+                                        </Paper>
+                                    </Grid>
+                                    <Grid item xs={6} md={3}>
+                                        <Paper sx={{ width: "100%", padding: 2, cursor: "pointer" }} >
+                                            <Typography variant="body2" className="vdt-font-semibold">Total Period Expenses</Typography>
+                                            <div>
+                                                <Typography variant="h6" color="primary">{numberAsCurrency(locale, currency).format(gettotalPeriodExpenseValue())}</Typography>
+                                            </div>
+                                        </Paper>
+                                    </Grid>
+                                    <Grid item xs={6} md={3}>
+                                        <Paper sx={{ width: "100%", padding: 2, cursor: "pointer" }} >
+                                            <Typography variant="body2" className="vdt-font-semibold">Total Period Income</Typography>
+                                            <div>
+                                                <Typography variant="h6" color="primary">{numberAsCurrency(locale, currency).format(gettotalPeriodIncomeValue())}</Typography>
+                                            </div>
+                                        </Paper>
+                                    </Grid>
                                 </Grid>
                             </Grid>
                             <Grid container item>
@@ -262,7 +436,7 @@ const WalletDetailPage: NextPage = () => {
                                                                     <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
                                                                     <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
                                                                     <TableCell className="vdt-border-none vdt-w-5">
-                                                                        <IconButton aria-label="actions" size="small" onClick={() => { openTransactionModal(ModalType.EDIT, item.id) }}>
+                                                                        <IconButton aria-label="actions" size="small" onClick={() => { openTransactionModal(ModalType.EDIT, item) }}>
                                                                             <MoreVertIcon />
                                                                         </IconButton>
                                                                     </TableCell>
