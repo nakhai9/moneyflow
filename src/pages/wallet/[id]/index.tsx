@@ -1,19 +1,18 @@
 import { Category } from "@/common/enums/category";
 import { ModalType } from "@/common/enums/modal-type.enum";
 import { PaymentMethod } from "@/common/enums/payment-method";
-import { TransactionType, WalletType } from "@/common/enums/transaction-type";
+import { TransactionType } from "@/common/enums/transaction-type";
 import { ITransaction } from "@/common/interfaces/transaction";
 import DefaultLayout from "@/components/layouts/DefaultLayout";
 import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { Box, Button, ButtonGroup, Container, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, IconButton, MenuItem, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from "@mui/material";
+import { Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, IconButton, MenuItem, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from "@mui/material";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from "@mui/x-date-pickers";
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 const columns = ['Category', 'Wallet', 'Description', 'Payment method', 'Amount'];
 
@@ -356,101 +355,99 @@ const WalletDetailPage: NextPage = () => {
                 </form>
             </Dialog>
             <DefaultLayout>
-                <Stack>
-                    <Grid container>
-                        <Grid container item mb={2}>
-                            <Grid container justifyContent="space-between">
-                                <Button type="button" size="small" variant="contained" color="primary" sx={{ textTransform: "none" }} startIcon={<AddIcon />} onClick={() => { openTransactionModal(ModalType.ADD) }}>Add transaction</Button>
+                <Grid container spacing={4}>
+                    <Grid container item xs={12} justifyContent="space-between">
+                        <Button type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={() => { openTransactionModal(ModalType.ADD) }}>Add transaction</Button>
+                        <Box>
+                            <Tooltip title="Settings">
                                 <IconButton aria-label="setting" size="small">
                                     <SettingsIcon />
                                 </IconButton>
-                            </Grid>
+                            </Tooltip>
+                            <Tooltip title="Export to PDF">
+                                <IconButton aria-label="setting" size="small">
+                                    <FileDownloadIcon />
+                                </IconButton>
+                            </Tooltip>
+                        </Box>
+                    </Grid>
+                    <Grid container item xs={12} spacing={4}>
+                        <Grid item xs={6} md={3}>
+                            <Paper className="vdt-p-4 vdt-cursor-pointer">
+                                <Typography variant="body2" className="vdt-font-semibold">Current Wallet Balance</Typography>
+                                <div>
+                                    <Typography variant="h6" color="primary">{numberAsCurrency(locale, currency).format(walletBalance)}</Typography>
+                                </div>
+                            </Paper>
                         </Grid>
-                        <Grid container item mb={2}>
-                            <Grid container spacing={2}>
-                                <Grid item xs={6} md={3}>
-                                    <Paper sx={{ width: "100%", padding: 2, cursor: "pointer" }} >
-                                        <Typography variant="body2" className="vdt-font-semibold">Current Wallet Balance</Typography>
-                                        <div>
-                                            <Typography variant="h6" color="primary">{numberAsCurrency(locale, currency).format(walletBalance)}</Typography>
-                                        </div>
-                                    </Paper>
-                                </Grid>
-                                <Grid item xs={6} md={3}>
-                                    <Paper sx={{ width: "100%", padding: 2, cursor: "pointer" }} >
-                                        <Typography variant="body2" className="vdt-font-semibold">Total Period Change</Typography>
-                                        <div>
-                                            <Typography variant="h6" color="primary">
-                                                {numberAsCurrency(locale, currency).format(gettotalPeriodExpenseValue() + gettotalPeriodIncomeValue())}
-                                            </Typography>
-                                        </div>
-                                    </Paper>
-                                </Grid>
-                                <Grid item xs={6} md={3}>
-                                    <Paper sx={{ width: "100%", padding: 2, cursor: "pointer" }} >
-                                        <Typography variant="body2" className="vdt-font-semibold">Total Period Expenses</Typography>
-                                        <div>
-                                            <Typography variant="h6" color="primary">{numberAsCurrency(locale, currency).format(gettotalPeriodExpenseValue())}</Typography>
-                                        </div>
-                                    </Paper>
-                                </Grid>
-                                <Grid item xs={6} md={3}>
-                                    <Paper sx={{ width: "100%", padding: 2, cursor: "pointer" }} >
-                                        <Typography variant="body2" className="vdt-font-semibold">Total Period Income</Typography>
-                                        <div>
-                                            <Typography variant="h6" color="primary">{numberAsCurrency(locale, currency).format(gettotalPeriodIncomeValue())}</Typography>
-                                        </div>
-                                    </Paper>
-                                </Grid>
-                            </Grid>
+                        <Grid item xs={6} md={3}>
+                            <Paper className="vdt-p-4 vdt-cursor-pointer">
+                                <Typography variant="body2" className="vdt-font-semibold">Total Period Change</Typography>
+                                <div>
+                                    <Typography variant="h6" color="primary">
+                                        {numberAsCurrency(locale, currency).format(gettotalPeriodExpenseValue() + gettotalPeriodIncomeValue())}
+                                    </Typography>
+                                </div>
+                            </Paper>
                         </Grid>
-                        <Grid container item>
-                            <Grid item container>
-                                <Grid item xs={12} md={12}>
-                                    {
-                                        transactions && (<TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
-                                            <Table size="small">
-                                                <TableHead>
-                                                    <TableRow>
-                                                        {
-                                                            columns.map((columnHeading: string, index: number) => <TableCell key={index} align={columnHeading === 'Amount' ? 'right' : 'left'} sx={{ 'fontWeight': "bold" }} component="th">{columnHeading}</TableCell>)
-                                                        }
-                                                        <TableCell className="vdt-w-5">
-                                                            <IconButton aria-label="actions" size="small">
-                                                                <MoreVertIcon />
-                                                            </IconButton>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                </TableHead>
-                                                <TableBody>
-                                                    {
-                                                        transactions.map((item, index) => {
-                                                            return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]"  >
-                                                                <TableCell component="td" className="vdt-border-none">
-                                                                    {/* <FastfoodIcon color="primary" /> */}
-                                                                    <span className="vdt-ml-2">{item.category}</span>
-                                                                </TableCell>
-                                                                <TableCell className="vdt-border-none">{item.walletName}</TableCell>
-                                                                <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
-                                                                <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
-                                                                <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
-                                                                <TableCell className="vdt-border-none vdt-w-5">
-                                                                    <IconButton aria-label="actions" size="small" onClick={() => { openTransactionModal(ModalType.EDIT, item) }}>
-                                                                        <MoreVertIcon />
-                                                                    </IconButton>
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        })
-                                                    }
-                                                </TableBody>
-                                            </Table>
-                                        </TableContainer>)
-                                    }
-                                </Grid>
-                            </Grid>
+                        <Grid item xs={6} md={3}>
+                            <Paper className="vdt-p-4 vdt-cursor-pointer" >
+                                <Typography variant="body2" className="vdt-font-semibold">Total Period Expenses</Typography>
+                                <div>
+                                    <Typography variant="h6" color="primary">{numberAsCurrency(locale, currency).format(gettotalPeriodExpenseValue())}</Typography>
+                                </div>
+                            </Paper>
+                        </Grid>
+                        <Grid item xs={6} md={3}>
+                            <Paper className="vdt-p-4 vdt-cursor-pointer" >
+                                <Typography variant="body2" className="vdt-font-semibold">Total Period Income</Typography>
+                                <div>
+                                    <Typography variant="h6" color="primary">{numberAsCurrency(locale, currency).format(gettotalPeriodIncomeValue())}</Typography>
+                                </div>
+                            </Paper>
                         </Grid>
                     </Grid>
-                </Stack>
+                    <Grid container item xs={12}>
+                        {
+                            transactions && (<TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            {
+                                                columns.map((columnHeading: string, index: number) => <TableCell key={index} align={columnHeading === 'Amount' ? 'right' : 'left'} sx={{ 'fontWeight': "bold" }} component="th">{columnHeading}</TableCell>)
+                                            }
+                                            <TableCell className="vdt-w-5">
+                                                <IconButton aria-label="actions" size="small">
+                                                    <MoreVertIcon />
+                                                </IconButton>
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {
+                                            transactions.map((item, index) => {
+                                                return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]"  >
+                                                    <TableCell component="td" className="vdt-border-none">
+                                                        <span className="vdt-ml-2">{item.category}</span>
+                                                    </TableCell>
+                                                    <TableCell className="vdt-border-none">{item.walletName}</TableCell>
+                                                    <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
+                                                    <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
+                                                    <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
+                                                    <TableCell className="vdt-border-none vdt-w-5">
+                                                        <IconButton aria-label="actions" size="small" onClick={() => { openTransactionModal(ModalType.EDIT, item) }}>
+                                                            <MoreVertIcon />
+                                                        </IconButton>
+                                                    </TableCell>
+                                                </TableRow>
+                                            })
+                                        }
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>)
+                        }
+                    </Grid>
+                </Grid>
             </DefaultLayout>
         </>
     );
