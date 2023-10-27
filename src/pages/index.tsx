@@ -4,7 +4,7 @@ import { IWallet } from "@/common/interfaces/wallet";
 import DefaultLayout from "@/components/layouts/DefaultLayout";
 import { yupResolver } from "@hookform/resolvers/yup";
 import AddIcon from '@mui/icons-material/Add';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, MenuItem, Paper, Stack, TextField } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -183,54 +183,28 @@ const Home: NextPage = () => {
         </form>
       </Dialog>
       <DefaultLayout>
-        <div className="vdt-container vdt-mx-auto vdt-p-4 ">
-          <h2 className="vdt-mb-2 vdt-text-xl vdt-font-semibold vdt-text-slate-500">Wallets</h2>
-          <div className="vdt-grid vdt-grid-cols-5 vdt-gap-4">
-            {
-              wallets.length > 0 && wallets.map((item, index: number) => (<div key={index} onClick={() => { openWallet(item.id) }} className="vdt-flex vdt-h-28 vdt-shadow-lg vdt-bg-white vdt-rounded vdt-cursor-pointer vdt-font-thin vdt-overflow-hidden hover:vdt-shadow-lg">
-                <div className="vdt-w-5 vdt-bg-blue-500"></div>
-                <div className="vdt-flex vdt-flex-col vdt-justify-center vdt-pl-4">
-                  <div className="vdt-text-xl">{item.name}</div>
-                  <div className="vdt-capitalize">{item.type}</div>
-                  <div className="vdt-text-xl vdt-text-blue-500 vdt-font-semibold">{item.amount.toLocaleString()} <span>{item.currency}</span></div>
-                </div>
-              </div>))
-            }
-            <div className="vdt-flex vdt-flex-col vdt-justify-start vdt-font-thin vdt-space-y-4">
-              {
-                /*
-                  ======================================= THIS IS CODE OF VERSION USING TAILWIND ============================================== 
-                  <button type="button" className="vdt-bg-white vdt-p-2 vdt-rounded vdt-text-sm vdt-font-semibold vdt-text-blue-500 vdt-shadow hover:vdt-shadow-lg" onClick={goto}>  <FontAwesomeIcon icon={faPlus} className="" /> Add New Wallet</button>
-                  <button type="button" className="vdt-bg-white vdt-p-2 vdt-rounded vdt-text-sm vdt-font-semibold vdt-text-blue-500 vdt-shadow hover:vdt-shadow-lg">Connect a Bank Account</button>
-                  ============================================================ END ============================================================
-                */
-              }
-              <Button type="button" variant="contained" color="primary" sx={{ textTransform: "none" }} startIcon={<AddIcon />} onClick={openModal}>Add wallet</Button>
-              <Button type="button" variant="outlined" sx={{ textTransform: "none" }}>Connect a Bank Account</Button>
-            </div>
-          </div>
+        <Grid container spacing={4}>
           {
-            /* ======================================= THIS IS CODE OF VERSION USING TAILWIND ============================================== 
-              <h2 className="vdt-mb-2 vdt-mt-6 vdt-text-xl vdt-font-semibold vdt-text-slate-500">Overview</h2>
-              <div className="vdt-grid vdt-grid-cols-3 vdt-gap-4">
-                <div className="vdt-bg-white vdt-rounded vdt-p-4">
-                  <h3 className="vdt-font-semibold vdt-text-slate-500">Total Balance</h3>
-                  <div className="vdt-text-xl vdt-text-blue-500">0.00 <span>USD</span></div>
-                </div>
-                <div className="vdt-bg-white vdt-rounded vdt-p-4">
-                  <h3 className="vdt-font-semibold vdt-text-slate-500">Total Period Income</h3>
-                  <div className="vdt-text-xl vdt-text-blue-500">0.00 <span>USD</span></div>
-                </div>
-                <div className="vdt-bg-white vdt-rounded vdt-p-4">
-                  <h3 className="vdt-font-semibold vdt-text-slate-500">Total Period Expenses</h3>
-                  <div className="vdt-text-xl vdt-text-blue-500">0.00 <span>USD</span></div>
-                </div>
-              </div> 
-              ============================================================ END ============================================================
-            */
+            wallets.length > 0 && wallets.map((item, index: number) => (
+              <Grid key={index} item xs={6} sm={4} md={2.4}>
+                <Paper onClick={() => { openWallet(item.id) }} className="vdt-flex vdt-h-28 vdt-shadow-lg vdt-bg-white vdt-rounded vdt-cursor-pointer vdt-font-thin vdt-overflow-hidden hover:vdt-shadow-lg">
+                  <div className="vdt-w-5 vdt-bg-blue-500"></div>
+                  <div className="vdt-flex vdt-flex-col vdt-justify-center vdt-pl-4">
+                    <div className="vdt-text-xl">{item.name}</div>
+                    <div className="vdt-capitalize">{item.type}</div>
+                    <div className="vdt-text-xl vdt-text-blue-500 vdt-font-semibold">{item.amount.toLocaleString()} <span>{item.currency}</span></div>
+                  </div>
+                </Paper>
+              </Grid>
+            ))
           }
-
-        </div>
+          <Grid item xs={6} sm={4} md={2.4}>
+            <Box className="vdt-flex vdt-flex-col vdt-gap-4">
+              <Button type="button" variant="contained" fullWidth color="primary" sx={{ textTransform: "none" }} startIcon={<AddIcon />} onClick={openModal}>Add wallet</Button>
+              <Button type="button" variant="outlined" fullWidth sx={{ textTransform: "none" }}>Connect a Bank Account</Button>
+            </Box>
+          </Grid>
+        </Grid>
       </DefaultLayout>
     </>
 
