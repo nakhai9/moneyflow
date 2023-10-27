@@ -13,6 +13,9 @@ const nextConfig = {
   },
   async redirects() {
     return BLOCK_ROUTES;
+  },
+  images: {
+    domain: ["https://scontent.fvca1-3.fna.fbcdn.net"]
   }
 }
 
