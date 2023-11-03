@@ -28,13 +28,10 @@ const LoginPage: NextPage = () => {
     const onSubmit: SubmitHandler<LoginSubmitForm> = async (data) => {
         setIsLoading(true);
         console.log(data);
-        
+
     };
 
     return <>
-        <Backdrop sx={{ color: '#00a67d', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
-            <CircularProgress color="inherit" />
-        </Backdrop>
         <AuthLayout>
             <form onSubmit={handleSubmit(onSubmit)} className="vdt-flex vdt-w-full vdt-flex-block vdt-flex-col vdt-space-y-2">
                 <Typography variant="h6" className="vdt-text-slate-500">Sign in</Typography>

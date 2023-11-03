@@ -1,11 +1,11 @@
+import { store } from '@/store/store'
 import '@/styles/globals.scss'
 import theme from '@/styles/theme'
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
+import { CssBaseline, ThemeProvider } from '@mui/material'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
-
+import { Provider } from 'react-redux'
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -19,9 +19,12 @@ export default function App({ Component, pageProps }: AppProps) {
     <Head>
       <title>Wallet NextJS</title>
     </Head>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Component {...pageProps} />
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Component {...pageProps} />
+      </ThemeProvider>
+    </Provider>
+
   </>
 }

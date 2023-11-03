@@ -1,11 +1,13 @@
 import { IRoute, OPTIONS_MENU_ON_APPBAR } from "@/common/constants/routes";
 import { IBase } from "@/common/interfaces/base";
 import { IUser } from "@/common/interfaces/user";
-import { AppBar, Avatar, Box, Button, Container, IconButton, Menu, MenuItem, MenuList, Paper, Toolbar, Typography } from "@mui/material";
+import { AppBar, Avatar, Backdrop, Box, Button, CircularProgress, Container, IconButton, Menu, MenuItem, MenuList, Paper, Toolbar, Typography } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useState } from 'react';
 import MenuIcon from '@mui/icons-material/Menu';
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 type DefaultLayoutProps = {
   children: React.ReactNode
 }
@@ -17,6 +19,9 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
 
   const [isToggle, setIsToggle] = useState<boolean>(false);
 
+  const { isOpen } = useSelector((state: RootState) => state.backdrop)
+
+  const dispatch = useDispatch();
 
   const toggleContextMenu = () => {
     setIsToggle(!isToggle);
@@ -30,6 +35,10 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
   }
 
   return <>
+    <Backdrop className="vdt-z-50" open={isOpen}
+    >
+      <CircularProgress color="primary" />
+    </Backdrop>
     <Box className="vdt-flex-1 vdt-w-100 vdt-h-screen">
       <AppBar position="static">
         <Container>
