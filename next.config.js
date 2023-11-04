@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 
 const BLOCK_ROUTES = [
+  { source: '/', destination: '/dashboard', permanent: false },
   { source: '/auth', destination: '/auth/login', permanent: false },
-  { source: '/wallet', destination: '/', permanent: false }
+  { source: '/wallet', destination: '/dashboard', permanent: false }
 ]
 
 const nextConfig = {
