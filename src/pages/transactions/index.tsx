@@ -1,16 +1,17 @@
-import { Category } from "@/common/enums/category";
-import { PaymentMethod } from "@/common/enums/payment-method";
-import { TransactionType } from "@/common/enums/transaction-type";
-import { ITransaction } from "@/common/interfaces/transaction";
-import VButton from "@/components/VButton";
-import DefaultLayout from "@/layouts/DefaultLayout";
-import FastfoodIcon from '@mui/icons-material/Fastfood';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { useState } from "react";
 import { Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import useToggle from "@/hooks/useToggle";
+import VButton from "@/components/common/VButton";
+import DefaultLayout from "@/layouts/DefaultLayout";
+import { AddIcon, FastfoodIcon, MoreVertIcon } from "@/components/common/VIcons";
+import { ITransaction } from "@/common/interfaces/transaction";
+import DialogTransaction from "@/components/Transactions/DialogTransaction";
+import { Category, ModalType, PaymentMethod, TransactionType } from "@/common/enums";
+import MoreTransaction from "@/components/Transactions/MoreTransaction";
 
 const columns = ['Category', 'Wallet', 'Description', 'Payment method', 'Amount'];
 
-const transactions: ITransaction[] = [
+const _transactions: ITransaction[] = [
     {
         id: 1,
         category: Category.FOOD_DRINK,
@@ -90,20 +91,42 @@ const transactions: ITransaction[] = [
     }
 ];
 
+const Transactions = () => {
 
-type TransactionProps = {}
-const Transaction: React.FC<TransactionProps> = () => {
+    const [type, setType] = useState<ModalType>();
+    const [transactions, setTransactions] = useState(_transactions);
+    const [transaction, setTransaction] = useState<ITransaction>();
+    const { open, handleOpen, handleClose } = useToggle();
 
-    const categories = Object.values(Category);
+    const handleAddTransaction = () => {
+        handleOpen();
+        setType(ModalType.ADD);
+    }
 
-    return <>
+    const handleEditTransaction = (transaction: ITransaction) => {
+        handleOpen();
+        setType(ModalType.EDIT);
+        setTransaction(transaction)
+    }
+
+    const handleDeleteTransaction = (transactionId: number) => {
+        const newTransactions = transactions?.filter(item => item.id !== transactionId);
+        setTransactions(newTransactions);
+        console.log(`Removed transaction have a id ${transactionId}`)
+    }
+
+    return (
         <DefaultLayout>
+            <DialogTransaction open={open} type={type} transaction={transaction} handleClose={handleClose} />
             <div className="vdt-py-4">
                 <Grid container spacing={2}>
                     <Grid item container>
                         <Grid item md={1}></Grid>
                         <Grid item md={10}>
-                            <VButton type="primary" variant="contained">Add Transactions</VButton>
+                            <VButton onClick={handleAddTransaction} color="primary" variant="contained">
+                                <Typography variant="body1">Add New</Typography>
+                                <AddIcon />
+                            </VButton>
                         </Grid>
                         <Grid item md={1}></Grid>
                     </Grid>
@@ -138,7 +161,7 @@ const Transaction: React.FC<TransactionProps> = () => {
                                                 transactions.map((item, index) => {
                                                     return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]"  >
                                                         <TableCell component="td" className="vdt-border-none">
-                                                            {/* <FastfoodIcon color="primary" /> */}
+                                                            <FastfoodIcon color="primary" />
                                                             <span className="vdt-ml-2">{item.category}</span>
                                                         </TableCell>
                                                         <TableCell className="vdt-border-none">{item.walletName}</TableCell>
@@ -146,9 +169,10 @@ const Transaction: React.FC<TransactionProps> = () => {
                                                         <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
                                                         <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
                                                         <TableCell className="vdt-border-none vdt-w-5">
-                                                            <IconButton aria-label="actions" size="small">
-                                                                <MoreVertIcon />
-                                                            </IconButton>
+                                                            <MoreTransaction
+                                                                handleDeleteTransaction={() => handleDeleteTransaction(item.id)}
+                                                                handleEditTransaction={() => handleEditTransaction(item)}
+                                                            />
                                                         </TableCell>
                                                     </TableRow>
                                                 })
@@ -163,6 +187,6 @@ const Transaction: React.FC<TransactionProps> = () => {
                 </Grid>
             </div>
         </DefaultLayout>
-    </>
+    )
 }
-export default Transaction;
+export default Transactions;
