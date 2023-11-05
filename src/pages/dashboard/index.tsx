@@ -1,7 +1,7 @@
 import { CURRENCIES } from "@/common/constants/currencies";
 import { WalletType } from "@/common/enums/transaction-type";
 import { IWallet } from "@/common/interfaces/wallet";
-import DefaultLayout from "@/components/layouts/DefaultLayout";
+import DefaultLayout from "@/layouts/DefaultLayout";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, Paper, TextField } from "@mui/material";
 import { NextPage } from "next";

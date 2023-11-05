@@ -1,5 +1,5 @@
 import WalletForm from "@/components/forms/WalletForm";
-import DefaultLayout from "@/components/layouts/DefaultLayout";
+import DefaultLayout from "@/layouts/DefaultLayout";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";

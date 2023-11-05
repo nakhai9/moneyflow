@@ -2,7 +2,8 @@ import { Category } from "@/common/enums/category";
 import { PaymentMethod } from "@/common/enums/payment-method";
 import { TransactionType } from "@/common/enums/transaction-type";
 import { ITransaction } from "@/common/interfaces/transaction";
-import DefaultLayout from "@/components/layouts/DefaultLayout";
+import VButton from "@/components/VButton";
+import DefaultLayout from "@/layouts/DefaultLayout";
 import FastfoodIcon from '@mui/icons-material/Fastfood';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
@@ -94,7 +95,7 @@ type TransactionProps = {}
 const Transaction: React.FC<TransactionProps> = () => {
 
     const categories = Object.values(Category);
-    
+
     return <>
         <DefaultLayout>
             <div className="vdt-py-4">
@@ -102,7 +103,7 @@ const Transaction: React.FC<TransactionProps> = () => {
                     <Grid item container>
                         <Grid item md={1}></Grid>
                         <Grid item md={10}>
-                            <Typography variant="h6" className="vdt-text-slate-500">Transactions</Typography>
+                            <VButton type="primary" variant="contained">Add Transactions</VButton>
                         </Grid>
                         <Grid item md={1}></Grid>
                     </Grid>
@@ -117,12 +118,13 @@ const Transaction: React.FC<TransactionProps> = () => {
                         <Grid item md={1}></Grid>
                         <Grid item xs={12} md={10}>
                             {
-                                transactions && (<TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+                                transactions &&
+                                (<TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
                                     <Table size="small">
                                         <TableHead>
                                             <TableRow>
                                                 {
-                                                    columns.map((columnHeading: string, index: number) => <TableCell key={index} align={columnHeading === 'Amount' ? 'right' : 'left'} sx={{'fontWeight': "bold"}} component="th">{columnHeading}</TableCell>)
+                                                    columns.map((columnHeading: string, index: number) => <TableCell key={index} align={columnHeading === 'Amount' ? 'right' : 'left'} sx={{ 'fontWeight': "bold" }} component="th">{columnHeading}</TableCell>)
                                                 }
                                                 <TableCell className="vdt-w-5">
                                                     <IconButton aria-label="actions" size="small">

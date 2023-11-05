@@ -1,7 +1,7 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 // import Dialog from "@/components/dialog/Dialog";
 import { API_SERVICES } from "@/common/services/service";
-import AuthLayout from "@/components/layouts/AuthLayout";
+import AuthLayout from "@/layouts/AuthLayout";
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Backdrop, Button, CircularProgress, Stack, TextField, Typography } from '@mui/material';
 import { NextPage } from "next";

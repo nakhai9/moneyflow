@@ -3,7 +3,7 @@ import { ModalType } from "@/common/enums/modal-type.enum";
 import { PaymentMethod } from "@/common/enums/payment-method";
 import { TransactionType } from "@/common/enums/transaction-type";
 import { ITransaction } from "@/common/interfaces/transaction";
-import DefaultLayout from "@/components/layouts/DefaultLayout";
+import DefaultLayout from "@/layouts/DefaultLayout";
 import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SettingsIcon from '@mui/icons-material/Settings';
