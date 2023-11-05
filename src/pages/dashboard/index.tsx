@@ -3,31 +3,18 @@ import { WalletType } from "@/common/enums/transaction-type";
 import { IWallet } from "@/common/interfaces/wallet";
 import DefaultLayout from "@/layouts/DefaultLayout";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, Paper, TextField } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, Paper, TextField, Typography } from "@mui/material";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import * as yup from 'yup';
 import AddIcon from '@mui/icons-material/Add';
-const wallets: IWallet[] = [
-    {
-        id: 1,
-        name: "Eximbank Account",
-        amount: 3461920,
-        currency: "VND",
-        type: WalletType.CASH,
-        userId: 1
-    },
-    {
-        id: 2,
-        name: "Loan Notebook",
-        amount: 600000,
-        currency: "VND",
-        type: WalletType.LOAN,
-        userId: 1
-    }
-]
+import { firestoreService } from "@/common/services/firestore";
+import { FirestoreCollection } from "@/common/enums/firestore-collection";
+import { useDispatch } from "react-redux";
+import { toggle } from "@/store/features/backdrop/backdropSlice";
+import { IBase } from "@/common/interfaces/base";
 
 type WalletSubmitForm = {
     name: string;
@@ -41,7 +28,7 @@ const validationSchema = yup.object().shape({
     name: yup.string().required("Wallet name is required"),
     type: yup.mixed<WalletType>().oneOf(Object.values(WalletType), 'Invalid wallet type').required('Type is required'),
     note: yup.string(),
-    amount: yup.number().test('is-positive', 'Amount must be a positive number', (value) => { return value! > 0 }).required('Amount is required'),
+    amount: yup.number().required('Amount is required'),
     currencyId: yup.string().required()
 })
 
@@ -49,7 +36,7 @@ const initialForm: WalletSubmitForm = {
     name: '',
     type: WalletType.LOAN,
     amount: 0,
-    currencyId: '1',
+    currencyId: 'VND',
 }
 
 const Dashboard: NextPage = () => {
@@ -57,12 +44,16 @@ const Dashboard: NextPage = () => {
     const router = useRouter();
     const [open, setOpen] = useState<boolean>(false);
     const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('xs');
+    const dispatch = useDispatch();
+
+    const [walletsOnFirestore, setWalletsOnFirestore] = useState<(IWallet & IBase)[]>([]);
+
     const { register, handleSubmit, watch, control, formState: { errors } } = useForm<WalletSubmitForm>({
         defaultValues: initialForm,
         resolver: yupResolver(validationSchema)
     })
 
-    const openWallet = (id: number) => {
+    const openWallet = (id: string) => {
         router.push(`wallet/${id}`);
     }
 
@@ -76,8 +67,40 @@ const Dashboard: NextPage = () => {
 
 
     const onSubmit = async (data: WalletSubmitForm) => {
-        console.log(data)
+        try {
+            setOpen(!open);
+            dispatch(toggle());
+            const wallet: IWallet = {
+                amount: data.amount,
+                name: data.name,
+                type: data.type,
+                currencyId: data.currencyId,
+                userId: "99qq9snx6m",
+                note: data.note ?? ''
+            }
+            const add = await firestoreService.addDoc<IWallet>(FirestoreCollection.WALLET, wallet);
+            if (add) {
+                dispatch(toggle());
+            }
+        } catch (error) {
+            console.log(error);
+        }
     };
+
+    const fetchWalletOnFirestore = async () => {
+        try {
+            dispatch(toggle());
+            const wallets = await firestoreService.getDocs(FirestoreCollection.WALLET);
+            setWalletsOnFirestore(wallets);
+            dispatch(toggle())
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    useEffect(() => {
+        fetchWalletOnFirestore();
+    }, [open]);
 
     return (
         <>
@@ -182,28 +205,37 @@ const Dashboard: NextPage = () => {
                 </form>
             </Dialog>
             <DefaultLayout>
+                <div className="vdt-my-4">
+                    <Typography variant="h5">Wallets</Typography>
+                </div>
                 <Grid container spacing={4}>
                     {
-                        wallets.length > 0 && wallets.map((item, index: number) => (
-                            <Grid key={index} item xs={6} sm={4} md={2.4}>
-                                <Paper onClick={() => { openWallet(item.id) }} className="vdt-flex vdt-h-28 vdt-shadow-lg vdt-bg-white vdt-rounded vdt-cursor-pointer vdt-font-thin vdt-overflow-hidden hover:vdt-shadow-lg">
+                        walletsOnFirestore.length > 0 && walletsOnFirestore.map((item, index: number) => (
+                            <Grid key={index} item xs={6} sm={4} md={3}>
+                                <Paper elevation={4} onClick={() => { openWallet(item.id!) }} className="vdt-flex vdt-h-24 vdt-bg-white vdt-rounded vdt-cursor-pointer vdt-font-thin vdt-overflow-hidden hover:vdt-shadow-lg">
                                     <div className="vdt-w-5 vdt-bg-blue-500"></div>
                                     <div className="vdt-flex vdt-flex-col vdt-justify-center vdt-pl-4">
                                         <div className="vdt-text-xl">{item.name}</div>
-                                        <div className="vdt-capitalize">{item.type}</div>
-                                        <div className="vdt-text-xl vdt-text-blue-500 vdt-font-semibold">{item.amount.toLocaleString()} <span>{item.currency}</span></div>
+                                        <div className="vdt-capitalize vdt-text-xs">{item.type}</div>
+                                        <div className="vdt-text-xl vdt-text-blue-500 vdt-font-semibold">{item.amount.toLocaleString() + ".00"} <span>{item.currencyId}</span></div>
                                     </div>
                                 </Paper>
                             </Grid>
                         ))
                     }
-                    <Grid item xs={6} sm={4} md={2.4}>
+                    <Grid item xs={6} sm={4} md={3}>
                         <Box className="vdt-flex vdt-flex-col vdt-gap-4">
-                            <Button type="button" variant="contained" fullWidth color="primary" sx={{ textTransform: "none" }} startIcon={<AddIcon />} onClick={openModal}>Add wallet</Button>
-                            <Button type="button" variant="outlined" fullWidth sx={{ textTransform: "none" }}>Connect a Bank Account</Button>
+                            <Button type="button" fullWidth className="vdt-normal-case vdt-shadow-lg vdt-bg-white" startIcon={<AddIcon />} onClick={openModal}>Add wallet</Button>
+                            <Button type="button" fullWidth className="vdt-normal-case vdt-shadow-lg vdt-bg-white">Connect a Bank Account</Button>
                         </Box>
                     </Grid>
                 </Grid>
+                <div className="vdt-my-4">
+                    <Typography variant="h5">Overview</Typography>
+                    <p>
+                        We are going to build the Analytics panel at here.
+                    </p>
+                </div>
             </DefaultLayout>
         </>
     )
