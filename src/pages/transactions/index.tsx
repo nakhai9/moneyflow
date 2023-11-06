@@ -1,15 +1,17 @@
-import { Category } from "@/common/enums/category";
-import { PaymentMethod } from "@/common/enums/payment-method";
-import { TransactionType } from "@/common/enums/transaction-type";
+import { useState } from "react";
+import { Box, Grid, IconButton, Paper, Slider, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
+import useToggle from "@/hooks/useToggle";
+import VButton from "@/components/common/VButton";
+import DefaultLayout from "@/layouts/DefaultLayout";
+import { AddIcon, FastfoodIcon, FileDownloadIcon, MoreVertIcon, SettingsIcon } from "@/components/common/VIcons";
 import { ITransaction } from "@/common/interfaces/transaction";
-import DefaultLayout from "@/components/layouts/DefaultLayout";
-import FastfoodIcon from '@mui/icons-material/Fastfood';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import DialogTransaction from "@/components/Transactions/DialogTransaction";
+import { Category, ModalType, PaymentMethod, TransactionType } from "@/common/enums";
+import MoreTransaction from "@/components/Transactions/MoreTransaction";
 
 const columns = ['Category', 'Wallet', 'Description', 'Payment method', 'Amount'];
 
-const transactions: ITransaction[] = [
+const _transactions: ITransaction[] = [
     {
         id: 1,
         category: Category.FOOD_DRINK,
@@ -89,78 +91,87 @@ const transactions: ITransaction[] = [
     }
 ];
 
+const Transactions = () => {
 
-type TransactionProps = {}
-const Transaction: React.FC<TransactionProps> = () => {
+    const [type, setType] = useState<ModalType>();
+    const [transactions, setTransactions] = useState(_transactions);
+    const [transaction, setTransaction] = useState<ITransaction>();
+    const { open, handleOpen, handleClose } = useToggle();
 
-    const categories = Object.values(Category);
-    
-    return <>
+    const handleAddTransaction = () => {
+        handleOpen();
+        setType(ModalType.ADD);
+    }
+
+    const handleEditTransaction = (transaction: ITransaction) => {
+        handleOpen();
+        setType(ModalType.EDIT);
+        setTransaction(transaction)
+    }
+
+    const handleDeleteTransaction = (transactionId: number) => {
+        const newTransactions = transactions?.filter(item => item.id !== transactionId);
+        setTransactions(newTransactions);
+        console.log(`Removed transaction have a id ${transactionId}`)
+    }
+
+    return (
         <DefaultLayout>
-            <div className="vdt-py-4">
-                <Grid container spacing={2}>
-                    <Grid item container>
-                        <Grid item md={1}></Grid>
-                        <Grid item md={10}>
-                            <Typography variant="h6" className="vdt-text-slate-500">Transactions</Typography>
-                        </Grid>
-                        <Grid item md={1}></Grid>
-                    </Grid>
-                    <Grid item container >
-                        <Grid item xs={0} md={1}></Grid>
-                        <Grid item xs={12} md={10} component={Paper} className="vdt-px-4 vdt-py-2">
-                            <Typography variant="body1" className="vdt-text-slate-500">Filters</Typography>
-                        </Grid>
-                        <Grid item xs={0} md={1}></Grid>
-                    </Grid>
-                    <Grid item container>
-                        <Grid item md={1}></Grid>
-                        <Grid item xs={12} md={10}>
-                            {
-                                transactions && (<TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
-                                    <Table size="small">
-                                        <TableHead>
-                                            <TableRow>
-                                                {
-                                                    columns.map((columnHeading: string, index: number) => <TableCell key={index} align={columnHeading === 'Amount' ? 'right' : 'left'} sx={{'fontWeight': "bold"}} component="th">{columnHeading}</TableCell>)
-                                                }
-                                                <TableCell className="vdt-w-5">
-                                                    <IconButton aria-label="actions" size="small">
-                                                        <MoreVertIcon />
-                                                    </IconButton>
+            <DialogTransaction open={open} type={type} transaction={transaction} handleClose={handleClose} />
+            <Grid container spacing={4}>
+                <Grid container item xs={12}>
+                    <VButton type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={handleAddTransaction}>
+                        Add transaction
+                    </VButton>
+                </Grid>
+                <Grid container item xs={12} spacing={2}>
+                    Filter
+                </Grid>
+                <Grid container item xs={12}>
+                    {
+                        transactions &&
+                        (<TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        {
+                                            columns.map((columnHeading: string, index: number) => <TableCell key={index} align={columnHeading === 'Amount' ? 'right' : 'left'} sx={{ 'fontWeight': "bold" }} component="th">{columnHeading}</TableCell>)
+                                        }
+                                        <TableCell className="vdt-w-5">
+                                            <IconButton aria-label="actions" size="small">
+                                                <MoreVertIcon />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {
+                                        transactions.map((item, index) => {
+                                            return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]"  >
+                                                <TableCell component="td" className="vdt-border-none">
+                                                    <FastfoodIcon color="primary" />
+                                                    <span className="vdt-ml-2">{item.category}</span>
+                                                </TableCell>
+                                                <TableCell className="vdt-border-none">{item.walletName}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
+                                                <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
+                                                <TableCell className="vdt-border-none vdt-w-5">
+                                                    <MoreTransaction
+                                                        handleDeleteTransaction={() => handleDeleteTransaction(item.id)}
+                                                        handleEditTransaction={() => handleEditTransaction(item)}
+                                                    />
                                                 </TableCell>
                                             </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {
-                                                transactions.map((item, index) => {
-                                                    return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]"  >
-                                                        <TableCell component="td" className="vdt-border-none">
-                                                            {/* <FastfoodIcon color="primary" /> */}
-                                                            <span className="vdt-ml-2">{item.category}</span>
-                                                        </TableCell>
-                                                        <TableCell className="vdt-border-none">{item.walletName}</TableCell>
-                                                        <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
-                                                        <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
-                                                        <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
-                                                        <TableCell className="vdt-border-none vdt-w-5">
-                                                            <IconButton aria-label="actions" size="small">
-                                                                <MoreVertIcon />
-                                                            </IconButton>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                })
-                                            }
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>)
-                            }
-                        </Grid>
-                        <Grid item md={1}></Grid>
-                    </Grid>
+                                        })
+                                    }
+                                </TableBody>
+                            </Table>
+                        </TableContainer>)
+                    }
                 </Grid>
-            </div>
+            </Grid>
         </DefaultLayout>
-    </>
+    )
 }
-export default Transaction;
+export default Transactions;

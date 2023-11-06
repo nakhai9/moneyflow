@@ -1,4 +1,4 @@
-import DefaultLayout from "@/components/layouts/DefaultLayout";
+import DefaultLayout from "@/layouts/DefaultLayout";
 import { NextPage } from "next";
 
 const WalletPage: NextPage = () => {

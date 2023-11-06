@@ -1,18 +1,14 @@
-import { Category } from "@/common/enums/category";
-import { ModalType } from "@/common/enums/modal-type.enum";
-import { PaymentMethod } from "@/common/enums/payment-method";
-import { TransactionType } from "@/common/enums/transaction-type";
-import { ITransaction } from "@/common/interfaces/transaction";
-import DefaultLayout from "@/components/layouts/DefaultLayout";
-import AddIcon from '@mui/icons-material/Add';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, IconButton, MenuItem, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from "@mui/material";
+import { useState } from 'react';
 import { NextPage } from "next";
-import { useRouter } from "next/router";
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { Box, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
+import useToggle from "@/hooks/useToggle";
+import DefaultLayout from "@/layouts/DefaultLayout";
+import { Category, ModalType, PaymentMethod, TransactionType } from "@/common/enums";
+import { ITransaction } from "@/common/interfaces/transaction";
+import DialogTransaction from "@/components/Transactions/DialogTransaction";
+import { getTotalPeriodExpenseValue, getTotalPeriodIncomeValue, numberAsCurrency } from "@/utils";
+import { AddIcon, FileDownloadIcon, MoreVertIcon, SettingsIcon } from "@/components/common/VIcons";
+import { VButton } from '@/components/common';
 
 const columns = ['Category', 'Wallet', 'Description', 'Payment method', 'Amount'];
 
@@ -106,350 +102,128 @@ const transactions: ITransaction[] = [
     }
 ];
 
-type TransactionSubmitForm = {
-    transactionType: TransactionType,
-    category: Category,
-    date: Date,
-    paymentMethod: PaymentMethod
-    amount: number,
-    label?: string,
-    description?: string,
-}
+const LOCALE = 'vi-Vi';
+const CURRENCY = 'VND'
+const WALLETBALANCE = 3000000;
 
 const WalletDetailPage: NextPage = () => {
-    const router = useRouter();
-    // wallet id
-    const { id } = router.query;
-    const [fullWidth, setFullWidth] = useState(true);
-    const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('lg');
-    const categories = Object.values(Category);
-    const [open, setOpen] = useState<boolean>(false);
-    const [walletBalance, setWalletBalance] = useState<number>(3000000);
-    const [locale, setLocale] = useState<string>('vi-Vi');
-    const [currency, setCurrency] = useState<string>('VND');
-    const [currentType, setCurrentType] = useState<TransactionType>(TransactionType.DEFAULT);
 
-    const [initialForm, setInitialForm] = useState<TransactionSubmitForm>({
-        transactionType: TransactionType.EXPENSE,
-        category: Category.NONE,
-        date: new Date("2023-10-23"),
-        paymentMethod: PaymentMethod.CASH,
-        amount: 0,
-        description: '',
-        label: ''
-    })
+    const [type, setType] = useState<ModalType>();
+    const [transaction, setTransaction] = useState<ITransaction>();
+    const { open, handleOpen, handleClose } = useToggle();
 
-    const { register, handleSubmit, watch, control, setValue, formState: { errors } } = useForm<TransactionSubmitForm>({
-        defaultValues: initialForm,
-    })
-
-    const chooseType = (type: TransactionType) => {
-        setCurrentType(type);
+    const handleAddTransaction = () => {
+        handleOpen();
+        setType(ModalType.ADD);
     }
 
-    const close = () => {
-        setOpen(!open);
-    }
-    const numberAsCurrency = (locale: string, iso4217code: string) => {
-        const option = {
-            style: "currency",
-            currency: iso4217code
-        }
-        return Intl.NumberFormat(locale, option);
-    }
-
-    const openTransactionModal = (type: ModalType, transaction?: ITransaction) => {
-        setOpen(!open);
-        if (transaction) {
-            const transactionDetail: TransactionSubmitForm = {
-                amount: transaction.amount,
-                category: transaction.category,
-                date: transaction.createdAt as Date,
-                paymentMethod: transaction.paymentMethod,
-                transactionType: transaction.type,
-                description: transaction.description,
-                label: transaction.label
-            }
-            setCurrentType(transaction.type);
-            setValue("amount", transaction.amount);
-            setValue("category", transaction.category);
-            setValue("date", (transaction.createdAt) as Date);
-            setValue("paymentMethod", transaction.paymentMethod);
-            setValue("description", transaction.description);
-            setValue("label", transaction.label);
-        }
-
-    }
-
-    const gettotalPeriodExpenseValue = (): number => {
-        let totalPeriodExpense: number = 0;
-        transactions
-            .filter((item) => {
-                return item.type === TransactionType.EXPENSE
-            })
-            .forEach(item => {
-                totalPeriodExpense += item.amount
-            })
-
-        return totalPeriodExpense;
-    }
-
-    const gettotalPeriodIncomeValue = (): number => {
-        let totalPeriodIncome: number = 0;
-        transactions
-            .filter((item) => {
-                return item.type === TransactionType.INCOME
-            })
-            .forEach(item => {
-                totalPeriodIncome += item.amount
-            })
-
-        return totalPeriodIncome;
-    }
-
-    const onCreateTransaction = async (data: TransactionSubmitForm) => {
-        console.log(data);
+    const handleEditTransaction = (transaction: ITransaction) => {
+        handleOpen();
+        setType(ModalType.EDIT);
+        setTransaction(transaction)
     }
 
     return (
-        <>
-            <Dialog open={open} fullWidth={fullWidth} maxWidth={maxWidth}>
-                <form onSubmit={handleSubmit(onCreateTransaction)}>
-                    <DialogTitle>Transaction</DialogTitle>
-                    <DialogContent>
-                        <Box mb={2}>
-                            <ButtonGroup variant="contained" >
-                                <Button type="button" color={currentType === TransactionType.EXPENSE ? "primary" : "inherit"} onClick={() => { chooseType(TransactionType.EXPENSE) }}>{TransactionType.EXPENSE}</Button>
-                                <Button type="button" color={currentType === TransactionType.INCOME ? "error" : "inherit"} onClick={() => { chooseType(TransactionType.INCOME) }}>{TransactionType.INCOME}</Button>
-                                <Button type="button" color={currentType === TransactionType.TRANSFER ? "success" : "inherit"} onClick={() => { chooseType(TransactionType.TRANSFER) }}>{TransactionType.TRANSFER}</Button>
-                            </ButtonGroup>
-                        </Box>
-                        <Grid container spacing={1}>
-                            <Grid item xs={12} md={2}>
-                                <Controller control={control} name="category" rules={{ required: true }}
-                                    render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            select
-                                            size="small"
-                                            fullWidth
-                                            label="Category"
-                                            margin="dense"
-                                            error={!!errors.category}
-                                            helperText={
-                                                errors.category && `${errors.category.message}`
-                                            }>
-                                            {Object.values(Category).map((category, index) => (
-                                                <MenuItem key={index} value={category}>
-                                                    {category}
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
-                                    )}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2}>
-                                <Controller control={control} name="date" rules={{ required: true }}
-                                    render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            type="datetime-local"
-                                            size="small"
-                                            fullWidth
-                                            margin="dense"
-                                            autoFocus
-                                            error={!!errors.date}
-                                            helperText={
-                                                errors.date && `${errors.date.message}`
-                                            }
-                                        />
-                                    )}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2}>
-                                <Controller control={control} name="description" rules={{ required: false }}
-                                    render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            label="Description (optional)"
-                                            type="text"
-                                            size="small"
-                                            fullWidth
-                                            margin="dense"
-                                            autoFocus
-                                            error={!!errors.description}
-                                            helperText={
-                                                errors.description && `${errors.description.message}`
-                                            }
-                                        />
-                                    )}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2}>
-                                <Controller control={control} name="amount" rules={{ required: true }}
-                                    render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            label="Amount"
-                                            type="number"
-                                            size="small"
-                                            fullWidth
-                                            margin="dense"
-                                            autoFocus
-                                            error={!!errors.amount}
-                                            helperText={
-                                                errors.amount && `${errors.amount.message}`
-                                            }
-                                        />
-                                    )}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2}>
-                                <Controller control={control} name="label" rules={{ required: false }}
-                                    render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            label="Label (optional)"
-                                            type="text"
-                                            size="small"
-                                            fullWidth
-                                            margin="dense"
-                                            autoFocus
-                                            error={!!errors.label}
-                                            helperText={
-                                                errors.label && `${errors.label.message}`
-                                            }
-                                        />
-                                    )}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2}>
-                                <Controller control={control} name="paymentMethod" rules={{ required: true }}
-                                    render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            select
-                                            size="small"
-                                            fullWidth
-                                            label="Payment method"
-                                            margin="dense"
-                                            error={!!errors.paymentMethod}
-                                            helperText={
-                                                errors.paymentMethod && `${errors.paymentMethod.message}`
-                                            }>
-                                            {Object.values(PaymentMethod).map((paymentMethod, index) => (
-                                                <MenuItem key={index} value={paymentMethod}>
-                                                    {paymentMethod}
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
-                                    )}
-                                />
-                            </Grid>
-                        </Grid>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button type="button" onClick={close} variant="contained" color="inherit">Cancel</Button>
-                        <Button type="submit" variant="contained" color="primary">Create</Button>
-                    </DialogActions>
-                </form>
-            </Dialog>
-            <DefaultLayout>
-                <Grid container spacing={4}>
-                    <Grid container item xs={12} justifyContent="space-between">
-                        <Button type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={() => { openTransactionModal(ModalType.ADD) }}>Add transaction</Button>
-                        <Box>
-                            <Tooltip title="Settings">
-                                <IconButton aria-label="setting" size="small">
-                                    <SettingsIcon />
-                                </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Export to PDF">
-                                <IconButton aria-label="setting" size="small">
-                                    <FileDownloadIcon />
-                                </IconButton>
-                            </Tooltip>
-                        </Box>
+        <DefaultLayout>
+            <DialogTransaction transaction={transaction} type={type} open={open} handleClose={handleClose} />
+            <Grid container spacing={4}>
+                <Grid container item xs={12} justifyContent="space-between">
+                    <VButton type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={handleAddTransaction}>
+                        Add transaction
+                    </VButton>
+                    <Box>
+                        <Tooltip title="Settings">
+                            <IconButton aria-label="setting" size="small">
+                                <SettingsIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Export to PDF">
+                            <IconButton aria-label="setting" size="small">
+                                <FileDownloadIcon />
+                            </IconButton>
+                        </Tooltip>
+                    </Box>
+                </Grid>
+                <Grid container item xs={12} spacing={4}>
+                    <Grid item xs={6} md={3}>
+                        <Paper className="vdt-p-4 vdt-cursor-pointer">
+                            <Typography variant="body2" className="vdt-font-semibold">Current Wallet Balance</Typography>
+                            <div>
+                                <Typography variant="h6" color="primary">{numberAsCurrency(LOCALE, CURRENCY).format(WALLETBALANCE)}</Typography>
+                            </div>
+                        </Paper>
                     </Grid>
-                    <Grid container item xs={12} spacing={4}>
-                        <Grid item xs={6} md={3}>
-                            <Paper className="vdt-p-4 vdt-cursor-pointer">
-                                <Typography variant="body2" className="vdt-font-semibold">Current Wallet Balance</Typography>
-                                <div>
-                                    <Typography variant="h6" color="primary">{numberAsCurrency(locale, currency).format(walletBalance)}</Typography>
-                                </div>
-                            </Paper>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Paper className="vdt-p-4 vdt-cursor-pointer">
-                                <Typography variant="body2" className="vdt-font-semibold">Total Period Change</Typography>
-                                <div>
-                                    <Typography variant="h6" color="primary">
-                                        {numberAsCurrency(locale, currency).format(gettotalPeriodExpenseValue() + gettotalPeriodIncomeValue())}
-                                    </Typography>
-                                </div>
-                            </Paper>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Paper className="vdt-p-4 vdt-cursor-pointer" >
-                                <Typography variant="body2" className="vdt-font-semibold">Total Period Expenses</Typography>
-                                <div>
-                                    <Typography variant="h6" color="primary">{numberAsCurrency(locale, currency).format(gettotalPeriodExpenseValue())}</Typography>
-                                </div>
-                            </Paper>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Paper className="vdt-p-4 vdt-cursor-pointer" >
-                                <Typography variant="body2" className="vdt-font-semibold">Total Period Income</Typography>
-                                <div>
-                                    <Typography variant="h6" color="primary">{numberAsCurrency(locale, currency).format(gettotalPeriodIncomeValue())}</Typography>
-                                </div>
-                            </Paper>
-                        </Grid>
+                    <Grid item xs={6} md={3}>
+                        <Paper className="vdt-p-4 vdt-cursor-pointer">
+                            <Typography variant="body2" className="vdt-font-semibold">Total Period Change</Typography>
+                            <div>
+                                <Typography variant="h6" color="primary">
+                                    {numberAsCurrency(LOCALE, CURRENCY).format(getTotalPeriodExpenseValue(transactions) + getTotalPeriodIncomeValue(transactions))}
+                                </Typography>
+                            </div>
+                        </Paper>
                     </Grid>
-                    <Grid container item xs={12}>
-                        {
-                            transactions && (<TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
-                                <Table size="small">
-                                    <TableHead>
-                                        <TableRow>
-                                            {
-                                                columns.map((columnHeading: string, index: number) => <TableCell key={index} align={columnHeading === 'Amount' ? 'right' : 'left'} sx={{ 'fontWeight': "bold" }} component="th">{columnHeading}</TableCell>)
-                                            }
-                                            <TableCell className="vdt-w-5">
-                                                <IconButton aria-label="actions" size="small">
-                                                    <MoreVertIcon />
-                                                </IconButton>
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {
-                                            transactions.map((item, index) => {
-                                                return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]"  >
-                                                    <TableCell component="td" className="vdt-border-none">
-                                                        <span className="vdt-ml-2">{item.category}</span>
-                                                    </TableCell>
-                                                    <TableCell className="vdt-border-none">{item.walletName}</TableCell>
-                                                    <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
-                                                    <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
-                                                    <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
-                                                    <TableCell className="vdt-border-none vdt-w-5">
-                                                        <IconButton aria-label="actions" size="small" onClick={() => { openTransactionModal(ModalType.EDIT, item) }}>
-                                                            <MoreVertIcon />
-                                                        </IconButton>
-                                                    </TableCell>
-                                                </TableRow>
-                                            })
-                                        }
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>)
-                        }
+                    <Grid item xs={6} md={3}>
+                        <Paper className="vdt-p-4 vdt-cursor-pointer" >
+                            <Typography variant="body2" className="vdt-font-semibold">Total Period Expenses</Typography>
+                            <div>
+                                <Typography variant="h6" color="primary">{numberAsCurrency(LOCALE, CURRENCY).format(getTotalPeriodExpenseValue(transactions))}</Typography>
+                            </div>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={6} md={3}>
+                        <Paper className="vdt-p-4 vdt-cursor-pointer" >
+                            <Typography variant="body2" className="vdt-font-semibold">Total Period Income</Typography>
+                            <div>
+                                <Typography variant="h6" color="primary">{numberAsCurrency(LOCALE, CURRENCY).format(getTotalPeriodIncomeValue(transactions))}</Typography>
+                            </div>
+                        </Paper>
                     </Grid>
                 </Grid>
-            </DefaultLayout>
-        </>
+                <Grid container item xs={12}>
+                    {
+                        transactions && (<TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        {
+                                            columns.map((columnHeading: string, index: number) => <TableCell key={index} align={columnHeading === 'Amount' ? 'right' : 'left'} sx={{ 'fontWeight': "bold" }} component="th">{columnHeading}</TableCell>)
+                                        }
+                                        <TableCell className="vdt-w-5">
+                                            <IconButton aria-label="actions" size="small">
+                                                <MoreVertIcon />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {
+                                        transactions.map((item, index) => {
+                                            return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]"  >
+                                                <TableCell component="td" className="vdt-border-none">
+                                                    <span className="vdt-ml-2">{item.category}</span>
+                                                </TableCell>
+                                                <TableCell className="vdt-border-none">{item.walletName}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
+                                                <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
+                                                <TableCell className="vdt-border-none vdt-w-5">
+                                                    <IconButton aria-label="actions" size="small"
+                                                        onClick={() => { handleEditTransaction(item) }}
+                                                    >
+                                                        <MoreVertIcon />
+                                                    </IconButton>
+                                                </TableCell>
+                                            </TableRow>
+                                        })
+                                    }
+                                </TableBody>
+                            </Table>
+                        </TableContainer>)
+                    }
+                </Grid>
+            </Grid>
+        </DefaultLayout>
     );
 }
 
