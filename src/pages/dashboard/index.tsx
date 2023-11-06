@@ -1,20 +1,20 @@
-import { CURRENCIES } from "@/common/constants/currencies";
+import { FirestoreCollection } from "@/common/enums/firestore-collection";
 import { WalletType } from "@/common/enums/transaction-type";
+import { IBase } from "@/common/interfaces/base";
+import { ICurrency } from "@/common/interfaces/currency";
 import { IWallet } from "@/common/interfaces/wallet";
+import { firestoreService } from "@/common/services/firestore";
 import DefaultLayout from "@/components/layouts/DefaultLayout";
+import { toggle } from "@/store/features/backdrop/backdropSlice";
 import { yupResolver } from "@hookform/resolvers/yup";
+import AddIcon from '@mui/icons-material/Add';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, Paper, TextField, Typography } from "@mui/material";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import * as yup from 'yup';
-import AddIcon from '@mui/icons-material/Add';
-import { firestoreService } from "@/common/services/firestore";
-import { FirestoreCollection } from "@/common/enums/firestore-collection";
 import { useDispatch } from "react-redux";
-import { toggle } from "@/store/features/backdrop/backdropSlice";
-import { IBase } from "@/common/interfaces/base";
+import * as yup from 'yup';
 
 type WalletSubmitForm = {
     name: string;
@@ -34,9 +34,9 @@ const validationSchema = yup.object().shape({
 
 const initialForm: WalletSubmitForm = {
     name: '',
-    type: WalletType.LOAN,
+    type: WalletType.CASH,
     amount: 0,
-    currencyId: 'VND',
+    currencyId: 'vnd',
 }
 
 const Dashboard: NextPage = () => {
@@ -47,6 +47,7 @@ const Dashboard: NextPage = () => {
     const dispatch = useDispatch();
 
     const [walletsOnFirestore, setWalletsOnFirestore] = useState<(IWallet & IBase)[]>([]);
+    const [currenciesOnFirestore, setCurrenciesOnFirestore] = useState<(ICurrency & IBase)[]>([]);
 
     const { register, handleSubmit, watch, control, formState: { errors } } = useForm<WalletSubmitForm>({
         defaultValues: initialForm,
@@ -78,7 +79,7 @@ const Dashboard: NextPage = () => {
                 userId: "99qq9snx6m",
                 note: data.note ?? ''
             }
-            const add = await firestoreService.addDoc<IWallet>(FirestoreCollection.WALLET, wallet);
+            const add = await firestoreService.addDoc<IWallet>(FirestoreCollection.WALLETS, wallet);
             if (add) {
                 dispatch(toggle());
             }
@@ -87,11 +88,13 @@ const Dashboard: NextPage = () => {
         }
     };
 
-    const fetchWalletOnFirestore = async () => {
+    const fetchDataOnFirestore = async () => {
         try {
             dispatch(toggle());
-            const wallets = await firestoreService.getDocs(FirestoreCollection.WALLET);
+            const wallets = await firestoreService.getDocs(FirestoreCollection.WALLETS);
+            const currencies = await firestoreService.getDocs(FirestoreCollection.CURRENCIES);
             setWalletsOnFirestore(wallets);
+            setCurrenciesOnFirestore(currencies);
             dispatch(toggle())
         } catch (error) {
             console.log(error);
@@ -99,8 +102,8 @@ const Dashboard: NextPage = () => {
     }
 
     useEffect(() => {
-        fetchWalletOnFirestore();
-    }, [open]);
+        fetchDataOnFirestore();
+    }, [walletsOnFirestore.length]);
 
     return (
         <>
@@ -173,9 +176,9 @@ const Dashboard: NextPage = () => {
                                             errors.currencyId && `${errors.currencyId.message}`
                                         }>
                                         {
-                                            CURRENCIES.map((type: any) => (
-                                                <MenuItem key={type.id} value={type.id}>
-                                                    {type.iso4217code}
+                                            currenciesOnFirestore.map((currency: (ICurrency & IBase)) => (
+                                                <MenuItem key={currency.id} value={currency.code}>
+                                                    {currency.code.toUpperCase()}
                                                 </MenuItem>
                                             ))
                                         }
