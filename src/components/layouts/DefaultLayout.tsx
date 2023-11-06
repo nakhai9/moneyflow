@@ -35,7 +35,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
   }
 
   return <>
-    <Backdrop className="vdt-z-50" open={true}
+    <Backdrop className="vdt-z-50" open={false}
     >
       <CircularProgress color="primary" />
     </Backdrop>
