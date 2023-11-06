@@ -1,9 +1,7 @@
-import React from 'react'
 import { Box, Grid, Typography } from '@mui/material'
-import { VButton } from '../common'
+import { blue, red } from '@mui/material/colors'
 import DropdownMore from '../Dropdowns/DropdownMore'
 import { DeleteIcon, EditIcon } from '../common/VIcons'
-import { blue, red } from '@mui/material/colors'
 
 type MoreTransactionProps = {
     handleEditTransaction: () => void;
