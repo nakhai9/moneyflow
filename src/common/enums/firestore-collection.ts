@@ -1,3 +1,6 @@
 export enum FirestoreCollection {
-    WALLET = 'wallets'
+    WALLETS = 'wallets',
+    CURRENCIES = 'currencies',
+    USERS = 'users',
+    TRANSACTIONS = 'transaction'
 }
