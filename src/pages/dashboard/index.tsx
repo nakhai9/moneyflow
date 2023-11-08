@@ -101,6 +101,10 @@ const Dashboard: NextPage = () => {
         }
     }
 
+    const getCurrencyCode = (currencyId: string) => {
+        return currenciesOnFirestore.find(currency => currency.id === currencyId)?.code.toUpperCase();
+    }
+
     useEffect(() => {
         fetchDataOnFirestore();
     }, [walletsOnFirestore.length]);
@@ -220,7 +224,7 @@ const Dashboard: NextPage = () => {
                                     <div className="vdt-flex vdt-flex-col vdt-justify-center vdt-pl-4">
                                         <div className="vdt-text-xl">{item.name}</div>
                                         <div className="vdt-capitalize vdt-text-xs">{item.type}</div>
-                                        <div className="vdt-text-xl vdt-text-blue-500 vdt-font-semibold">{item.amount.toLocaleString() + ".00"} <span>{item.currencyId}</span></div>
+                                        <div className="vdt-text-xl vdt-text-blue-500 vdt-font-thin">{item.amount.toLocaleString() + ".00"} <span>{getCurrencyCode(item.currencyId!)}</span></div>
                                     </div>
                                 </Paper>
                             </Grid>
