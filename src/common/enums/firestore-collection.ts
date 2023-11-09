@@ -2,5 +2,6 @@ export enum FirestoreCollection {
     WALLETS = 'wallets',
     CURRENCIES = 'currencies',
     USERS = 'users',
-    TRANSACTIONS = 'transaction'
+    TRANSACTIONS = 'transactions',
+    DEFAULT = 'default'
 }

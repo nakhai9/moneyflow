@@ -102,12 +102,12 @@ const Dashboard: NextPage = () => {
     }
 
     const getCurrencyCode = (currencyId: string) => {
-        return currenciesOnFirestore.find(currency => currency.id === currencyId)?.code.toUpperCase();
+        return currenciesOnFirestore.find(currency => currency.id === currencyId)?.code.toUpperCase() ?? "XXX";
     }
 
     useEffect(() => {
         fetchDataOnFirestore();
-    }, [walletsOnFirestore.length]);
+    }, [walletsOnFirestore.length]); 
 
     return (
         <>

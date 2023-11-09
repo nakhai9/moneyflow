@@ -1,129 +1,124 @@
-import { TransactionType, WalletType } from "@/common/enums/transaction-type";
-import { AppBar, Avatar, Box, Button, ButtonGroup, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogProps, DialogTitle, FormControl, Grid, IconButton, InputLabel, Menu, MenuItem, Select, Stack, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
+import { Category, FirestoreCollection, PaymentMethod, TransactionType, UserRole, WalletType } from "@/common/enums";
+import { ICurrency } from "@/common/interfaces/currency";
+import { ITransaction2 } from "@/common/interfaces/transaction";
+import { IWallet } from "@/common/interfaces/wallet";
+import { firestoreService } from "@/common/services/firestore";
+import { Button } from "@mui/material";
 import { useState } from "react";
-import MenuIcon from '@mui/icons-material/Menu';
-import AdbIcon from '@mui/icons-material/Adb';
+
 type ComponentsProps = {}
 const Components: React.FC<ComponentsProps> = () => {
-    const [fullWidth, setFullWidth] = useState(true);
-    const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('xs');
-    const [color, setColor] = useState('');
-    const colors = ['Red', 'Blue', 'Green'];
 
-    const [open, setOpen] = useState<boolean>(false);
+    const [user, setUser] = useState<any>(null);
 
-    const chooseType = (type: TransactionType) => { }
-
-    const close = () => {
-        setOpen(!open);
+    const signIn = async () => {
+        const response = await firestoreService.signIn({
+            email: "khainguyen@app.com",
+            password: "12345678",
+        })
+        console.log(response);
+        setUser(response);
     }
 
-    const pages = ['Products', 'Pricing', 'Blog'];
-    const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+    const signUp = async () => {
+        const response = await firestoreService.signUp({
+            email: "khainguyen@app.com",
+            fullName: "Khai Nguyen Anh",
+            firstName: "Khai",
+            lastName: "Nguyen",
+            phoneNumber: "0945757051",
+            role: UserRole.ADMIN,
+            password: "12345678"
+        })
+    }
 
-    const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
-    const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+    const createNewWallet = async () => {
+        const wallet: IWallet = {
+            amount: 0,
+            name: "Tài khoản nợ",
+            type: WalletType.LOAN,
+            currencyId: "",
+            userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
+            note: "Đây là tài khoản đem tiền cho vay"
+        }
 
-    const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorElNav(event.currentTarget);
-    };
-    const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorElUser(event.currentTarget);
-    };
+        await firestoreService.setDoc<IWallet>(FirestoreCollection.WALLETS, wallet)
+    }
 
-    const handleCloseNavMenu = () => {
-        setAnchorElNav(null);
-    };
+    const createCurrencies = async () => {
+        const currencies: ICurrency[] = [
+            {
+                code: "vnd",
+                countryCode: "vnm",
+                countryName: "Vietnamese",
+                locale: "vi-VN",
+                name: "Viet Nam Dong"
+            },
+            {
+                code: "usd",
+                countryCode: "us",
+                countryName: "United States",
+                locale: "us-EN",
+                name: "US Dollar"
+            },
+        ];
 
-    const handleCloseUserMenu = () => {
-        setAnchorElUser(null);
-    };
+        for(let item of currencies) {
+            await firestoreService.setDoc(FirestoreCollection.CURRENCIES, item);
+        }
+    }
+
+    const createTransactions = async () => {
+        const transactions: ITransaction2[] = [
+            {
+                name: "Cho Nhường mượn 500",
+                amount: 500000,
+                category: Category.LOAN,
+                paymentMethod: PaymentMethod.CASH,
+                type: TransactionType.EXPENSE,
+                walletId: "f677d4a1-7c68-45b3-a176-fe9a1726df37",
+                userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
+                excutedAt: new Date("2023-11-07")
+            },
+            {
+                name: "Tiền Băng mượn",
+                amount: 4000000,
+                category: Category.LOAN,
+                paymentMethod: PaymentMethod.TRANSFER,
+                type: TransactionType.EXPENSE,
+                walletId: "f677d4a1-7c68-45b3-a176-fe9a1726df37",
+                userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
+                excutedAt: new Date("2023-11-04")
+            }
+        ]
+
+        for(let item of transactions) {
+            await firestoreService.setDoc(FirestoreCollection.TRANSACTIONS, item);
+        }
+    }
+
     return <>
-        <Dialog open={open} fullWidth={fullWidth} maxWidth={maxWidth}>
-            <DialogTitle>Create wallet / transaction </DialogTitle>
-            <DialogContent>
+        <Button type="button" variant="contained" color="primary" onClick={signUp}>
+            CREATE USER ON FIRESTORE
+        </Button>
 
-                {/* <form action="">
-                <TextField select label="Type" margin="dense" size="small" fullWidth>
-                    {Object.values(WalletType).map((type) => (
-                        <MenuItem key={type} value={type}>
-                            {type}
-                        </MenuItem>
-                    ))}
-                </TextField>
-                <TextField id="name" type="datetime-local" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
-                <TextField id="name" type="text" label="Description" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
-                <TextField id="name" type="text" label="Amount" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
-                <TextField select label="Type" margin="dense" size="small" fullWidth>
-                    {Object.values(WalletType).map((type) => (
-                        <MenuItem key={type} value={type}>
-                            {type}
-                        </MenuItem>
-                    ))}
-                </TextField>
-            </form> */}
+        <Button type="button" variant="contained" color="primary" onClick={signIn}>
+            Login
+        </Button>
 
-                {/* <Box mb={2}>
-                <ButtonGroup variant="contained" >
-                    <Button type="button" color="primary" onClick={() => { chooseType(TransactionType.EXPENSE) }}>{TransactionType.EXPENSE}</Button>
-                    <Button type="button" color="error" onClick={() => { chooseType(TransactionType.INCOME) }}>{TransactionType.INCOME}</Button>
-                    <Button type="button" color="success" onClick={() => { chooseType(TransactionType.TRANSFER) }}>{TransactionType.TRANSFER}</Button>
-                </ButtonGroup>
-            </Box>
-            <form>
-                <Grid container spacing={1}>
-                    <Grid item xs={12} md={2}>
-                        <TextField select label="Category" margin="dense" size="small" fullWidth>
-                            {Object.values(WalletType).map((type) => (
-                                <MenuItem key={type} value={type}>
-                                    {type}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </Grid>
-                    <Grid item xs={12} md={2}>
-                        <TextField id="name" type="datetime-local" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
-                    </Grid>
-                    <Grid item xs={12} md={2}>
-                        <TextField id="name" type="text" label="Description" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
-                    </Grid>
-                    <Grid item xs={12} md={2}>
-                        <TextField id="name" type="text" label="Amount" variant="outlined" size="small" margin="dense" autoFocus fullWidth />
-                    </Grid>
-                    <Grid item xs={12} md={2}>
-                        <TextField select label="Type" margin="dense" size="small" fullWidth>
-                            {Object.values(WalletType).map((type) => (
-                                <MenuItem key={type} value={type}>
-                                    {type}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </Grid>
-                    <Grid item xs={12} md={2}>
-                        <TextField select label="Payment method" margin="dense" size="small" fullWidth>
-                            {Object.values(WalletType).map((type) => (
-                                <MenuItem key={type} value={type}>
-                                    {type}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </Grid>
-                </Grid>
-            </form> */}
+        <Button type="button" variant="contained" color="primary" onClick={createNewWallet}>
+            CREATE NEW WALLET
+        </Button>
 
-            </DialogContent>
-            <DialogActions>
-                <Button type="button" onClick={close} variant="contained" color="inherit">Cancel</Button>
-                <Button type="button" variant="contained" color="primary">Create</Button>
-            </DialogActions>
-        </Dialog>
-        <AppBar >
-            <Container maxWidth="xl">
-                <Toolbar >
-                    
-                </Toolbar>
-            </Container>
-        </AppBar>
+        <Button type="button" variant="contained" color="primary" onClick={createCurrencies}>
+            CREATE CURRENCIES
+        </Button>
+
+        <Button type="button" variant="contained" color="primary" onClick={createTransactions}>
+            CREATE TRANSACTIONS
+        </Button>
+
+        {JSON.stringify(user)}
     </>
 }
 export default Components;
