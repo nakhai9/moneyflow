@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Box, Grid, IconButton, Paper, Slider, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
 import useToggle from "@/hooks/useToggle";
 import VButton from "@/components/common/VButton";
@@ -6,96 +6,18 @@ import DefaultLayout from "@/layouts/DefaultLayout";
 import { AddIcon, FastfoodIcon, FileDownloadIcon, MoreVertIcon, SettingsIcon } from "@/components/common/VIcons";
 import { ITransaction } from "@/common/interfaces/transaction";
 import DialogTransaction from "@/components/Transactions/DialogTransaction";
-import { Category, ModalType, PaymentMethod, TransactionType } from "@/common/enums";
+import { Category, FirestoreCollection, ModalType, PaymentMethod, TransactionType } from "@/common/enums";
 import MoreTransaction from "@/components/Transactions/MoreTransaction";
+import { IBase } from "@/common/interfaces/base";
+import { firestoreService } from "@/common/services/firestore";
 
 const columns = ['Category', 'Wallet', 'Description', 'Payment method', 'Amount'];
-
-const _transactions: ITransaction[] = [
-    {
-        id: 1,
-        category: Category.FOOD_DRINK,
-        walletName: "My Wallet",
-        description: "Transfer from SaigonBank account",
-        paymentMethod: PaymentMethod.TRANSFER,
-        type: TransactionType.INCOME,
-        amount: 115000,
-        createdAt: new Date("2023-10-7")
-    },
-    {
-        id: 2,
-        category: Category.FOOD_DRINK,
-        walletName: "My Wallet",
-        description: "Paid food to cook",
-        paymentMethod: PaymentMethod.CASH,
-        type: TransactionType.EXPENSE,
-        amount: 115000,
-        createdAt: new Date("2023-10-7")
-    },
-    {
-        id: 3,
-        category: Category.FOOD_DRINK,
-        walletName: "My Wallet",
-        description: "Highlands",
-        paymentMethod: PaymentMethod.CASH,
-        amount: 45000,
-        type: TransactionType.EXPENSE,
-        createdAt: new Date("2023-10-7")
-    },
-    {
-        id: 4,
-        category: Category.FOOD_DRINK,
-        walletName: "My Wallet",
-        description: "Ái Liên",
-        paymentMethod: PaymentMethod.CASH,
-        amount: 45000,
-        type: TransactionType.EXPENSE,
-        createdAt: new Date("2023-10-7")
-    },
-    {
-        id: 5,
-        category: Category.FUEL,
-        walletName: "My Wallet",
-        paymentMethod: PaymentMethod.CASH,
-        amount: 45000,
-        type: TransactionType.EXPENSE,
-        createdAt: new Date("2023-10-7")
-    },
-    {
-        id: 6,
-        category: Category.OTHER,
-        walletName: "My Wallet",
-        paymentMethod: PaymentMethod.TRANSFER,
-        amount: 1000000,
-        type: TransactionType.EXPENSE,
-        createdAt: new Date("2023-10-8")
-    },
-    {
-        id: 7,
-        category: Category.FOOD_DRINK,
-        walletName: "My Wallet",
-        paymentMethod: PaymentMethod.CASH,
-        amount: 45000,
-        type: TransactionType.EXPENSE,
-        createdAt: new Date("2023-10-7")
-    },
-    {
-        id: 8,
-        category: Category.LOAN,
-        walletName: "My Wallet",
-        paymentMethod: PaymentMethod.TRANSFER,
-        amount: 300000,
-        description: "Cho Nhường mượn",
-        type: TransactionType.TRANSFER,
-        createdAt: new Date("2023-10-9")
-    }
-];
 
 const Transactions = () => {
 
     const [type, setType] = useState<ModalType>();
-    const [transactions, setTransactions] = useState(_transactions);
-    const [transaction, setTransaction] = useState<ITransaction>();
+    const [transactions, setTransactions] = useState<(ITransaction & IBase)[]>([]);
+    const [transaction, setTransaction] = useState<(ITransaction & IBase)>();
     const { open, handleOpen, handleClose } = useToggle();
 
     const handleAddTransaction = () => {
@@ -103,17 +25,29 @@ const Transactions = () => {
         setType(ModalType.ADD);
     }
 
-    const handleEditTransaction = (transaction: ITransaction) => {
+    const handleEditTransaction = (transaction: (ITransaction & IBase)) => {
         handleOpen();
         setType(ModalType.EDIT);
         setTransaction(transaction)
     }
 
-    const handleDeleteTransaction = (transactionId: number) => {
+    const handleDeleteTransaction = (transactionId: string) => {
         const newTransactions = transactions?.filter(item => item.id !== transactionId);
         setTransactions(newTransactions);
         console.log(`Removed transaction have a id ${transactionId}`)
     }
+
+    const fetchTransactions = useCallback(async () => {
+        const snapshotTransactions = await firestoreService.getDocs(FirestoreCollection.TRANSACTIONS);
+        setTransactions(snapshotTransactions);
+    }, []);
+
+
+    useEffect(()=>{
+        fetchTransactions();
+    }, [fetchTransactions])
+
+
 
     return (
         <DefaultLayout>
@@ -152,13 +86,13 @@ const Transactions = () => {
                                                     <FastfoodIcon color="primary" />
                                                     <span className="vdt-ml-2">{item.category}</span>
                                                 </TableCell>
-                                                <TableCell className="vdt-border-none">{item.walletName}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.walletId}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
                                                 <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
                                                 <TableCell className="vdt-border-none vdt-w-5">
                                                     <MoreTransaction
-                                                        handleDeleteTransaction={() => handleDeleteTransaction(item.id)}
+                                                        handleDeleteTransaction={() => handleDeleteTransaction(item.id!)}
                                                         handleEditTransaction={() => handleEditTransaction(item)}
                                                     />
                                                 </TableCell>

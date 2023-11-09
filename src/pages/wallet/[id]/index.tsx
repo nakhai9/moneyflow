@@ -15,8 +15,7 @@ import { firestoreService } from '@/common/services/firestore';
 import { IWallet } from '@/common/interfaces/wallet';
 import { useDispatch } from 'react-redux';
 import { toggle } from '@/store/features/backdrop/backdropSlice';
-
-const columns = ['Category', "Wallet", 'Name', 'Description', 'Payment method', 'Amount'];
+import WalletIcon from '@mui/icons-material/Wallet';
 
 const WalletDetailPage: NextPage = () => {
 
@@ -24,6 +23,8 @@ const WalletDetailPage: NextPage = () => {
     const disptach = useDispatch();
 
     const { id } = router.query;
+
+    const [columns] = useState<string[]>(['Category', 'Name', 'Description', 'Payment method', 'Amount']);
 
     const [type, setType] = useState<ModalType>();
     const [transaction, setTransaction] = useState<ITransaction>();
@@ -49,7 +50,7 @@ const WalletDetailPage: NextPage = () => {
         const wallet = await firestoreService.getDocById<IWallet>(FirestoreCollection.WALLETS, id as string);
         if (wallet) {
             console.log(wallet);
-            
+
             setCurrentWallet(wallet);
         }
         const transactionsByWalletId = snapshotTransactions.filter((transaction: (ITransaction & IBase)) => transaction.walletId === id);
@@ -82,6 +83,9 @@ const WalletDetailPage: NextPage = () => {
                             </IconButton>
                         </Tooltip>
                     </Box>
+                </Grid>
+                <Grid container item xs={12}>
+                    <Typography variant="h6">{currentWallet?.name}</Typography>
                 </Grid>
                 <Grid container item xs={12} spacing={4}>
                     <Grid item xs={6} md={3}>
@@ -142,7 +146,6 @@ const WalletDetailPage: NextPage = () => {
                                                 <TableCell component="td" className="vdt-border-none">
                                                     <span className="vdt-ml-2">{item.category}</span>
                                                 </TableCell>
-                                                <TableCell className="vdt-border-none">{item.walletId}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.name}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>

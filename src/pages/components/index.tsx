@@ -34,12 +34,19 @@ const Components: React.FC<ComponentsProps> = () => {
 
     const createNewWallet = async () => {
         const wallet: IWallet = {
+            // amount: 0,
+            // name: "Tài khoản nợ",
+            // type: WalletType.LOAN,
+            // currencyId: "bd866ba7-b488-42a2-8a24-aec683a08273",
+            // userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
+            // note: "Đây là tài khoản đem tiền cho vay"
+
             amount: 0,
-            name: "Tài khoản nợ",
-            type: WalletType.LOAN,
-            currencyId: "",
+            name: "Nợ trong chuyến đi Đà Lạt",
+            type: WalletType.DEBT,
+            currencyId: "bd866ba7-b488-42a2-8a24-aec683a08273",
             userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
-            note: "Đây là tài khoản đem tiền cho vay"
+            note: "Đây là tiền nợ trong quá trình đi Đà Lạt"
         }
 
         await firestoreService.setDoc<IWallet>(FirestoreCollection.WALLETS, wallet)
@@ -71,15 +78,15 @@ const Components: React.FC<ComponentsProps> = () => {
     const createTransactions = async () => {
         const transactions: ITransaction[] = [
             {
-                name: "Cơm cá kho và canh chua",
-                amount: 57000,
+                name: "Đi ăn hủ tiếu",
+                amount: 20000,
                 category: Category.FOOD_DRINK,
                 paymentMethod: PaymentMethod.CASH,
                 type: TransactionType.EXPENSE,
-                walletId: "e0311712-2460-4add-bda4-d39a6e8782ba",
+                walletId: "a0e637f3-f040-4264-84c4-5d9ca8a6b3ea",
                 userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
                 excutedAt: new Date("2023-11-07"),
-                description: "Cơm cá kho canh chua"
+                description: "Tân trả dùm tiền này"
             },
             // {
             //     name: "Tiền Băng mượn",
