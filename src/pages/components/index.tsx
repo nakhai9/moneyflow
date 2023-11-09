@@ -1,6 +1,6 @@
 import { Category, FirestoreCollection, PaymentMethod, TransactionType, UserRole, WalletType } from "@/common/enums";
 import { ICurrency } from "@/common/interfaces/currency";
-import { ITransaction2 } from "@/common/interfaces/transaction";
+import { ITransaction } from "@/common/interfaces/transaction";
 import { IWallet } from "@/common/interfaces/wallet";
 import { firestoreService } from "@/common/services/firestore";
 import { Button } from "@mui/material";
@@ -69,27 +69,28 @@ const Components: React.FC<ComponentsProps> = () => {
     }
 
     const createTransactions = async () => {
-        const transactions: ITransaction2[] = [
+        const transactions: ITransaction[] = [
             {
-                name: "Cho Nhường mượn 500",
-                amount: 500000,
-                category: Category.LOAN,
+                name: "Cơm cá kho và canh chua",
+                amount: 57000,
+                category: Category.FOOD_DRINK,
                 paymentMethod: PaymentMethod.CASH,
                 type: TransactionType.EXPENSE,
-                walletId: "f677d4a1-7c68-45b3-a176-fe9a1726df37",
+                walletId: "e0311712-2460-4add-bda4-d39a6e8782ba",
                 userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
-                excutedAt: new Date("2023-11-07")
+                excutedAt: new Date("2023-11-07"),
+                description: "Cơm cá kho canh chua"
             },
-            {
-                name: "Tiền Băng mượn",
-                amount: 4000000,
-                category: Category.LOAN,
-                paymentMethod: PaymentMethod.TRANSFER,
-                type: TransactionType.EXPENSE,
-                walletId: "f677d4a1-7c68-45b3-a176-fe9a1726df37",
-                userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
-                excutedAt: new Date("2023-11-04")
-            }
+            // {
+            //     name: "Tiền Băng mượn",
+            //     amount: 4000000,
+            //     category: Category.LOAN,
+            //     paymentMethod: PaymentMethod.TRANSFER,
+            //     type: TransactionType.EXPENSE,
+            //     walletId: "f677d4a1-7c68-45b3-a176-fe9a1726df37",
+            //     userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
+            //     excutedAt: new Date("2023-11-04")
+            // }
         ]
 
         for(let item of transactions) {

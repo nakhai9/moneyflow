@@ -1,116 +1,36 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { NextPage } from "next";
 import { Box, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
 import useToggle from "@/hooks/useToggle";
 import DefaultLayout from "@/layouts/DefaultLayout";
-import { Category, ModalType, PaymentMethod, TransactionType } from "@/common/enums";
+import { Category, FirestoreCollection, ModalType, PaymentMethod, TransactionType } from "@/common/enums";
 import { ITransaction } from "@/common/interfaces/transaction";
 import DialogTransaction from "@/components/Transactions/DialogTransaction";
 import { getTotalPeriodExpenseValue, getTotalPeriodIncomeValue, numberAsCurrency } from "@/utils";
 import { AddIcon, FileDownloadIcon, MoreVertIcon, SettingsIcon } from "@/components/common/VIcons";
 import { VButton } from '@/components/common';
+import { IBase } from '@/common/interfaces/base';
+import { useRouter } from 'next/router';
+import { firestoreService } from '@/common/services/firestore';
+import { IWallet } from '@/common/interfaces/wallet';
+import { useDispatch } from 'react-redux';
+import { toggle } from '@/store/features/backdrop/backdropSlice';
 
-const columns = ['Category', 'Wallet', 'Description', 'Payment method', 'Amount'];
-
-const transactions: ITransaction[] = [
-    {
-        id: 1,
-        category: Category.FOOD_DRINK,
-        walletName: "My Wallet",
-        description: "Transfer from SaigonBank account",
-        paymentMethod: PaymentMethod.TRANSFER,
-        type: TransactionType.INCOME,
-        amount: 115000,
-        createdAt: new Date("2023-10-7")
-    },
-    {
-        id: 2,
-        category: Category.FOOD_DRINK,
-        walletName: "My Wallet",
-        description: "Paid food to cook",
-        paymentMethod: PaymentMethod.CASH,
-        type: TransactionType.EXPENSE,
-        amount: 115000,
-        createdAt: new Date("2023-10-7")
-    },
-    {
-        id: 3,
-        category: Category.FOOD_DRINK,
-        walletName: "My Wallet",
-        description: "Highlands",
-        paymentMethod: PaymentMethod.CASH,
-        amount: 45000,
-        type: TransactionType.EXPENSE,
-        createdAt: new Date("2023-10-7")
-    },
-    {
-        id: 4,
-        category: Category.FOOD_DRINK,
-        walletName: "My Wallet",
-        description: "Ái Liên",
-        paymentMethod: PaymentMethod.CASH,
-        amount: 45000,
-        type: TransactionType.EXPENSE,
-        createdAt: new Date("2023-10-7")
-    },
-    {
-        id: 5,
-        category: Category.FUEL,
-        walletName: "My Wallet",
-        paymentMethod: PaymentMethod.CASH,
-        amount: 45000,
-        type: TransactionType.EXPENSE,
-        createdAt: new Date("2023-10-7")
-    },
-    {
-        id: 6,
-        category: Category.OTHER,
-        walletName: "My Wallet",
-        paymentMethod: PaymentMethod.TRANSFER,
-        amount: 1000000,
-        type: TransactionType.EXPENSE,
-        createdAt: new Date("2023-10-8")
-    },
-    {
-        id: 7,
-        category: Category.FOOD_DRINK,
-        walletName: "My Wallet",
-        paymentMethod: PaymentMethod.CASH,
-        amount: 45000,
-        type: TransactionType.EXPENSE,
-        createdAt: new Date("2023-10-7")
-    },
-    {
-        id: 8,
-        category: Category.LOAN,
-        walletName: "My Wallet",
-        paymentMethod: PaymentMethod.TRANSFER,
-        amount: 300000,
-        description: "Cho Nhường mượn",
-        type: TransactionType.TRANSFER,
-        createdAt: new Date("2023-10-9")
-    },
-    {
-        id: 9,
-        category: Category.LOAN,
-        walletName: "My Wallet",
-        paymentMethod: PaymentMethod.TRANSFER,
-        amount: 100000,
-        description: "Cho Nhường mượn",
-        type: TransactionType.TRANSFER,
-        createdAt: new Date("2023-10-25")
-    }
-];
-
-const LOCALE = 'vi-Vi';
-const CURRENCY = 'VND'
-const WALLETBALANCE = 3000000;
+const columns = ['Category', "Wallet", 'Name', 'Description', 'Payment method', 'Amount'];
 
 const WalletDetailPage: NextPage = () => {
+
+    const router = useRouter();
+    const disptach = useDispatch();
+
+    const { id } = router.query;
 
     const [type, setType] = useState<ModalType>();
     const [transaction, setTransaction] = useState<ITransaction>();
     const { open, handleOpen, handleClose } = useToggle();
+
+    const [transactions, setTransactions] = useState<(ITransaction & IBase)[]>([]);
+    const [currentWallet, setCurrentWallet] = useState<(IWallet & IBase) | null>(null);
 
     const handleAddTransaction = () => {
         handleOpen();
@@ -122,6 +42,25 @@ const WalletDetailPage: NextPage = () => {
         setType(ModalType.EDIT);
         setTransaction(transaction)
     }
+
+    const fetch = useCallback(async () => {
+        disptach(toggle());
+        const snapshotTransactions = await firestoreService.getDocs(FirestoreCollection.TRANSACTIONS);
+        const wallet = await firestoreService.getDocById<IWallet>(FirestoreCollection.WALLETS, id as string);
+        if (wallet) {
+            console.log(wallet);
+            
+            setCurrentWallet(wallet);
+        }
+        const transactionsByWalletId = snapshotTransactions.filter((transaction: (ITransaction & IBase)) => transaction.walletId === id);
+
+        setTransactions(transactionsByWalletId);
+        disptach(toggle())
+    }, [id])
+
+    useEffect(() => {
+        fetch()
+    }, [fetch])
 
     return (
         <DefaultLayout>
@@ -149,7 +88,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer">
                             <Typography variant="body2" className="vdt-font-semibold">Current Wallet Balance</Typography>
                             <div>
-                                <Typography variant="h6" color="primary">{numberAsCurrency(LOCALE, CURRENCY).format(WALLETBALANCE)}</Typography>
+                                <Typography variant="h6" color="primary">{currentWallet?.amount.toLocaleString('en-US')}</Typography>
                             </div>
                         </Paper>
                     </Grid>
@@ -158,7 +97,7 @@ const WalletDetailPage: NextPage = () => {
                             <Typography variant="body2" className="vdt-font-semibold">Total Period Change</Typography>
                             <div>
                                 <Typography variant="h6" color="primary">
-                                    {numberAsCurrency(LOCALE, CURRENCY).format(getTotalPeriodExpenseValue(transactions) + getTotalPeriodIncomeValue(transactions))}
+                                    {(getTotalPeriodExpenseValue(transactions) + getTotalPeriodIncomeValue(transactions)).toLocaleString('en-US')}
                                 </Typography>
                             </div>
                         </Paper>
@@ -167,7 +106,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer" >
                             <Typography variant="body2" className="vdt-font-semibold">Total Period Expenses</Typography>
                             <div>
-                                <Typography variant="h6" color="primary">{numberAsCurrency(LOCALE, CURRENCY).format(getTotalPeriodExpenseValue(transactions))}</Typography>
+                                <Typography variant="h6" color="primary">{getTotalPeriodExpenseValue(transactions).toLocaleString('en-US')}</Typography>
                             </div>
                         </Paper>
                     </Grid>
@@ -175,7 +114,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer" >
                             <Typography variant="body2" className="vdt-font-semibold">Total Period Income</Typography>
                             <div>
-                                <Typography variant="h6" color="primary">{numberAsCurrency(LOCALE, CURRENCY).format(getTotalPeriodIncomeValue(transactions))}</Typography>
+                                <Typography variant="h6" color="primary">{getTotalPeriodIncomeValue(transactions).toLocaleString('en-US')}</Typography>
                             </div>
                         </Paper>
                     </Grid>
@@ -203,7 +142,8 @@ const WalletDetailPage: NextPage = () => {
                                                 <TableCell component="td" className="vdt-border-none">
                                                     <span className="vdt-ml-2">{item.category}</span>
                                                 </TableCell>
-                                                <TableCell className="vdt-border-none">{item.walletName}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.walletId}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.name}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
                                                 <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>

@@ -3,21 +3,7 @@ import { Category } from "../enums/category";
 import { PaymentMethod } from "../enums/payment-method";
 import { TransactionType } from "../enums/transaction-type";
 
-export interface ITransaction {
-    id: number;
-    category: Category;
-    walletName: string;
-    description?: string;
-    amount: number;
-    paymentMethod: PaymentMethod;
-    type: TransactionType;
-    label?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-    icon?: any;
-}
-
-export interface ITransaction2 {
+export interface ITransaction{
     category: Category;
     name: string;
     amount: number;

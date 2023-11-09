@@ -21,10 +21,14 @@ export const firestoreService = {
 
         }
     },
-    getDocById: async (collectionName: FirestoreCollection, docId: string) => {
+    getDocById: async <T>(collectionName: FirestoreCollection, docId: string) => {
         try {
             const docRef = doc(firestore, collectionName, docId);
             const snapshotDocument = await getDoc(docRef);
+
+            if (snapshotDocument && snapshotDocument.exists()) {
+                return snapshotDocument.data() as (T & IBase);
+            }
         } catch (error) {
             console.log(error);
         }
