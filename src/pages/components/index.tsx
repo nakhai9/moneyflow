@@ -77,27 +77,16 @@ const Components: React.FC<ComponentsProps> = () => {
 
     const createTransactions = async () => {
         const transactions: ITransaction[] = [
-            {
-                name: "Đi ăn hủ tiếu",
-                amount: 20000,
-                category: Category.FOOD_DRINK,
-                paymentMethod: PaymentMethod.CASH,
-                type: TransactionType.EXPENSE,
-                walletId: "a0e637f3-f040-4264-84c4-5d9ca8a6b3ea",
-                userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
-                excutedAt: new Date("2023-11-07"),
-                description: "Tân trả dùm tiền này"
-            },
             // {
-            //     name: "Tiền Băng mượn",
-            //     amount: 4000000,
-            //     category: Category.LOAN,
-            //     paymentMethod: PaymentMethod.TRANSFER,
+            //     name: "Hủ tiếu mì",
+            //     amount: 20000,
+            //     category: Category.FOOD_DRINK,
+            //     paymentMethod: PaymentMethod.CASH,
             //     type: TransactionType.EXPENSE,
-            //     walletId: "f677d4a1-7c68-45b3-a176-fe9a1726df37",
+            //     walletId: "bd866ba7-b488-42a2-8a24-aec683a08273",
             //     userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
-            //     excutedAt: new Date("2023-11-04")
-            // }
+            //     excutedAt: new Date("2023-11-09")
+            // },
         ]
 
         for(let item of transactions) {
