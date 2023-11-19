@@ -11,12 +11,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import VButton from '../common/VButton';
 
 type TransactionSubmitForm = {
+    title: string,
     transactionType: TransactionType,
     category: Category,
     excutedAt: Date | Timestamp,
     paymentMethod: PaymentMethod
     amount: number,
-    label?: string | null,
     note?: string | null,
 }
 
@@ -38,16 +38,16 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
     const { user } = useSelector((state: RootState) => state.user)
 
     const [initialForm] = useState<TransactionSubmitForm>({
+        title: '',
+        amount: 0,
         transactionType: TransactionType.EXPENSE,
         category: Category.NONE,
         excutedAt: new Date("2023-10-23"),
         paymentMethod: PaymentMethod.CASH,
-        amount: 0,
         note: '',
-        label: ''
     })
 
-    const { handleSubmit, control, setValue, formState: { errors } } = useForm<TransactionSubmitForm>({
+    const { handleSubmit, control, setValue, formState: { errors }, reset } = useForm<TransactionSubmitForm>({
         defaultValues: initialForm,
     })
 
@@ -59,24 +59,26 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
         dispatch(toggle())
         try {
             const newTransaction: ITransaction = {
-                title: "",
-                amount: data.amount,
+                title: data.title,
+                amount: parseInt(data.amount.toString(), 10),
                 excutedAt: Timestamp.now(),
-                type: data.transactionType,
+                type: currentType,
                 paymentMethod: data.paymentMethod,
                 category: data.category,
                 note: data.note ?? null,
-                label: data.label ?? null,
                 walletId: walletId,
                 userId: user?.id,
+                label: null,
                 payee: null
             }
+            console.log(newTransaction);
+            
             const response = await firestoreService.addDoc(FirestoreCollections.TRANSACTIONS, newTransaction);
-            console.log(newTransaction)
         } catch (error) {
             console.log(error);
         } finally {
-            dispatch(toggle());
+            reset(initialForm);
+            dispatch(toggle())
         }
 
         handleClose && handleClose();
@@ -86,13 +88,13 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
         handleClose && handleClose();
     }
 
-    const handleSetValues = useCallback((transaction: (ITransaction & IBase)) => {
+    const handleSetValues = useCallback(async (transaction: (ITransaction & IBase)) => {
+        setValue("title", transaction.title);
         setValue("amount", transaction.amount);
         setValue("category", transaction.category);
         setValue("excutedAt", (transaction.createdAt) as Date);
         setValue("paymentMethod", transaction.paymentMethod);
         setValue("note", transaction.note!);
-        setValue("label", transaction.label);
     }, [setValue]);
 
     useEffect(() => {
@@ -100,13 +102,13 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
             if (!type) return
             if (transaction) {
                 const transactionDetail: TransactionSubmitForm = {
+                    title: transaction.title,
                     amount: transaction.amount,
                     category: transaction.category,
                     excutedAt: transaction.createdAt as Date,
                     paymentMethod: transaction.paymentMethod,
                     transactionType: transaction.type,
                     note: transaction.note as string,
-                    label: transaction.label as string
                 }
                 setCurrentType(transaction.type);
                 handleSetValues(transaction);
@@ -134,6 +136,25 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                         </ButtonGroup>
                     </Box>
                     <Grid container spacing={1}>
+                        <Grid item xs={12} md={2}>
+                            <Controller control={control} name="title" rules={{ required: false }}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label="Title"
+                                        type="text"
+                                        size="small"
+                                        fullWidth
+                                        margin="dense"
+                                        autoFocus
+                                        error={!!errors.title}
+                                        helperText={
+                                            errors.title && `${errors.title.message}`
+                                        }
+                                    />
+                                )}
+                            />
+                        </Grid>
                         <Grid item xs={12} md={2}>
                             <Controller control={control} name="category" rules={{ required: true }}
                                 render={({ field }) => (
@@ -209,25 +230,7 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                                         helperText={
                                             errors.amount && `${errors.amount.message}`
                                         }
-                                    />
-                                )}
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={2}>
-                            <Controller control={control} name="label" rules={{ required: false }}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        label="Label (optional)"
-                                        type="text"
-                                        size="small"
-                                        fullWidth
-                                        margin="dense"
-                                        autoFocus
-                                        error={!!errors.label}
-                                        helperText={
-                                            errors.label && `${errors.label.message}`
-                                        }
+                                        
                                     />
                                 )}
                             />

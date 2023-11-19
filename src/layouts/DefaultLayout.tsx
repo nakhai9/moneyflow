@@ -53,7 +53,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
   const logout = () => {
     localStorage.clear();
     dispatch(clearUserAndToken());
-    router.push("/");
+    return router.push("/");
   }
 
   return <>

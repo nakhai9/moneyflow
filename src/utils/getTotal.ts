@@ -1,10 +1,10 @@
-import { ITransaction } from "@/common/drafts/prisma";
+import { IBase, ITransaction } from "@/common/drafts/prisma";
 import { TransactionType } from "@/common/enums/transaction-type";
 
-const getTotalPeriodExpenseValue = (transactions: ITransaction[]): number => {
+const getTotalPeriodExpenseValue = (transactions: (ITransaction & IBase)[]): number => {
     let totalPeriodExpense: number = 0;
     transactions
-        .filter((item) => {
+        .filter((item: ITransaction & IBase) => {
             return item.type === TransactionType.EXPENSE
         })
         .forEach(item => {
@@ -14,10 +14,10 @@ const getTotalPeriodExpenseValue = (transactions: ITransaction[]): number => {
     return totalPeriodExpense;
 }
 
-const getTotalPeriodIncomeValue = (transactions: ITransaction[]): number => {
+const getTotalPeriodIncomeValue = (transactions: (ITransaction & IBase)[]): number => {
     let totalPeriodIncome: number = 0;
     transactions
-        .filter((item) => {
+        .filter((item: ITransaction & IBase ) => {
             return item.type === TransactionType.INCOME
         })
         .forEach(item => {

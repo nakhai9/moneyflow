@@ -21,7 +21,7 @@ const WalletDetailPage: NextPage = () => {
 
     const id = router.query.id as string;
 
-    const [columns] = useState<string[]>(['Category', 'Name', 'Description', 'Payment method', 'Amount']);
+    const [columns] = useState<string[]>(['Category', 'Title', 'Note', 'Payment method', 'Amount']);
 
     const [type, setType] = useState<ModalType>();
     const [transaction, setTransaction] = useState<ITransaction & IBase>();
@@ -49,6 +49,8 @@ const WalletDetailPage: NextPage = () => {
             setCurrentWallet(wallet);
             const transactionsByWalletId = snapshotTransactions.filter((transaction: (ITransaction & IBase)) => transaction.walletId === id);
             setTransactions(transactionsByWalletId);
+        } else {
+            router.push("/")
         }
         disptach(toggle())
     }, [id, disptach])

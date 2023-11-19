@@ -17,7 +17,7 @@ export const firestoreService = {
         try {
             const snapshotDocuments = await getDocs(collection(firestore, collectionName));
             const result: any = [];
-            snapshotDocuments.forEach((doc) => {
+            snapshotDocuments.docs.reverse().forEach((doc) => {
                 result.push({ id: doc.id, ...doc.data() });
             });
 
