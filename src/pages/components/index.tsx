@@ -1,5 +1,4 @@
-import { ICurrency, IUserSignUp } from "@/common/drafts/prisma";
-import { FirestoreCollection } from "@/common/enums";
+import { FirestoreCollections, ICurrency, IUserSignUp } from "@/common/drafts/prisma";
 import { firestoreService } from "@/common/services/firestore";
 import { Button, Stack } from "@mui/material";
 import { useState } from "react";
@@ -57,7 +56,7 @@ const Components: React.FC<ComponentsProps> = () => {
         ];
 
         for(let item of currencies) {
-            await firestoreService.addDoc(FirestoreCollection.CURRENCIES, item);
+            await firestoreService.addDoc(FirestoreCollections.CURRENCIES, item);
         }
     }
 
