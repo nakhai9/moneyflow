@@ -1,11 +1,12 @@
 import { OPTIONS_MENU_ON_APPBAR } from "@/common/constants/routes";
-import { IBase } from "@/common/interfaces/base";
-import { IUser } from "@/common/interfaces/user";
+import { FirestoreCollections } from "@/common/drafts/prisma";
+import { firestoreService } from "@/common/services/firestore";
+import { clearUserAndToken, setUser } from "@/store/features/user/userSlice";
 import { RootState } from "@/store/store";
-import { AppBar, Avatar, Backdrop, Box, CircularProgress, Container, MenuItem, MenuList, Paper, Toolbar, Typography } from "@mui/material";
+import { AppBar, Avatar, Backdrop, Box, Button, CircularProgress, Container, MenuItem, MenuList, Paper, Skeleton, Toolbar, Typography } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 type DefaultLayoutProps = {
   children: React.ReactNode
@@ -14,23 +15,45 @@ type DefaultLayoutProps = {
 const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
 
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<IUser & IBase>();
+  const dispatch = useDispatch();
+
+  const { user } = useSelector((state: RootState) => state.user)
 
   const [isToggle, setIsToggle] = useState<boolean>(false);
 
   const { isOpen } = useSelector((state: RootState) => state.backdrop)
 
-  const dispatch = useDispatch();
+  const fecthUserById = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        router.push("/auth/login");
+      } else {
+        const user = await firestoreService.getDocById(FirestoreCollections.USERS, userId);
+        dispatch(setUser(user));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [dispatch])
+
+  useEffect(() => {
+    fecthUserById()
+  }, [fecthUserById])
+
 
   const toggleContextMenu = () => {
     setIsToggle(!isToggle);
   }
 
   const selectMenuItem = (path: string) => {
-    if (path === '/logout') {
-      localStorage.clear();
-    }
     router.push(path);
+  }
+
+  const logout = () => {
+    localStorage.clear();
+    dispatch(clearUserAndToken());
+    router.push("/");
   }
 
   return <>
@@ -47,13 +70,14 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
                 vidientu
               </Typography>
               <Link className="vdt-no-underline vdt-text-white" href="/transactions">Transactions</Link>
+              <Link className="vdt-no-underline vdt-text-white" href="/components">Components</Link>
             </div>
 
             <Box>
               <div className="vdt-relative">
                 <div className="vdt-flex vdt-gap-4 vdt-items-center vdt-relative" onClick={toggleContextMenu}>
-                  <Avatar src="https://scontent.fvca1-3.fna.fbcdn.net/v/t39.30808-6/273733125_968361504110187_3156377724812769692_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeHjIFFE3YpeMkq844jJAbYLOY4_AJp1Yxw5jj8AmnVjHCUWondyUjeuSwuUIEBj4sRuwAh3qdxT6H4SjKQoTzVn&_nc_ohc=jvBAhMwYlOEAX9CJ7qg&_nc_ht=scontent.fvca1-3.fna&oh=00_AfCSHjmS07QYO0DtRZADPZ9LWKgqgvYZO-_fZb-sihs9qg&oe=6540CF16" alt="KD" />
-                  <span className="vdt-text-sm vdt-font-semibold">Dev React Xịnnnn</span>
+                  <Avatar src={user?.photoUrl} alt="KD" />
+                  <span className="vdt-text-sm vdt-font-semibold">{user?.firstName} {user?.lastName}</span>
                 </div>
                 {
                   isToggle && <MenuList component={Paper} className="vdt-top-12 vdt-absolute vdt-bg-white vdt-z-30">
@@ -63,7 +87,11 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
                           <Link className="vdt-no-underline vdt-text-slate-500 " href={option.path} >{option.text}</Link>
                         </MenuItem>
                       ))
+
                     }
+                    <MenuItem className="vdt-min-w-md vdt-w-40" key="logout" onClick={logout}>
+                      <Link className="vdt-no-underline vdt-text-slate-500" href={"/logout"} passHref>Log out</Link>
+                    </MenuItem>
                   </MenuList>
                 }
               </div>
@@ -78,7 +106,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
           </Box>
         </Container>
       </main>
-    </Box>
+    </Box >
   </>
 }
 

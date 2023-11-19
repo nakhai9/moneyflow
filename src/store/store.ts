@@ -1,11 +1,19 @@
-import { configureStore } from '@reduxjs/toolkit'
+import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
 import backdropReducer from "./features/backdrop/backdropSlice";
+import userReducer from "./features/user/userSlice";
+
 const rootReducer = {
-  backdrop: backdropReducer
+  backdrop: backdropReducer,
+  user: userReducer
 }
 
 export const store = configureStore({
   reducer: rootReducer,
+  middleware: [
+    ...getDefaultMiddleware({
+      serializableCheck: false
+    })
+  ],
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

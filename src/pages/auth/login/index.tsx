@@ -1,13 +1,16 @@
-import { SubmitHandler, useForm } from "react-hook-form";
-// import Dialog from "@/components/dialog/Dialog";
-import { API_SERVICES } from "@/common/services/service";
+import { FirestoreCollections } from "@/common/drafts/prisma";
+import { firestoreService } from "@/common/services/firestore";
 import AuthLayout from "@/layouts/AuthLayout";
+import { toggle } from "@/store/features/backdrop/backdropSlice";
+import { setAccessToken, setUser } from "@/store/features/user/userSlice";
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Backdrop, Button, CircularProgress, Stack, TextField, Typography } from '@mui/material';
+import { Button, Stack, TextField, Typography } from '@mui/material';
 import { NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
 import * as yup from 'yup';
 
 const loginSchema = yup.object({
@@ -20,15 +23,28 @@ type LoginSubmitForm = yup.InferType<typeof loginSchema>;
 const LoginPage: NextPage = () => {
 
     const router = useRouter();
-
+    const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState<boolean>(false);
-
     const { register, handleSubmit, formState: { errors } } = useForm<LoginSubmitForm>({ resolver: yupResolver(loginSchema) })
-
     const onSubmit: SubmitHandler<LoginSubmitForm> = async (data) => {
-        setIsLoading(true);
-        console.log(data);
-
+        dispatch(toggle())
+        try {
+            const { userCredential, error } = await firestoreService.signIn({ ...data });
+            if (userCredential) {
+                const userId = userCredential.user.uid;
+                localStorage.setItem("userId", userId)
+                const user = await firestoreService.getDocById(FirestoreCollections.USERS, userId);
+                if (user) {
+                    dispatch(setUser(user));
+                    dispatch(setAccessToken(userCredential.user));
+                    router.push("/dashboard");
+                }
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            dispatch(toggle());
+        }
     };
 
     return <>

@@ -1,9 +1,7 @@
-import { Category, FirestoreCollection, PaymentMethod, TransactionType, UserRole, WalletType } from "@/common/enums";
-import { ICurrency } from "@/common/interfaces/currency";
-import { ITransaction } from "@/common/interfaces/transaction";
-import { IWallet } from "@/common/interfaces/wallet";
+import { ICurrency, IUserSignUp } from "@/common/drafts/prisma";
+import { FirestoreCollection } from "@/common/enums";
 import { firestoreService } from "@/common/services/firestore";
-import { Button } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import { useState } from "react";
 
 type ComponentsProps = {}
@@ -13,43 +11,31 @@ const Components: React.FC<ComponentsProps> = () => {
 
     const signIn = async () => {
         const response = await firestoreService.signIn({
-            email: "khainguyen@app.com",
-            password: "12345678",
+            email: "khai.fordev@gmail.com",
+            password: "open4me",
         })
         console.log(response);
         setUser(response);
     }
 
     const signUp = async () => {
-        const response = await firestoreService.signUp({
-            email: "khainguyen@app.com",
-            fullName: "Khai Nguyen Anh",
-            firstName: "Khai",
-            lastName: "Nguyen",
+
+        const newUser: IUserSignUp = {
+            email: "admin@app.com",
+            firstName: "Super",
+            lastName: "Admin",
             phoneNumber: "0945757051",
-            role: UserRole.ADMIN,
-            password: "12345678"
-        })
+            password: "admin1234"
+        }
+
+        const response = await firestoreService.signUp(newUser)
     }
 
     const createNewWallet = async () => {
-        const wallet: IWallet = {
-            // amount: 0,
-            // name: "Tài khoản nợ",
-            // type: WalletType.LOAN,
-            // currencyId: "bd866ba7-b488-42a2-8a24-aec683a08273",
-            // userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
-            // note: "Đây là tài khoản đem tiền cho vay"
+        // const wallet: IWallet = {
+        // }
 
-            amount: 0,
-            name: "Nợ trong chuyến đi Đà Lạt",
-            type: WalletType.DEBT,
-            currencyId: "bd866ba7-b488-42a2-8a24-aec683a08273",
-            userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
-            note: "Đây là tiền nợ trong quá trình đi Đà Lạt"
-        }
-
-        await firestoreService.setDoc<IWallet>(FirestoreCollection.WALLETS, wallet)
+        // await firestoreService.setDoc<IWallet>(FirestoreCollection.WALLETS, wallet)
     }
 
     const createCurrencies = async () => {
@@ -59,7 +45,7 @@ const Components: React.FC<ComponentsProps> = () => {
                 countryCode: "vnm",
                 countryName: "Vietnamese",
                 locale: "vi-VN",
-                name: "Viet Nam Dong"
+                name: "Viet Nam Dong",
             },
             {
                 code: "usd",
@@ -71,49 +57,41 @@ const Components: React.FC<ComponentsProps> = () => {
         ];
 
         for(let item of currencies) {
-            await firestoreService.setDoc(FirestoreCollection.CURRENCIES, item);
+            await firestoreService.addDoc(FirestoreCollection.CURRENCIES, item);
         }
     }
 
     const createTransactions = async () => {
-        const transactions: ITransaction[] = [
-            // {
-            //     name: "Hủ tiếu mì",
-            //     amount: 20000,
-            //     category: Category.FOOD_DRINK,
-            //     paymentMethod: PaymentMethod.CASH,
-            //     type: TransactionType.EXPENSE,
-            //     walletId: "bd866ba7-b488-42a2-8a24-aec683a08273",
-            //     userId: "vjnLYPH5rAa3bJUGKB2xmibKiYv2",
-            //     excutedAt: new Date("2023-11-09")
-            // },
-        ]
+        // const transactions: ITransaction[] = []
 
-        for(let item of transactions) {
-            await firestoreService.setDoc(FirestoreCollection.TRANSACTIONS, item);
-        }
+        // for(let item of transactions) {
+        //     await firestoreService.setDoc(FirestoreCollection.TRANSACTIONS, item);
+        // }
     }
 
     return <>
-        <Button type="button" variant="contained" color="primary" onClick={signUp}>
-            CREATE USER ON FIRESTORE
-        </Button>
+        <Stack spacing={3}>
+            <Button type="button" variant="contained" color="primary" onClick={signUp}>
+                Sign up new user
+            </Button>
 
-        <Button type="button" variant="contained" color="primary" onClick={signIn}>
-            Login
-        </Button>
+            <Button type="button" variant="contained" color="primary" onClick={signIn}>
+                Login
+            </Button>
 
-        <Button type="button" variant="contained" color="primary" onClick={createNewWallet}>
-            CREATE NEW WALLET
-        </Button>
+            <Button type="button" variant="contained" color="primary" onClick={createNewWallet}>
+                CREATE NEW WALLET
+            </Button>
 
-        <Button type="button" variant="contained" color="primary" onClick={createCurrencies}>
-            CREATE CURRENCIES
-        </Button>
+            <Button type="button" variant="contained" color="primary" onClick={createCurrencies}>
+                CREATE CURRENCIES
+            </Button>
 
-        <Button type="button" variant="contained" color="primary" onClick={createTransactions}>
-            CREATE TRANSACTIONS
-        </Button>
+            <Button type="button" variant="contained" color="primary" onClick={createTransactions}>
+                CREATE TRANSACTIONS
+            </Button>
+
+        </Stack>
 
         {JSON.stringify(user)}
     </>

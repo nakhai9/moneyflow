@@ -1,18 +1,23 @@
-import { useState, useCallback, useEffect } from 'react'
-import { Box, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, TextField } from '@mui/material'
-import VButton from '../common/VButton'
+import { FirestoreCollections, IBase, ITransaction, PaymentMethod, TransactionType } from '@/common/drafts/prisma';
+import { Category, ModalType, } from '@/common/enums';
+import { firestoreService } from '@/common/services/firestore';
+import { toggle } from '@/store/features/backdrop/backdropSlice';
+import { RootState } from '@/store/store';
+import { Box, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, TextField } from '@mui/material';
+import { Timestamp } from 'firebase/firestore';
+import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from "react-hook-form";
-import { ITransaction } from "@/common/interfaces/transaction";
-import { Category, ModalType, PaymentMethod, TransactionType } from '@/common/enums';
+import { useDispatch, useSelector } from 'react-redux';
+import VButton from '../common/VButton';
 
 type TransactionSubmitForm = {
     transactionType: TransactionType,
     category: Category,
-    date: Date,
+    excutedAt: Date | Timestamp,
     paymentMethod: PaymentMethod
     amount: number,
-    label?: string,
-    description?: string,
+    label?: string | null,
+    note?: string | null,
 }
 
 type DialogTransactionProps = {
@@ -20,22 +25,25 @@ type DialogTransactionProps = {
     handleOpen?: () => void;
     handleClose?: () => void;
     type?: ModalType;
-    transaction?: ITransaction
+    walletId?: string;
+    transaction?: (ITransaction & IBase)
 }
 
-export default function DialogTransaction({ open, type, transaction, handleClose }: DialogTransactionProps) {
+export default function DialogTransaction({ open, type, transaction, walletId, handleClose }: DialogTransactionProps) {
 
+    const dispatch = useDispatch();
     const [fullWidth] = useState(true);
     const [maxWidth] = useState<DialogProps['maxWidth']>('lg');
     const [currentType, setCurrentType] = useState<TransactionType>(TransactionType.DEFAULT);
+    const { user } = useSelector((state: RootState) => state.user)
 
     const [initialForm] = useState<TransactionSubmitForm>({
         transactionType: TransactionType.EXPENSE,
         category: Category.NONE,
-        date: new Date("2023-10-23"),
+        excutedAt: new Date("2023-10-23"),
         paymentMethod: PaymentMethod.CASH,
         amount: 0,
-        description: '',
+        note: '',
         label: ''
     })
 
@@ -48,7 +56,29 @@ export default function DialogTransaction({ open, type, transaction, handleClose
     }
 
     const onCreateTransaction = async (data: TransactionSubmitForm) => {
-        console.log(data);
+        dispatch(toggle())
+        try {
+            const newTransaction: ITransaction = {
+                title: "",
+                amount: data.amount,
+                excutedAt: Timestamp.now(),
+                type: data.transactionType,
+                paymentMethod: data.paymentMethod,
+                category: data.category,
+                note: data.note ?? null,
+                label: data.label ?? null,
+                walletId: walletId,
+                userId: user?.id,
+                payee: null
+            }
+            const response = await firestoreService.addDoc(FirestoreCollections.TRANSACTIONS, newTransaction);
+            console.log(newTransaction)
+        } catch (error) {
+            console.log(error);
+        } finally {
+            dispatch(toggle());
+        }
+
         handleClose && handleClose();
     }
 
@@ -56,27 +86,27 @@ export default function DialogTransaction({ open, type, transaction, handleClose
         handleClose && handleClose();
     }
 
-    const handleSetValues = useCallback((transaction: ITransaction) => {
+    const handleSetValues = useCallback((transaction: (ITransaction & IBase)) => {
         setValue("amount", transaction.amount);
         setValue("category", transaction.category);
-        setValue("date", (transaction.createdAt) as Date);
+        setValue("excutedAt", (transaction.createdAt) as Date);
         setValue("paymentMethod", transaction.paymentMethod);
-        setValue("description", transaction.description);
+        setValue("note", transaction.note!);
         setValue("label", transaction.label);
     }, [setValue]);
 
     useEffect(() => {
-        const openTransactionModal = (type: ModalType, transaction?: ITransaction) => {
+        const openTransactionModal = (type: ModalType, transaction?: (ITransaction & IBase)) => {
             if (!type) return
             if (transaction) {
                 const transactionDetail: TransactionSubmitForm = {
                     amount: transaction.amount,
                     category: transaction.category,
-                    date: transaction.createdAt as Date,
+                    excutedAt: transaction.createdAt as Date,
                     paymentMethod: transaction.paymentMethod,
                     transactionType: transaction.type,
-                    description: transaction.description,
-                    label: transaction.label
+                    note: transaction.note as string,
+                    label: transaction.label as string
                 }
                 setCurrentType(transaction.type);
                 handleSetValues(transaction);
@@ -128,7 +158,7 @@ export default function DialogTransaction({ open, type, transaction, handleClose
                             />
                         </Grid>
                         <Grid item xs={12} md={2}>
-                            <Controller control={control} name="date" rules={{ required: true }}
+                            <Controller control={control} name="excutedAt" rules={{ required: true }}
                                 render={({ field }) => (
                                     <TextField
                                         {...field}
@@ -137,16 +167,16 @@ export default function DialogTransaction({ open, type, transaction, handleClose
                                         fullWidth
                                         margin="dense"
                                         autoFocus
-                                        error={!!errors.date}
+                                        error={!!errors.excutedAt}
                                         helperText={
-                                            errors.date && `${errors.date.message}`
+                                            errors.excutedAt && `${errors.excutedAt.message}`
                                         }
                                     />
                                 )}
                             />
                         </Grid>
                         <Grid item xs={12} md={2}>
-                            <Controller control={control} name="description" rules={{ required: false }}
+                            <Controller control={control} name="note" rules={{ required: false }}
                                 render={({ field }) => (
                                     <TextField
                                         {...field}
@@ -156,9 +186,9 @@ export default function DialogTransaction({ open, type, transaction, handleClose
                                         fullWidth
                                         margin="dense"
                                         autoFocus
-                                        error={!!errors.description}
+                                        error={!!errors.note}
                                         helperText={
-                                            errors.description && `${errors.description.message}`
+                                            errors.note && `${errors.note.message}`
                                         }
                                     />
                                 )}

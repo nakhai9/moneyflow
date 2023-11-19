@@ -1,33 +1,30 @@
-import { useCallback, useEffect, useState } from 'react';
-import { NextPage } from "next";
-import { Box, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
+import { FirestoreCollections, IBase, ITransaction, IWallet } from "@/common/drafts/prisma";
+import { ModalType, TransactionType } from "@/common/enums";
+import { firestoreService } from '@/common/services/firestore';
+import DialogTransaction from "@/components/Transactions/DialogTransaction";
+import { VButton } from '@/components/common';
+import { AddIcon, FileDownloadIcon, MoreVertIcon, SettingsIcon } from "@/components/common/VIcons";
 import useToggle from "@/hooks/useToggle";
 import DefaultLayout from "@/layouts/DefaultLayout";
-import { Category, FirestoreCollection, ModalType, PaymentMethod, TransactionType } from "@/common/enums";
-import { ITransaction } from "@/common/interfaces/transaction";
-import DialogTransaction from "@/components/Transactions/DialogTransaction";
-import { getTotalPeriodExpenseValue, getTotalPeriodIncomeValue, numberAsCurrency } from "@/utils";
-import { AddIcon, FileDownloadIcon, MoreVertIcon, SettingsIcon } from "@/components/common/VIcons";
-import { VButton } from '@/components/common';
-import { IBase } from '@/common/interfaces/base';
-import { useRouter } from 'next/router';
-import { firestoreService } from '@/common/services/firestore';
-import { IWallet } from '@/common/interfaces/wallet';
-import { useDispatch } from 'react-redux';
 import { toggle } from '@/store/features/backdrop/backdropSlice';
-import WalletIcon from '@mui/icons-material/Wallet';
+import { getTotalPeriodExpenseValue, getTotalPeriodIncomeValue } from "@/utils";
+import { Box, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
+import { NextPage } from "next";
+import { useRouter } from 'next/router';
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 const WalletDetailPage: NextPage = () => {
 
     const router = useRouter();
     const disptach = useDispatch();
 
-    const { id } = router.query;
+    const id = router.query.id as string;
 
     const [columns] = useState<string[]>(['Category', 'Name', 'Description', 'Payment method', 'Amount']);
 
     const [type, setType] = useState<ModalType>();
-    const [transaction, setTransaction] = useState<ITransaction>();
+    const [transaction, setTransaction] = useState<ITransaction & IBase>();
     const { open, handleOpen, handleClose } = useToggle();
 
     const [transactions, setTransactions] = useState<(ITransaction & IBase)[]>([]);
@@ -38,7 +35,7 @@ const WalletDetailPage: NextPage = () => {
         setType(ModalType.ADD);
     }
 
-    const handleEditTransaction = (transaction: ITransaction) => {
+    const handleEditTransaction = (transaction: ITransaction & IBase) => {
         handleOpen();
         setType(ModalType.EDIT);
         setTransaction(transaction)
@@ -46,16 +43,13 @@ const WalletDetailPage: NextPage = () => {
 
     const fetch = useCallback(async () => {
         disptach(toggle());
-        const snapshotTransactions = await firestoreService.getDocs(FirestoreCollection.TRANSACTIONS);
-        const wallet = await firestoreService.getDocById<IWallet>(FirestoreCollection.WALLETS, id as string);
+        const snapshotTransactions = await firestoreService.getDocs(FirestoreCollections.TRANSACTIONS);
+        const wallet = await firestoreService.getDocById<IWallet>(FirestoreCollections.WALLETS, id as string);
         if (wallet) {
-            console.log(wallet);
-
             setCurrentWallet(wallet);
+            const transactionsByWalletId = snapshotTransactions.filter((transaction: (ITransaction & IBase)) => transaction.walletId === id);
+            setTransactions(transactionsByWalletId);
         }
-        const transactionsByWalletId = snapshotTransactions.filter((transaction: (ITransaction & IBase)) => transaction.walletId === id);
-
-        setTransactions(transactionsByWalletId);
         disptach(toggle())
     }, [id])
 
@@ -65,7 +59,7 @@ const WalletDetailPage: NextPage = () => {
 
     return (
         <DefaultLayout>
-            <DialogTransaction transaction={transaction} type={type} open={open} handleClose={handleClose} />
+            <DialogTransaction transaction={transaction} walletId={id} type={type} open={open} handleClose={handleClose} />
             <Grid container spacing={4}>
                 <Grid container item xs={12} justifyContent="space-between">
                     <VButton type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={handleAddTransaction}>
@@ -146,8 +140,8 @@ const WalletDetailPage: NextPage = () => {
                                                 <TableCell component="td" className="vdt-border-none">
                                                     <span className="vdt-ml-2">{item.category}</span>
                                                 </TableCell>
-                                                <TableCell className="vdt-border-none">{item.name}</TableCell>
-                                                <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.title}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.note ?? "---"}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
                                                 <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
                                                 <TableCell className="vdt-border-none vdt-w-5">

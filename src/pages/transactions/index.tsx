@@ -1,15 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
-import { Box, Grid, IconButton, Paper, Slider, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
-import useToggle from "@/hooks/useToggle";
-import VButton from "@/components/common/VButton";
-import DefaultLayout from "@/layouts/DefaultLayout";
-import { AddIcon, FastfoodIcon, FileDownloadIcon, MoreVertIcon, SettingsIcon } from "@/components/common/VIcons";
-import { ITransaction } from "@/common/interfaces/transaction";
-import DialogTransaction from "@/components/Transactions/DialogTransaction";
-import { Category, FirestoreCollection, ModalType, PaymentMethod, TransactionType } from "@/common/enums";
-import MoreTransaction from "@/components/Transactions/MoreTransaction";
-import { IBase } from "@/common/interfaces/base";
+import { FirestoreCollections, IBase, ITransaction } from "@/common/drafts/prisma";
+import { ModalType, TransactionType } from "@/common/enums";
 import { firestoreService } from "@/common/services/firestore";
+import DialogTransaction from "@/components/Transactions/DialogTransaction";
+import MoreTransaction from "@/components/Transactions/MoreTransaction";
+import VButton from "@/components/common/VButton";
+import { AddIcon, FastfoodIcon, MoreVertIcon } from "@/components/common/VIcons";
+import useToggle from "@/hooks/useToggle";
+import DefaultLayout from "@/layouts/DefaultLayout";
+import { Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
 
 const columns = ['Category', 'Wallet', 'Description', 'Payment method', 'Amount'];
 
@@ -38,7 +37,7 @@ const Transactions = () => {
     }
 
     const fetchTransactions = useCallback(async () => {
-        const snapshotTransactions = await firestoreService.getDocs(FirestoreCollection.TRANSACTIONS);
+        const snapshotTransactions = await firestoreService.getDocs(FirestoreCollections.TRANSACTIONS);
         setTransactions(snapshotTransactions);
     }, []);
 
@@ -46,8 +45,6 @@ const Transactions = () => {
     useEffect(()=>{
         fetchTransactions();
     }, [fetchTransactions])
-
-
 
     return (
         <DefaultLayout>
@@ -87,7 +84,7 @@ const Transactions = () => {
                                                     <span className="vdt-ml-2">{item.category}</span>
                                                 </TableCell>
                                                 <TableCell className="vdt-border-none">{item.walletId}</TableCell>
-                                                <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.note ?? "---"}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
                                                 <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
                                                 <TableCell className="vdt-border-none vdt-w-5">
