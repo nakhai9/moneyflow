@@ -51,7 +51,7 @@ const WalletDetailPage: NextPage = () => {
             setTransactions(transactionsByWalletId);
         }
         disptach(toggle())
-    }, [id])
+    }, [id, disptach])
 
     useEffect(() => {
         fetch()

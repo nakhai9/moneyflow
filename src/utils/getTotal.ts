@@ -1,4 +1,4 @@
-import { ITransaction } from "@/common/interfaces/transaction";
+import { ITransaction } from "@/common/drafts/prisma";
 import { TransactionType } from "@/common/enums/transaction-type";
 
 const getTotalPeriodExpenseValue = (transactions: ITransaction[]): number => {

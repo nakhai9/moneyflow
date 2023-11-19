@@ -35,7 +35,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
     } catch (error) {
       console.log(error);
     }
-  }, [dispatch])
+  }, [dispatch, router])
 
   useEffect(() => {
     fecthUserById()

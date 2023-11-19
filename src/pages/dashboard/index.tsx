@@ -101,7 +101,7 @@ const Dashboard: NextPage = () => {
             console.log(error);
         }
 
-    }, [])
+    }, [dispatch])
 
     const getCurrencyCode = (currencyId: string) => {
         return currenciesOnFirestore.find(currency => currency.id === currencyId)?.code.toUpperCase() ?? "XXX";
@@ -109,7 +109,7 @@ const Dashboard: NextPage = () => {
 
     useEffect(() => {
         fetchDataOnFirestore();
-    }, []);
+    }, [fetchDataOnFirestore]);
 
     return (
         <>
