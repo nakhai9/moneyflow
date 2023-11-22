@@ -1,10 +1,10 @@
 import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
 import backdropReducer from "./features/backdrop/backdropSlice";
-import userReducer from "./features/user/userSlice";
+import authReducer from "./features/auth/authSlice";
 
 const rootReducer = {
   backdrop: backdropReducer,
-  user: userReducer
+  auth: authReducer
 }
 
 export const store = configureStore({

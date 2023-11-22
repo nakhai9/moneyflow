@@ -124,6 +124,11 @@ export interface IBase {
     isDelete: boolean;
 }
 
+export interface IUserInfo {
+    email: string;
+    id: string;
+}
+
 // type IWalletRecord = IWallet & IBase;
 // type ITransactionRecord = ITransaction & IBase;
 // type ICurrencyRecord = ICurrency & IBase;

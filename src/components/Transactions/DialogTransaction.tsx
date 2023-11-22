@@ -35,7 +35,7 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
     const [fullWidth] = useState(true);
     const [maxWidth] = useState<DialogProps['maxWidth']>('lg');
     const [currentType, setCurrentType] = useState<TransactionType>(TransactionType.DEFAULT);
-    const { user } = useSelector((state: RootState) => state.user)
+    const { user } = useSelector((state: RootState) => state.auth)
 
     const [initialForm] = useState<TransactionSubmitForm>({
         title: '',

@@ -76,7 +76,7 @@ export const firestoreService = {
             const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password!);
             if (userCredential) {
                 const customId = userCredential.user.uid;
-                const payload = { ...user, ...base, role: UserRole.USER };
+                const payload = { ...user, ...base, photoUrl: null, role: UserRole.USER };
                 await setDoc(doc(firestore, FirestoreCollections.USERS, customId), payload);
             }
             return userCredential;

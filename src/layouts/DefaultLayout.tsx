@@ -1,9 +1,13 @@
+'use client'
+import { auth } from "@/common/configs/firebaseConfig";
 import { OPTIONS_MENU_ON_APPBAR } from "@/common/constants/routes";
-import { FirestoreCollections } from "@/common/drafts/prisma";
+import { FirestoreCollections, IUser } from "@/common/drafts/prisma";
 import { firestoreService } from "@/common/services/firestore";
-import { clearUserAndToken, setUser } from "@/store/features/user/userSlice";
+import { setCurrentUser } from "@/store/features/auth/authSlice";
+import { toggle } from "@/store/features/backdrop/backdropSlice";
 import { RootState } from "@/store/store";
-import { AppBar, Avatar, Backdrop, Box, Button, CircularProgress, Container, MenuItem, MenuList, Paper, Skeleton, Toolbar, Typography } from "@mui/material";
+import { AppBar, Avatar, Backdrop, Box, CircularProgress, Container, MenuItem, MenuList, Paper, Toolbar, Typography } from "@mui/material";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from 'react';
@@ -17,30 +21,11 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const { user } = useSelector((state: RootState) => state.user)
+  const { user } = useSelector((state: RootState) => state.auth)
 
   const [isToggle, setIsToggle] = useState<boolean>(false);
 
   const { isOpen } = useSelector((state: RootState) => state.backdrop)
-
-  const fecthUserById = useCallback(async () => {
-    try {
-      const userId = localStorage.getItem("userId");
-      if (!userId) {
-        router.push("/auth/login");
-      } else {
-        const user = await firestoreService.getDocById(FirestoreCollections.USERS, userId);
-        dispatch(setUser(user));
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }, [dispatch, router])
-
-  useEffect(() => {
-    fecthUserById()
-  }, [fecthUserById])
-
 
   const toggleContextMenu = () => {
     setIsToggle(!isToggle);
@@ -51,10 +36,37 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
   }
 
   const logout = () => {
+    signOut(auth);
     localStorage.clear();
-    dispatch(clearUserAndToken());
-    router.push("/");
+    router.push("/auth/login");
   }
+
+  const fetchUser = useCallback(async (userId: string) => {
+    dispatch(toggle())
+    try {
+      const user = await firestoreService.getDocById<IUser>(FirestoreCollections.USERS, userId);
+      if (user) {
+        dispatch(setCurrentUser(user));
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      dispatch(toggle())
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchUser(user.uid);
+      } else {
+        dispatch(setCurrentUser(null));
+        router.push("/auth/login")
+      }
+    })
+    return () => unsubscribe();
+  }, [router]);
 
   return <>
     <Backdrop className="vdt-z-50" open={isOpen}
@@ -70,7 +82,6 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
                 vidientu
               </Typography>
               <Link className="vdt-no-underline vdt-text-white" href="/transactions">Transactions</Link>
-              <Link className="vdt-no-underline vdt-text-white" href="/components">Components</Link>
             </div>
 
             <Box>
@@ -90,7 +101,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
 
                     }
                     <MenuItem className="vdt-min-w-md vdt-w-40" key="logout" onClick={logout}>
-                      <Link className="vdt-no-underline vdt-text-slate-500" href={"/logout"} passHref>Log out</Link>
+                      <Link className="vdt-no-underline vdt-text-slate-500" href="" passHref>Log out</Link>
                     </MenuItem>
                   </MenuList>
                 }

@@ -26,7 +26,7 @@ const validationSchema = yup.object().shape({
     name: yup.string().required("Wallet name is required"),
     type: yup.mixed<WalletType>().oneOf(Object.values(WalletType), 'Invalid wallet type').required('Type is required'),
     amount: yup.number().required('Amount is required'),
-    currencyId: yup.string().required(),
+    currencyId: yup.string().required('Currency is required').notOneOf(['none'], 'Currency must not be "None"'),
     note: yup.string(),
 })
 
@@ -34,7 +34,7 @@ const initialForm: WalletSubmitForm = {
     name: '',
     type: WalletType.CASH,
     amount: 0,
-    currencyId: 'k9gxUXxeQfVuWV4k8Mu3',
+    currencyId: 'none',
     note: ''
 }
 
@@ -44,12 +44,13 @@ const Dashboard: NextPage = () => {
     const [open, setOpen] = useState<boolean>(false);
     const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('xs');
     const dispatch = useDispatch();
-    const { user } = useSelector((state: RootState) => state.user);
+
+    const { user } = useSelector((state: RootState) => state.auth);
 
     const [walletsOnFirestore, setWalletsOnFirestore] = useState<(IWallet & IBase)[]>([]);
     const [currenciesOnFirestore, setCurrenciesOnFirestore] = useState<(ICurrency & IBase)[]>([]);
 
-    const { handleSubmit, control, formState: { errors } } = useForm<WalletSubmitForm>({
+    const { handleSubmit, control, formState: { errors }, reset } = useForm<WalletSubmitForm>({
         defaultValues: initialForm,
         resolver: yupResolver(validationSchema)
     })
@@ -70,7 +71,6 @@ const Dashboard: NextPage = () => {
     const onSubmit = async (data: WalletSubmitForm) => {
         dispatch(toggle());
         try {
-            console.log(data)
             setOpen(!open);
             const wallet: IWallet = {
                 amount: data.amount,
@@ -82,6 +82,8 @@ const Dashboard: NextPage = () => {
                 isClose: false
             }
             const add = await firestoreService.addDoc<IWallet>(FirestoreCollections.WALLETS, wallet);
+            reset();
+            fetchDataOnFirestore();
         } catch (error) {
             console.log(error);
         } finally {
@@ -90,15 +92,16 @@ const Dashboard: NextPage = () => {
     };
 
     const fetchDataOnFirestore = useCallback(async () => {
+        dispatch(toggle());
         try {
-            dispatch(toggle());
             const wallets = await firestoreService.getDocs(FirestoreCollections.WALLETS);
             const currencies = await firestoreService.getDocs(FirestoreCollections.CURRENCIES);
             setWalletsOnFirestore(wallets);
             setCurrenciesOnFirestore(currencies);
-            dispatch(toggle())
         } catch (error) {
             console.log(error);
+        } finally {
+            dispatch(toggle())
         }
 
     }, [dispatch])
@@ -109,7 +112,7 @@ const Dashboard: NextPage = () => {
 
     useEffect(() => {
         fetchDataOnFirestore();
-    }, [fetchDataOnFirestore]);
+    }, [fetchDataOnFirestore, reset]);
 
     return (
         <>
@@ -181,6 +184,9 @@ const Dashboard: NextPage = () => {
                                         helperText={
                                             errors.currencyId && `${errors.currencyId.message}`
                                         }>
+                                        <MenuItem key="none" value="none">
+                                            None
+                                        </MenuItem>
                                         {
                                             currenciesOnFirestore.map((currency: (ICurrency & IBase)) => (
                                                 <MenuItem key={currency.id} value={currency.id}>

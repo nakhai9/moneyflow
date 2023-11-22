@@ -1,8 +1,8 @@
-import { FirestoreCollections } from "@/common/drafts/prisma";
+import { FirestoreCollections, IUserInfo } from "@/common/drafts/prisma";
 import { firestoreService } from "@/common/services/firestore";
 import AuthLayout from "@/layouts/AuthLayout";
+import { setCurrentUser, setUserInfo } from "@/store/features/auth/authSlice";
 import { toggle } from "@/store/features/backdrop/backdropSlice";
-import { setAccessToken, setUser } from "@/store/features/user/userSlice";
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Stack, TextField, Typography } from '@mui/material';
 import { NextPage } from "next";
@@ -30,15 +30,14 @@ const LoginPage: NextPage = () => {
         dispatch(toggle())
         try {
             const { userCredential, error } = await firestoreService.signIn({ ...data });
-            if (userCredential) {
-                const userId = userCredential.user.uid;
-                localStorage.setItem("userId", userId)
-                const user = await firestoreService.getDocById(FirestoreCollections.USERS, userId);
-                if (user) {
-                    dispatch(setUser(user));
-                    dispatch(setAccessToken(userCredential.user));
-                    router.push("/dashboard");
+            if (userCredential && userCredential.user) {
+                const userInfo: IUserInfo = {
+                    id: userCredential.user.uid,
+                    email: userCredential.user.email!
                 }
+                localStorage.setItem("userInfo", JSON.stringify(userInfo));
+                dispatch(setUserInfo(userInfo));
+                router.push("/dashboard");
             }
         } catch (error) {
             console.log(error);
