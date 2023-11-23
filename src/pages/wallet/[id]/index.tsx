@@ -64,6 +64,7 @@ const WalletDetailPage: NextPage = () => {
             console.log(error);
         } finally {
             disptach(toggle());
+            router.push("/");
         }
     }
 
