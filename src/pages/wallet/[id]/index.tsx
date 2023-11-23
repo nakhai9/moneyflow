@@ -13,6 +13,7 @@ import { NextPage } from "next";
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const WalletDetailPage: NextPage = () => {
 
@@ -55,6 +56,19 @@ const WalletDetailPage: NextPage = () => {
         disptach(toggle())
     }, [id, disptach])
 
+    const deleteWalletById = async (wallet: IWallet & IBase) => {
+        disptach(toggle());
+        try {
+            if (wallet && wallet.id) {
+                await firestoreService.deleteDoc(FirestoreCollections.WALLETS, wallet.id);
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            disptach(toggle());
+        }
+    }
+
     useEffect(() => {
         fetch()
     }, [fetch])
@@ -76,6 +90,11 @@ const WalletDetailPage: NextPage = () => {
                         <Tooltip title="Export to PDF">
                             <IconButton aria-label="setting" size="small">
                                 <FileDownloadIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete" onClick={() => { deleteWalletById(currentWallet) }}>
+                            <IconButton aria-label="setting" size="small">
+                                <DeleteIcon />
                             </IconButton>
                         </Tooltip>
                     </Box>
