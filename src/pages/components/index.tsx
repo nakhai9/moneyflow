@@ -1,34 +1,24 @@
-import { FirestoreCollections, ICurrency, IUserSignUp } from "@/common/drafts/prisma";
+import { FirestoreCollections, ICategory, ICurrency, IUserSignUp } from "@/common/drafts/prisma";
 import { firestoreService } from "@/common/services/firestore";
+import { RootState } from "@/store/store";
 import { Button, Stack } from "@mui/material";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 type ComponentsProps = {}
 const Components: React.FC<ComponentsProps> = () => {
 
-    const [user, setUser] = useState<any>(null);
+    const router = useRouter();
+    const dispatch = useDispatch();
+    const { user } = useSelector((state: RootState) => state.auth)
 
-    const signIn = async () => {
-        const response = await firestoreService.signIn({
-            email: "khai.fordev@gmail.com",
-            password: "open4me",
-        })
-        console.log(response);
-        setUser(response);
-    }
-
-    const signUp = async () => {
-
-        const newUser: IUserSignUp = {
-            email: "admin@app.com",
-            firstName: "Super",
-            lastName: "Admin",
-            phoneNumber: "0945757051",
-            password: "admin1234"
+    useEffect(()=> {
+        // check user role
+        if (user?.role === "user") {
+            router.push("/dashboard")
         }
-
-        const response = await firestoreService.signUp(newUser)
-    }
+    }, [])
 
     const createNewWallet = async () => {
         // const wallet: IWallet = {
@@ -55,7 +45,7 @@ const Components: React.FC<ComponentsProps> = () => {
             },
         ];
 
-        for(let item of currencies) {
+        for (let item of currencies) {
             await firestoreService.addDoc(FirestoreCollections.CURRENCIES, item);
         }
     }
@@ -68,15 +58,38 @@ const Components: React.FC<ComponentsProps> = () => {
         // }
     }
 
+    const createCategories = async () => {
+        const categories: ICategory[] = [
+            {
+                title: "Food"
+            },
+            {
+                title: "Drink"
+            },
+            {
+                title: "Fuel"
+            },
+            {
+                title: "Debt"
+            },
+            {
+                title: "Loan"
+            },
+            {
+                title: "Rent"
+            },
+            {
+                title: "Entertaiment"
+            }
+        ]
+        for (let item of categories) {
+            await firestoreService.setDoc(FirestoreCollections.CATEGORY, item);
+        }
+    }
+
+
     return <>
         <Stack spacing={3}>
-            <Button type="button" variant="contained" color="primary" onClick={signUp}>
-                Sign up new user
-            </Button>
-
-            <Button type="button" variant="contained" color="primary" onClick={signIn}>
-                Login
-            </Button>
 
             <Button type="button" variant="contained" color="primary" onClick={createNewWallet}>
                 CREATE NEW WALLET
@@ -88,6 +101,10 @@ const Components: React.FC<ComponentsProps> = () => {
 
             <Button type="button" variant="contained" color="primary" onClick={createTransactions}>
                 CREATE TRANSACTIONS
+            </Button>
+
+            <Button type="button" variant="contained" color="primary" onClick={createCategories}>
+                CREATE CATEGORIES
             </Button>
 
         </Stack>

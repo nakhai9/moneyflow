@@ -113,6 +113,11 @@ export interface ICurrency {
     locale: string;
 }
 
+export interface ICategory {
+    title: string;
+    icon?: any;
+}
+
 export interface IAccount {}
 
 export interface IBase {
