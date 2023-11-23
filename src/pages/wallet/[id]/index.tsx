@@ -50,8 +50,6 @@ const WalletDetailPage: NextPage = () => {
             setCurrentWallet(wallet);
             const transactionsByWalletId = snapshotTransactions.filter((transaction: (ITransaction & IBase)) => transaction.walletId === id);
             setTransactions(transactionsByWalletId);
-        } else {
-            router.push("/")
         }
         disptach(toggle())
     }, [id, disptach])
