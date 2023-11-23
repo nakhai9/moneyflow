@@ -56,7 +56,7 @@ const WalletDetailPage: NextPage = () => {
         disptach(toggle())
     }, [id, disptach])
 
-    const deleteWalletById = async (wallet: IWallet & IBase) => {
+    const deleteWalletById = async (wallet: (IWallet & IBase) | null) => {
         disptach(toggle());
         try {
             if (wallet && wallet.id) {
