@@ -106,7 +106,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer">
                             <Typography variant="body2" className="vdt-font-semibold">Current Wallet Balance</Typography>
                             <div>
-                                <Typography variant="h6" color="primary">{currentWallet?.amount.toLocaleString('en-US')}</Typography>
+                                <Typography variant="h6" color="primary">{(currentWallet?.amount! - (getTotalPeriodExpenseValue(transactions) + getTotalPeriodIncomeValue(transactions))).toLocaleString('en-US') }</Typography>
                             </div>
                         </Paper>
                     </Grid>
