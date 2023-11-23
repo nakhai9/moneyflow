@@ -83,7 +83,7 @@ const Components: React.FC<ComponentsProps> = () => {
             }
         ]
         for (let item of categories) {
-            await firestoreService.setDoc(FirestoreCollections.CATEGORY, item);
+            await firestoreService.addDoc(FirestoreCollections.CATEGORIES, item);
         }
     }
 

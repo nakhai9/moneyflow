@@ -51,7 +51,7 @@ export enum FirestoreCollections {
     TRANSACTIONS = 'transactions',
     WALLETS = 'wallets',
     CURRENCIES = 'currencies',
-    CATEGORY = 'category'
+    CATEGORIES = 'categories'
 }
 
 // Interface
