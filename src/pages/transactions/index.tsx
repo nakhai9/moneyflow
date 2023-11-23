@@ -10,7 +10,7 @@ import DefaultLayout from "@/layouts/DefaultLayout";
 import { Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 
-const columns = ['Category', 'Wallet', 'Description', 'Payment method', 'Amount'];
+const columns = ['Category', 'Wallet', 'Title', 'Note', 'Payment method', 'Amount'];
 
 const Transactions = () => {
 
@@ -42,7 +42,7 @@ const Transactions = () => {
     }, []);
 
 
-    useEffect(()=>{
+    useEffect(() => {
         fetchTransactions();
     }, [fetchTransactions])
 
@@ -55,8 +55,10 @@ const Transactions = () => {
                         Add transaction
                     </VButton>
                 </Grid>
-                <Grid container item xs={12} spacing={2}>
-                    Filter
+                <Grid container item xs={12} >
+                    <Paper sx={{ width: '100%', padding: 2 }}>
+                        Filter
+                    </Paper>
                 </Grid>
                 <Grid container item xs={12}>
                     {
@@ -84,6 +86,7 @@ const Transactions = () => {
                                                     <span className="vdt-ml-2">{item.category}</span>
                                                 </TableCell>
                                                 <TableCell className="vdt-border-none">{item.walletId}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.title}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.note ?? "---"}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
                                                 <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>

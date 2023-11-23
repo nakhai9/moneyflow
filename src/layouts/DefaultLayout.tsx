@@ -35,6 +35,10 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
     router.push(path);
   }
 
+  const navigateToDashboard = () => {
+    router.push("/dashboard");
+  }
+
   const logout = () => {
     signOut(auth);
     localStorage.clear();
@@ -78,9 +82,11 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
         <Container>
           <Toolbar disableGutters>
             <div className="vdt-flex vdt-items-center vdt-flex-1 vdt-gap-4">
-              <Typography variant="h6" color="inherit" component="div" >
-                vidientu
-              </Typography>
+              <div onClick={navigateToDashboard} className="vdt-cursor-pointer">
+                <Typography variant="h6" color="inherit" component="div" >
+                  Expense Tracker
+                </Typography>
+              </div>
               <Link className="vdt-no-underline vdt-text-white" href="/transactions">Transactions</Link>
             </div>
 

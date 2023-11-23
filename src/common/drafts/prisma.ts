@@ -29,7 +29,8 @@ export enum WalletType {
     CREDIT = 'credit',
     LOAN = 'loan',
     DEBT = 'debt',
-    SAVING = 'saving'
+    SAVING = 'saving',
+    BANK = 'bank'
 }
 
 export enum Category {
@@ -99,6 +100,7 @@ export interface ITransaction {
     category: Category;
     paymentMethod: PaymentMethod;
     payee: string | null;
+    status?: null;
     note?: string | null;
     label?: string | null;
     walletId?: string;

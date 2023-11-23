@@ -1,5 +1,4 @@
-import { FirestoreCollections, IBase, ICurrency, IWallet } from "@/common/drafts/prisma";
-import { WalletType } from "@/common/enums/transaction-type";
+import { FirestoreCollections, IBase, ICurrency, IWallet, WalletType } from "@/common/drafts/prisma";
 import { firestoreService } from "@/common/services/firestore";
 import DefaultLayout from "@/layouts/DefaultLayout";
 import { toggle } from "@/store/features/backdrop/backdropSlice";
@@ -126,7 +125,7 @@ const Dashboard: NextPage = () => {
                                     {...field}
                                     size="small"
                                     fullWidth
-                                    label="First Name"
+                                    label="Wallet name"
                                     margin="dense"
                                     error={!!errors.name}
                                     helperText={
