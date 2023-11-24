@@ -6,14 +6,16 @@ import { VButton } from '@/components/common';
 import { AddIcon, FileDownloadIcon, MoreVertIcon, SettingsIcon } from "@/components/common/VIcons";
 import useToggle from "@/hooks/useToggle";
 import DefaultLayout from "@/layouts/DefaultLayout";
-import { toggle } from '@/store/features/backdrop/backdropSlice';
+import { setLoadData, toggle } from '@/store/features/backdrop/backdropSlice';
 import { getTotalPeriodExpenseValue, getTotalPeriodIncomeValue } from "@/utils";
 import { Box, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
 import { NextPage } from "next";
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { RootState } from "@/store/store";
+import { Timestamp } from "firebase/firestore";
 
 const WalletDetailPage: NextPage = () => {
 
@@ -22,7 +24,7 @@ const WalletDetailPage: NextPage = () => {
 
     const id = router.query.id as string;
 
-    const [columns] = useState<string[]>(['Category', 'Title', 'Note', 'Payment method', 'Amount']);
+    const [columns] = useState<string[]>(['Category', 'Description', 'Payment method', 'Date', 'Amount']);
 
     const [type, setType] = useState<ModalType>();
     const [transaction, setTransaction] = useState<ITransaction & IBase>();
@@ -30,6 +32,8 @@ const WalletDetailPage: NextPage = () => {
 
     const [transactions, setTransactions] = useState<(ITransaction & IBase)[]>([]);
     const [currentWallet, setCurrentWallet] = useState<(IWallet & IBase) | null>(null);
+
+    const { loadData } = useSelector((state: RootState) => state.backdrop);
 
     const handleAddTransaction = () => {
         handleOpen();
@@ -43,7 +47,7 @@ const WalletDetailPage: NextPage = () => {
     }
 
     const fetch = useCallback(async () => {
-        disptach(toggle());
+        // disptach(toggle());
         const snapshotTransactions = await firestoreService.getDocs(FirestoreCollections.TRANSACTIONS);
         const wallet = await firestoreService.getDocById<IWallet>(FirestoreCollections.WALLETS, id as string);
         if (wallet) {
@@ -51,8 +55,9 @@ const WalletDetailPage: NextPage = () => {
             const transactionsByWalletId = snapshotTransactions.filter((transaction: (ITransaction & IBase)) => transaction.walletId === id);
             setTransactions(transactionsByWalletId);
         }
-        disptach(toggle())
-    }, [id, disptach])
+        // disptach(toggle());
+        disptach(setLoadData(false));
+    }, [id, disptach, loadData])
 
     const deleteWalletById = async (wallet: (IWallet & IBase) | null) => {
         disptach(toggle());
@@ -106,7 +111,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer">
                             <Typography variant="body2" className="vdt-font-semibold">Current Wallet Balance</Typography>
                             <div>
-                                <Typography variant="h6" color="primary">{(currentWallet?.amount! - (getTotalPeriodExpenseValue(transactions) + getTotalPeriodIncomeValue(transactions))).toLocaleString('en-US') }</Typography>
+                                <Typography variant="h6" color="primary">{(currentWallet?.amount! - (getTotalPeriodExpenseValue(transactions) + getTotalPeriodIncomeValue(transactions))).toLocaleString('en-US')}</Typography>
                             </div>
                         </Paper>
                     </Grid>
@@ -160,9 +165,9 @@ const WalletDetailPage: NextPage = () => {
                                                 <TableCell component="td" className="vdt-border-none">
                                                     <span className="vdt-ml-2">{item.category}</span>
                                                 </TableCell>
-                                                <TableCell className="vdt-border-none">{item.title}</TableCell>
-                                                <TableCell className="vdt-border-none">{item.note ?? "---"}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.description}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
+                                                <TableCell className="vdt-border-none"><div className="vdt-text-slate-300 vdt-italic">We are handling</div></TableCell>
                                                 <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
                                                 <TableCell className="vdt-border-none vdt-w-5">
                                                     <IconButton aria-label="actions" size="small"

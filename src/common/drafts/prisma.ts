@@ -19,8 +19,11 @@ export enum TransactionType {
     DEFAULT = 'expense'
 }
 export enum PaymentMethod {
+    CASH = 'cash',
     TRANSFER = 'transfer',
-    CASH = 'cash'
+    MOMO = 'momo',
+    PAYPAL = 'paypal',
+    EPAY = 'ePay'
 }
 
 export enum WalletType {
@@ -34,17 +37,22 @@ export enum WalletType {
 }
 
 export enum Category {
+    // Default
     NONE = 'None',
+    DEBT = 'Debt',
+    LOAN = 'Loan',
+    SALARY = 'Salary',
+    OTHER = 'Other',
+
+    // Custom
     SHOPPING = 'Shopping',
-    FOOD_DRINK = 'Food and Drink',
+    FOOD_DRINK = 'Food Drink',
     TRAVEL = 'Travel',
     FUEL = 'Fuel',
     ENTERTAIMENT = 'Entertaiment',
-    LOAN = 'Loan',
-    DEBT = 'Debt',
     BODY_CARE = 'Body care',
-    SALARY = 'Salary',
-    OTHER = 'Other'
+    RENT = "Rent",
+    
 }
 
 export enum FirestoreCollections {
@@ -93,16 +101,15 @@ export interface IWallet {
 }
 
 export interface ITransaction {
-    title: string;
-    amount: number;
-    excutedAt: Timestamp | Date;
     type: TransactionType;
     category: Category;
+    description: string;
+    excutedAt: Timestamp | Date | string;
+    amount: number;
     paymentMethod: PaymentMethod;
-    payee: string | null;
-    status?: null;
-    note?: string | null;
-    label?: string | null;
+    isPaid: boolean;
+    payee?: string | null;
+    quantity?: number | null;
     walletId?: string;
     userId?: string;
 }

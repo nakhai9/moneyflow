@@ -1,7 +1,6 @@
-import { FirestoreCollections, IBase, ITransaction, PaymentMethod, TransactionType } from '@/common/drafts/prisma';
-import { Category, ModalType, } from '@/common/enums';
-import { firestoreService } from '@/common/services/firestore';
-import { toggle } from '@/store/features/backdrop/backdropSlice';
+import { Category, FirestoreCollections, IBase, ITransaction, PaymentMethod, TransactionType } from '@/common/drafts/prisma';
+import { ModalType, } from '@/common/enums';
+import { setLoadData, toggle } from '@/store/features/backdrop/backdropSlice';
 import { RootState } from '@/store/store';
 import { Box, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, TextField } from '@mui/material';
 import { Timestamp } from 'firebase/firestore';
@@ -9,15 +8,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from 'react-redux';
 import VButton from '../common/VButton';
+import { firestoreService } from '@/common/services/firestore';
 
 type TransactionSubmitForm = {
-    title: string,
+    description: string,
     transactionType: TransactionType,
     category: Category,
-    excutedAt: Date | Timestamp,
+    excutedAt: Date | Timestamp | string,
     paymentMethod: PaymentMethod
     amount: number,
-    note?: string | null,
+    paidTo: string
 }
 
 type DialogTransactionProps = {
@@ -38,13 +38,13 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
     const { user } = useSelector((state: RootState) => state.auth)
 
     const [initialForm] = useState<TransactionSubmitForm>({
-        title: '',
         amount: 0,
         transactionType: TransactionType.EXPENSE,
         category: Category.NONE,
         excutedAt: new Date("2023-10-23"),
         paymentMethod: PaymentMethod.CASH,
-        note: '',
+        description: '',
+        paidTo: ''
     })
 
     const { handleSubmit, control, setValue, formState: { errors }, reset } = useForm<TransactionSubmitForm>({
@@ -56,29 +56,27 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
     }
 
     const onCreateTransaction = async (data: TransactionSubmitForm) => {
-        dispatch(toggle())
         try {
             const newTransaction: ITransaction = {
-                title: data.title,
-                amount: parseInt(data.amount.toString(), 10),
-                excutedAt: Timestamp.now(),
                 type: currentType,
-                paymentMethod: data.paymentMethod,
                 category: data.category,
-                note: data.note ?? null,
+                description: data.description,
+                excutedAt: Timestamp.fromDate(new Date(data.excutedAt as string)),
+                amount: parseInt(data.amount.toString(), 10),
+                paymentMethod: data.paymentMethod,
                 walletId: walletId,
                 userId: user?.id,
-                label: null,
-                payee: null
+                payee: data.paidTo ?? null,
+                isPaid: data.category === Category.LOAN || data.category === Category.DEBT ? false : true 
             }
             console.log(newTransaction);
-            
+
             const response = await firestoreService.addDoc(FirestoreCollections.TRANSACTIONS, newTransaction);
         } catch (error) {
             console.log(error);
         } finally {
             reset(initialForm);
-            dispatch(toggle())
+            dispatch(setLoadData(true));
         }
 
         handleClose && handleClose();
@@ -89,12 +87,11 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
     }
 
     const handleSetValues = useCallback(async (transaction: (ITransaction & IBase)) => {
-        setValue("title", transaction.title);
+        setValue("description", transaction.description);
         setValue("amount", transaction.amount);
         setValue("category", transaction.category);
-        setValue("excutedAt", (transaction.createdAt) as Date);
+        setValue("excutedAt", (transaction.excutedAt) as Date);
         setValue("paymentMethod", transaction.paymentMethod);
-        setValue("note", transaction.note!);
     }, [setValue]);
 
     useEffect(() => {
@@ -102,13 +99,13 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
             if (!type) return
             if (transaction) {
                 const transactionDetail: TransactionSubmitForm = {
-                    title: transaction.title,
+                    description: transaction.description,
                     amount: transaction.amount,
                     category: transaction.category,
                     excutedAt: transaction.createdAt as Date,
                     paymentMethod: transaction.paymentMethod,
                     transactionType: transaction.type,
-                    note: transaction.note as string,
+                    paidTo: transaction.payee ?? ''
                 }
                 setCurrentType(transaction.type);
                 handleSetValues(transaction);
@@ -137,25 +134,6 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                     </Box>
                     <Grid container spacing={1}>
                         <Grid item xs={12} md={2}>
-                            <Controller control={control} name="title" rules={{ required: false }}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        label="Title"
-                                        type="text"
-                                        size="small"
-                                        fullWidth
-                                        margin="dense"
-                                        autoFocus
-                                        error={!!errors.title}
-                                        helperText={
-                                            errors.title && `${errors.title.message}`
-                                        }
-                                    />
-                                )}
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={2}>
                             <Controller control={control} name="category" rules={{ required: true }}
                                 render={({ field }) => (
                                     <TextField
@@ -179,11 +157,31 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                             />
                         </Grid>
                         <Grid item xs={12} md={2}>
+                            <Controller control={control} name="description" rules={{ required: false }}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label="Description"
+                                        type="text"
+                                        size="small"
+                                        fullWidth
+                                        margin="dense"
+                                        autoFocus
+                                        error={!!errors.description}
+                                        helperText={
+                                            errors.description && `${errors.description.message}`
+                                        }
+                                    />
+                                )}
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={2}>
                             <Controller control={control} name="excutedAt" rules={{ required: true }}
                                 render={({ field }) => (
                                     <TextField
                                         {...field}
-                                        type="datetime-local"
+                                        label="Excuted at"
+                                        type="date"
                                         size="small"
                                         fullWidth
                                         margin="dense"
@@ -191,25 +189,6 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                                         error={!!errors.excutedAt}
                                         helperText={
                                             errors.excutedAt && `${errors.excutedAt.message}`
-                                        }
-                                    />
-                                )}
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={2}>
-                            <Controller control={control} name="note" rules={{ required: false }}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        label="Description (optional)"
-                                        type="text"
-                                        size="small"
-                                        fullWidth
-                                        margin="dense"
-                                        autoFocus
-                                        error={!!errors.note}
-                                        helperText={
-                                            errors.note && `${errors.note.message}`
                                         }
                                     />
                                 )}
@@ -230,7 +209,7 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                                         helperText={
                                             errors.amount && `${errors.amount.message}`
                                         }
-                                        
+
                                     />
                                 )}
                             />
@@ -255,6 +234,26 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                                             </MenuItem>
                                         ))}
                                     </TextField>
+                                )}
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={2}>
+                            <Controller control={control} name="paidTo" rules={{ required: false }}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label="Paid to (Optional)"
+                                        type="text"
+                                        size="small"
+                                        fullWidth
+                                        margin="dense"
+                                        autoFocus
+                                        error={!!errors.paidTo}
+                                        helperText={
+                                            errors.paidTo && `${errors.paidTo.message}`
+                                        }
+
+                                    />
                                 )}
                             />
                         </Grid>

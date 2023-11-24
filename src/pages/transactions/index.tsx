@@ -10,7 +10,7 @@ import DefaultLayout from "@/layouts/DefaultLayout";
 import { Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 
-const columns = ['Category', 'Wallet', 'Title', 'Note', 'Payment method', 'Amount'];
+const columns = ['Category', 'Wallet', 'Description', 'Payment method', 'Amount'];
 
 const Transactions = () => {
 
@@ -82,12 +82,10 @@ const Transactions = () => {
                                         transactions.map((item, index) => {
                                             return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]"  >
                                                 <TableCell component="td" className="vdt-border-none">
-                                                    <FastfoodIcon color="primary" />
-                                                    <span className="vdt-ml-2">{item.category}</span>
+                                                    {item.category}
                                                 </TableCell>
                                                 <TableCell className="vdt-border-none">{item.walletId}</TableCell>
-                                                <TableCell className="vdt-border-none">{item.title}</TableCell>
-                                                <TableCell className="vdt-border-none">{item.note ?? "---"}</TableCell>
+                                                <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
                                                 <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
                                                 <TableCell className="vdt-border-none vdt-w-5">

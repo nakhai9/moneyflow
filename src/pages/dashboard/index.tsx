@@ -24,7 +24,7 @@ type WalletSubmitForm = {
 const validationSchema = yup.object().shape({
     name: yup.string().required("Wallet name is required"),
     type: yup.mixed<WalletType>().oneOf(Object.values(WalletType), 'Invalid wallet type').required('Type is required'),
-    amount: yup.number().required('Amount is required'),
+    amount: yup.number().positive('Amount must be a positive number').required('Amount is required'),
     currencyId: yup.string().required('Currency is required').notOneOf(['none'], 'Currency must not be "None"'),
     note: yup.string(),
 })

@@ -77,7 +77,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
     >
       <CircularProgress color="primary" />
     </Backdrop>
-    <Box className="vdt-flex-1 vdt-w-100 vdt-h-screen">
+    <Box className="vdt-flex-1 vdt-w-100">
       <AppBar position="static">
         <Container>
           <Toolbar disableGutters>
