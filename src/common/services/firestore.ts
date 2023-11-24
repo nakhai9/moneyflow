@@ -1,5 +1,5 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { Timestamp, addDoc, collection, deleteDoc, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
+import { Timestamp, addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, setDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from 'uuid';
 import { auth, firestore } from "../configs/firebaseConfig";
 import { FirestoreCollections, IBase, IUser, IUserSignIn, IUserSignUp } from "../drafts/prisma";
@@ -15,17 +15,33 @@ const base: IBase = {
 export const firestoreService = {
     getDocs: async (collectionName: FirestoreCollections) => {
         try {
-            const snapshotDocuments = await getDocs(collection(firestore, collectionName));
+            // Build the query with collection, orderBy, and any additional conditions
+            const q = query(collection(firestore, collectionName), orderBy('createdAt', 'desc'));
+    
+            // Fetch documents based on the query
+            const snapshotDocuments = await getDocs(q);
+    
+            // Process and format the documents
             const result: any = [];
             snapshotDocuments.docs.forEach((doc) => {
                 result.push({ id: doc.id, ...doc.data() });
             });
-
+    
             return result;
         } catch (error) {
-            console.log(error);
-
+            console.error(error);
         }
+        // try {
+        //     const snapshotDocuments = await getDocs(collection(firestore, collectionName));
+        //     const result: any = [];
+        //     snapshotDocuments.docs.forEach((doc) => {
+        //         result.push({ id: doc.id, ...doc.data() });
+        //     });
+
+        //     return result;
+        // } catch (error) {
+        //     console.log(error);
+        // }
     },
     getDocById: async <T>(collectionName: FirestoreCollections, docId: string) => {
         try {
