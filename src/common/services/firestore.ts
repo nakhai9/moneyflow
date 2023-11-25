@@ -26,7 +26,6 @@ export const firestoreService = {
             snapshotDocuments.docs.forEach((doc) => {
                 result.push({ id: doc.id, ...doc.data() });
             });
-            console.log(result);
             
             return result;
         } catch (error) {

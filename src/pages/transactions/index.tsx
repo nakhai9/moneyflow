@@ -1,6 +1,7 @@
-import { FirestoreCollections, IBase, ITransaction } from "@/common/drafts/prisma";
+import { FirestoreCollections, IBase, ITransaction, IWallet } from "@/common/drafts/prisma";
 import { ModalType, TransactionType } from "@/common/enums";
 import { firestoreService } from "@/common/services/firestore";
+import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
 import DialogTransaction from "@/components/Transactions/DialogTransaction";
 import MoreTransaction from "@/components/Transactions/MoreTransaction";
 import VButton from "@/components/common/VButton";
@@ -8,13 +9,16 @@ import { AddIcon, FastfoodIcon, MoreVertIcon } from "@/components/common/VIcons"
 import useToggle from "@/hooks/useToggle";
 import DefaultLayout from "@/layouts/DefaultLayout";
 import { Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { Timestamp } from "firebase/firestore";
 import { useCallback, useEffect, useState } from "react";
+import WalletIcon from '@mui/icons-material/Wallet';
 
-const columns = ['Category', 'Wallet', 'Description', 'Payment method', 'Amount'];
+const columns = ['Category', 'Wallet', 'Description', 'Payment method', 'Excuted Date', 'Amount'];
 
 const Transactions = () => {
 
     const [type, setType] = useState<ModalType>();
+    const [wallets, setWallets] = useState<(IWallet & IBase)[] | null>(null);
     const [transactions, setTransactions] = useState<(ITransaction & IBase)[]>([]);
     const [transaction, setTransaction] = useState<(ITransaction & IBase)>();
     const { open, handleOpen, handleClose } = useToggle();
@@ -37,9 +41,15 @@ const Transactions = () => {
     }
 
     const fetchTransactions = useCallback(async () => {
+        const snapshotWallets = await firestoreService.getDocs(FirestoreCollections.WALLETS);
         const snapshotTransactions = await firestoreService.getDocs(FirestoreCollections.TRANSACTIONS);
         setTransactions(snapshotTransactions);
+        setWallets(snapshotWallets);
     }, []);
+
+    const getWalletName = (walletId: string): (string | undefined) => {
+        return wallets?.find((wallet: IWallet & IBase) => wallet.id === walletId)?.name;
+    }
 
 
     useEffect(() => {
@@ -84,9 +94,14 @@ const Transactions = () => {
                                                 <TableCell component="td" className="vdt-border-none">
                                                     {item.category}
                                                 </TableCell>
-                                                <TableCell className="vdt-border-none">{item.walletId}</TableCell>
+                                                <TableCell className="vdt-border-none">
+                                                    {item.walletId && getWalletName(item.walletId)}
+                                                </TableCell>
                                                 <TableCell className="vdt-border-none">{item.description ?? "---"}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
+                                                <TableCell className="vdt-border-none">
+                                                    {formatTimestampToDateString(item.excutedAt as Timestamp, FormatDate.DDMMYYYY)}
+                                                </TableCell>
                                                 <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
                                                 <TableCell className="vdt-border-none vdt-w-5">
                                                     <MoreTransaction

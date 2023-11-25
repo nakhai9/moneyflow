@@ -16,6 +16,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { RootState } from "@/store/store";
 import { Timestamp } from "firebase/firestore";
+import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
+import { format } from 'date-fns';
 
 const WalletDetailPage: NextPage = () => {
 
@@ -24,7 +26,7 @@ const WalletDetailPage: NextPage = () => {
 
     const id = router.query.id as string;
 
-    const [columns] = useState<string[]>(['Category', 'Description', 'Payment method', 'Date', 'Amount']);
+    const [columns] = useState<string[]>(['Category', 'Description', 'Payment method', 'Excuted Date', 'Amount']);
 
     const [type, setType] = useState<ModalType>();
     const [transaction, setTransaction] = useState<ITransaction & IBase>();
@@ -47,7 +49,6 @@ const WalletDetailPage: NextPage = () => {
     }
 
     const fetch = useCallback(async () => {
-        // disptach(toggle());
         const snapshotTransactions = await firestoreService.getDocs(FirestoreCollections.TRANSACTIONS);
         const wallet = await firestoreService.getDocById<IWallet>(FirestoreCollections.WALLETS, id as string);
         if (wallet) {
@@ -55,7 +56,6 @@ const WalletDetailPage: NextPage = () => {
             const transactionsByWalletId = snapshotTransactions.filter((transaction: (ITransaction & IBase)) => transaction.walletId === id);
             setTransactions(transactionsByWalletId);
         }
-        // disptach(toggle());
         disptach(setLoadData(false));
     }, [id, disptach, loadData])
 
@@ -96,7 +96,7 @@ const WalletDetailPage: NextPage = () => {
                                 <FileDownloadIcon />
                             </IconButton>
                         </Tooltip>
-                        <Tooltip title="Delete" onClick={() => { deleteWalletById(currentWallet) }}>
+                        <Tooltip title="Delete wallet" onClick={() => { deleteWalletById(currentWallet) }}>
                             <IconButton aria-label="setting" size="small">
                                 <DeleteIcon />
                             </IconButton>
@@ -162,12 +162,12 @@ const WalletDetailPage: NextPage = () => {
                                     {
                                         transactions.map((item, index) => {
                                             return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]"  >
-                                                <TableCell component="td" className="vdt-border-none">
-                                                    <span className="vdt-ml-2">{item.category}</span>
-                                                </TableCell>
+                                                <TableCell component="td" className="vdt-border-none">{item.category}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.description}</TableCell>
                                                 <TableCell className="vdt-border-none">{item.paymentMethod}</TableCell>
-                                                <TableCell className="vdt-border-none"><div className="vdt-text-slate-300 vdt-italic">We are handling</div></TableCell>
+                                                <TableCell className="vdt-border-none">
+                                                    {formatTimestampToDateString(item.excutedAt as Timestamp, FormatDate.DDMMYYYY)}
+                                                </TableCell>
                                                 <TableCell className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
                                                 <TableCell className="vdt-border-none vdt-w-5">
                                                     <IconButton aria-label="actions" size="small"

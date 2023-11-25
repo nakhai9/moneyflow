@@ -245,11 +245,13 @@ const Dashboard: NextPage = () => {
                     </Grid>
                 </Grid>
                 <div className="vdt-my-4">
-                    <Typography variant="h5">Overview</Typography>
-                    <p>
-                        We are going to build the Analytics panel at here.
-                    </p>
+                    <Typography variant="h5">Overviews</Typography>
                 </div>
+                <Grid container spacing={4}>
+                    <Grid item xs={12} md={6}></Grid>
+                    <Grid item xs={12} md={6}></Grid>
+                </Grid>
+
             </DefaultLayout>
         </>
     )

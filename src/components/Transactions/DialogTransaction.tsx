@@ -9,12 +9,13 @@ import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from 'react-redux';
 import VButton from '../common/VButton';
 import { firestoreService } from '@/common/services/firestore';
+import { FormatDate } from '@/common/utils/date';
 
 type TransactionSubmitForm = {
     description: string,
     transactionType: TransactionType,
     category: Category,
-    excutedAt: Date | Timestamp | string,
+    excutedAt: Timestamp | string,
     paymentMethod: PaymentMethod
     amount: number,
     paidTo: string
@@ -41,7 +42,7 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
         amount: 0,
         transactionType: TransactionType.EXPENSE,
         category: Category.NONE,
-        excutedAt: new Date("2023-10-23"),
+        excutedAt: "2020-01-13",
         paymentMethod: PaymentMethod.CASH,
         description: '',
         paidTo: ''
@@ -67,11 +68,11 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                 walletId: walletId,
                 userId: user?.id,
                 payee: data.paidTo ?? null,
-                isPaid: data.category === Category.LOAN || data.category === Category.DEBT ? false : true 
+                isPaid: data.category === Category.LOAN || data.category === Category.DEBT ? false : true
             }
             console.log(newTransaction);
 
-            const response = await firestoreService.addDoc(FirestoreCollections.TRANSACTIONS, newTransaction);
+            // const response = await firestoreService.addDoc(FirestoreCollections.TRANSACTIONS, newTransaction);
         } catch (error) {
             console.log(error);
         } finally {
@@ -90,7 +91,7 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
         setValue("description", transaction.description);
         setValue("amount", transaction.amount);
         setValue("category", transaction.category);
-        setValue("excutedAt", (transaction.excutedAt) as Date);
+        setValue("excutedAt", "2022-1-23" as string);
         setValue("paymentMethod", transaction.paymentMethod);
     }, [setValue]);
 
@@ -102,7 +103,7 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                     description: transaction.description,
                     amount: transaction.amount,
                     category: transaction.category,
-                    excutedAt: transaction.createdAt as Date,
+                    excutedAt: (transaction.excutedAt as Timestamp),
                     paymentMethod: transaction.paymentMethod,
                     transactionType: transaction.type,
                     paidTo: transaction.payee ?? ''
@@ -127,9 +128,9 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                 <DialogContent >
                     <Box mb={2}>
                         <ButtonGroup size='small' variant="contained" >
-                            <VButton type="button" color={currentType === TransactionType.EXPENSE ? "primary" : "inherit"} onClick={() => { chooseType(TransactionType.EXPENSE) }}>{TransactionType.EXPENSE}</VButton>
-                            <VButton type="button" color={currentType === TransactionType.INCOME ? "error" : "inherit"} onClick={() => { chooseType(TransactionType.INCOME) }}>{TransactionType.INCOME}</VButton>
-                            <VButton type="button" color={currentType === TransactionType.TRANSFER ? "success" : "inherit"} onClick={() => { chooseType(TransactionType.TRANSFER) }}>{TransactionType.TRANSFER}</VButton>
+                            <VButton type="button" color={currentType === TransactionType.EXPENSE ? "warning" : "inherit"} onClick={() => { chooseType(TransactionType.EXPENSE) }}>{TransactionType.EXPENSE}</VButton>
+                            <VButton type="button" color={currentType === TransactionType.INCOME ? "info" : "inherit"} onClick={() => { chooseType(TransactionType.INCOME) }}>{TransactionType.INCOME}</VButton>
+                            {/* <VButton type="button" color={currentType === TransactionType.TRANSFER ? "success" : "inherit"} onClick={() => { chooseType(TransactionType.TRANSFER) }}>{TransactionType.TRANSFER}</VButton> */}
                         </ButtonGroup>
                     </Box>
                     <Grid container spacing={1}>
@@ -261,7 +262,13 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                 </DialogContent>
                 <DialogActions>
                     <VButton type="button" onClick={handleCloseDialog} variant="contained" color="inherit">Cancel</VButton>
-                    <VButton type="submit" variant="contained" color="primary">Create</VButton>
+                    {
+                        type === ModalType.ADD ? <VButton type="submit" variant="contained" color="primary">Create</VButton> :
+                            <>
+                                <VButton type="submit" variant="contained" color="error">Delete</VButton>
+                                <VButton type="submit" variant="contained" color="primary">Save</VButton>
+                            </>
+                    }
                 </DialogActions>
             </form>
         </Dialog>

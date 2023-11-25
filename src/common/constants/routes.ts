@@ -6,7 +6,7 @@ export interface IRoute {
 }
 export const ROUTES_ON_APPBAR = []
 
-export const OPTIONS_MENU_ON_APPBAR: IRoute[] = [
+export const SETTINGS: IRoute[] = [
     { path: "/accounts", text: 'Account', isHide: false },
     { path: "/settings", text: 'Settings', isHide: false },
 ]
