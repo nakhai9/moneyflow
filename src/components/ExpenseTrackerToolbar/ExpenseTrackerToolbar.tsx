@@ -157,7 +157,7 @@ const ExpenseTrackerToolbar: React.FC<ExpenseTrackerToolbarProps> = ({ user, log
                                     <Typography textAlign="center">{setting}</Typography>
                                 </MenuItem>
                             ))}
-                            <MenuItem key="logout" onClick={handleCloseUserMenu}>
+                            <MenuItem key="logout" onClick={logout}>
                                 <Typography textAlign="center">Log out</Typography>
                             </MenuItem>
                         </Menu>
