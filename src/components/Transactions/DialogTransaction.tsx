@@ -2,12 +2,11 @@ import { Category, FirestoreCollections, IBase, ITransaction, PaymentMethod, Tra
 import { ModalType, } from '@/common/enums';
 import { setLoadData, toggle } from '@/store/features/backdrop/backdropSlice';
 import { RootState } from '@/store/store';
-import { Box, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, TextField } from '@mui/material';
+import { Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, TextField } from '@mui/material';
 import { Timestamp } from 'firebase/firestore';
 import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from 'react-redux';
-import VButton from '../common/VButton';
 import { firestoreService } from '@/common/services/firestore';
 import { FormatDate } from '@/common/utils/date';
 
@@ -128,8 +127,8 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                 <DialogContent >
                     <Box mb={2}>
                         <ButtonGroup size='small' variant="contained" >
-                            <VButton type="button" color={currentType === TransactionType.EXPENSE ? "warning" : "inherit"} onClick={() => { chooseType(TransactionType.EXPENSE) }}>{TransactionType.EXPENSE}</VButton>
-                            <VButton type="button" color={currentType === TransactionType.INCOME ? "info" : "inherit"} onClick={() => { chooseType(TransactionType.INCOME) }}>{TransactionType.INCOME}</VButton>
+                            <Button type="button" color={currentType === TransactionType.EXPENSE ? "warning" : "inherit"} onClick={() => { chooseType(TransactionType.EXPENSE) }}>{TransactionType.EXPENSE}</Button>
+                            <Button type="button" color={currentType === TransactionType.INCOME ? "info" : "inherit"} onClick={() => { chooseType(TransactionType.INCOME) }}>{TransactionType.INCOME}</Button>
                             {/* <VButton type="button" color={currentType === TransactionType.TRANSFER ? "success" : "inherit"} onClick={() => { chooseType(TransactionType.TRANSFER) }}>{TransactionType.TRANSFER}</VButton> */}
                         </ButtonGroup>
                     </Box>
@@ -261,12 +260,12 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                     </Grid>
                 </DialogContent>
                 <DialogActions>
-                    <VButton type="button" onClick={handleCloseDialog} variant="contained" color="inherit">Cancel</VButton>
+                    <Button type="button" onClick={handleCloseDialog} variant="contained" color="inherit">Cancel</Button>
                     {
-                        type === ModalType.ADD ? <VButton type="submit" variant="contained" color="primary">Create</VButton> :
+                        type === ModalType.ADD ? <Button type="submit" variant="contained" color="primary">Create</Button> :
                             <>
-                                <VButton type="submit" variant="contained" color="error">Delete</VButton>
-                                <VButton type="submit" variant="contained" color="primary">Save</VButton>
+                                <Button type="button" variant="contained" color="error">Delete</Button>
+                                <Button type="submit" variant="contained" color="primary">Save</Button>
                             </>
                     }
                 </DialogActions>

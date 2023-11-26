@@ -4,11 +4,10 @@ import { firestoreService } from "@/common/services/firestore";
 import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
 import DialogTransaction from "@/components/Transactions/DialogTransaction";
 import MoreTransaction from "@/components/Transactions/MoreTransaction";
-import VButton from "@/components/common/VButton";
 import { AddIcon, FastfoodIcon, MoreVertIcon } from "@/components/common/VIcons";
 import useToggle from "@/hooks/useToggle";
 import DefaultLayout from "@/layouts/DefaultLayout";
-import { Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { Button, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { useCallback, useEffect, useState } from "react";
 import WalletIcon from '@mui/icons-material/Wallet';
@@ -61,9 +60,9 @@ const Transactions = () => {
             <DialogTransaction open={open} type={type} transaction={transaction} handleClose={handleClose} />
             <Grid container spacing={4}>
                 <Grid container item xs={12}>
-                    <VButton type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={handleAddTransaction}>
+                    <Button type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={handleAddTransaction}>
                         Add transaction
-                    </VButton>
+                    </Button>
                 </Grid>
                 <Grid container item xs={12} >
                     <Paper sx={{ width: '100%', padding: 2 }}>

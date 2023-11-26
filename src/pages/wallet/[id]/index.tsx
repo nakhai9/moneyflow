@@ -2,13 +2,12 @@ import { FirestoreCollections, IBase, ITransaction, IWallet } from "@/common/dra
 import { ModalType, TransactionType } from "@/common/enums";
 import { firestoreService } from '@/common/services/firestore';
 import DialogTransaction from "@/components/Transactions/DialogTransaction";
-import { VButton } from '@/components/common';
 import { AddIcon, FileDownloadIcon, MoreVertIcon, SettingsIcon } from "@/components/common/VIcons";
 import useToggle from "@/hooks/useToggle";
 import DefaultLayout from "@/layouts/DefaultLayout";
 import { setLoadData, toggle } from '@/store/features/backdrop/backdropSlice';
 import { getTotalPeriodExpenseValue, getTotalPeriodIncomeValue } from "@/utils";
-import { Box, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
 import { NextPage } from "next";
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
@@ -82,9 +81,13 @@ const WalletDetailPage: NextPage = () => {
             <DialogTransaction transaction={transaction} walletId={id} type={type} open={open} handleClose={handleClose} />
             <Grid container spacing={4}>
                 <Grid container item xs={12} justifyContent="space-between">
-                    <VButton type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={handleAddTransaction}>
+                    <Button type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={handleAddTransaction}>
                         Add transaction
-                    </VButton>
+                    </Button>
+
+                </Grid>
+                <Grid container item xs={12}>
+                    <Typography variant="h6" sx={{ flex: 1 }}>{currentWallet?.name}</Typography>
                     <Box>
                         <Tooltip title="Settings">
                             <IconButton aria-label="setting" size="small">
@@ -102,9 +105,6 @@ const WalletDetailPage: NextPage = () => {
                             </IconButton>
                         </Tooltip>
                     </Box>
-                </Grid>
-                <Grid container item xs={12}>
-                    <Typography variant="h6">{currentWallet?.name}</Typography>
                 </Grid>
                 <Grid container item xs={12} spacing={4}>
                     <Grid item xs={6} md={3}>
