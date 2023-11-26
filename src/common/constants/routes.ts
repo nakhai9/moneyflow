@@ -12,6 +12,5 @@ export const PAGES: IRoute[] = [
 ]
 
 export const SETTINGS: IRoute[] = [
-    { id: 1, path: "/accounts", text: 'Account', isHide: false, },
     { id: 2, path: "/settings", text: 'Settings', isHide: false },
 ]
