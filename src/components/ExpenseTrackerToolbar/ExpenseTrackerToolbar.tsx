@@ -1,7 +1,7 @@
+import { PAGES, SETTINGS } from '@/common/constants/routes';
 import { IBase, IUser } from '@/common/drafts/prisma';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Button } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -11,10 +11,8 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import Link from 'next/link';
 import * as React from 'react';
-
-const PAGES = ['Dashboard', 'Transactions'];
-const settings = ['Profile', 'Settings'];
 
 type ExpenseTrackerToolbarProps = {
     user: (IUser & IBase) | null,
@@ -45,7 +43,6 @@ const ExpenseTrackerToolbar: React.FC<ExpenseTrackerToolbarProps> = ({ user, log
         <AppBar position="static">
             <Container>
                 <Toolbar disableGutters>
-
                     <Typography
                         variant="h6"
                         noWrap
@@ -62,7 +59,6 @@ const ExpenseTrackerToolbar: React.FC<ExpenseTrackerToolbarProps> = ({ user, log
                     >
                         Expense Tracker
                     </Typography>
-
                     <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
                         <IconButton
                             size="large"
@@ -93,8 +89,8 @@ const ExpenseTrackerToolbar: React.FC<ExpenseTrackerToolbarProps> = ({ user, log
                             }}
                         >
                             {PAGES.map((page) => (
-                                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                                    <Typography textAlign="center">{page}</Typography>
+                                <MenuItem key={page?.id} onClick={handleCloseNavMenu}>
+                                    <Typography textAlign="center">{page.text}</Typography>
                                 </MenuItem>
                             ))}
                         </Menu>
@@ -105,7 +101,7 @@ const ExpenseTrackerToolbar: React.FC<ExpenseTrackerToolbarProps> = ({ user, log
                         component="a"
                         href="/dashboard"
                         sx={{
-                            mr: 2,
+                            mr: 4,
                             display: { xs: 'flex', md: 'none' },
                             flexGrow: 1,
                             fontFamily: 'monospace',
@@ -116,15 +112,9 @@ const ExpenseTrackerToolbar: React.FC<ExpenseTrackerToolbarProps> = ({ user, log
                     >
                         Expense Tracker
                     </Typography>
-                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: { md: 4 } }}>
                         {PAGES.map((page) => (
-                            <Button
-                                key={page}
-                                onClick={handleCloseNavMenu}
-                                sx={{ my: 2, color: 'white', display: 'block' }}
-                            >
-                                {page}
-                            </Button>
+                            <Link href={page.path} passHref className='vdt-no-underline vdt-text-white'>{page.text}</Link>
                         ))}
                     </Box>
 
@@ -132,13 +122,14 @@ const ExpenseTrackerToolbar: React.FC<ExpenseTrackerToolbarProps> = ({ user, log
                         {
                             user && (<Box sx={{ display: 'flex', alignItems: "center", gap: 2, cursor: "pointer" }} onClick={handleOpenUserMenu}>
                                 <Avatar alt={`${user.firstName} ${user?.lastName}`} src={`${user.photoUrl}`} />
-                                <Typography sx={{ display: { xs: 'none', md: 'flex' }, mr: {xs: 'unset', md: 2} }}>{`${user.firstName} ${user.lastName}`}</Typography>
+                                <Typography sx={{ display: { xs: 'none', md: 'flex' }, mr: { xs: 'unset', md: 2 } }}>{`${user.firstName} ${user.lastName}`}</Typography>
                                 <KeyboardArrowDownIcon fontSize='small' />
                             </Box>)
                         }
                         <Menu
                             sx={{ mt: '46px' }}
                             id="menu-appbar"
+                            className='expense-tracker-menu-appbar'
                             anchorEl={anchorElUser}
                             anchorOrigin={{
                                 vertical: 'top',
@@ -152,13 +143,13 @@ const ExpenseTrackerToolbar: React.FC<ExpenseTrackerToolbarProps> = ({ user, log
                             open={Boolean(anchorElUser)}
                             onClose={handleCloseUserMenu}
                         >
-                            {settings.map((setting) => (
-                                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography textAlign="center">{setting}</Typography>
+                            {SETTINGS.map((setting) => (
+                                <MenuItem key={setting.id} onClick={handleCloseUserMenu}>
+                                    <Typography component="a" href={setting.path} variant='subtitle2' className='vdt-no-underline vdt-text-inherit'>{setting.text}</Typography>
                                 </MenuItem>
                             ))}
                             <MenuItem key="logout" onClick={logout}>
-                                <Typography textAlign="center">Log out</Typography>
+                                <Typography variant='subtitle2' >Log out</Typography>
                             </MenuItem>
                         </Menu>
                     </Box>
