@@ -114,7 +114,7 @@ const ExpenseTrackerToolbar: React.FC<ExpenseTrackerToolbarProps> = ({ user, log
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: { md: 4 } }}>
                         {PAGES.map((page) => (
-                            <Link href={page.path} passHref className='vdt-no-underline vdt-text-white'>{page.text}</Link>
+                            <Link key={page.id} href={page.path} passHref className='vdt-no-underline vdt-text-white'>{page.text}</Link>
                         ))}
                     </Box>
 
