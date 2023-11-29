@@ -60,7 +60,7 @@ const RegisterPage: NextPage = () => {
             <form onSubmit={handleSubmit(onSubmit)} className="vdt-flex vdt-w-full vdt-flex-block vdt-flex-col vdt-space-y-2">
                 <Typography variant="h6" className="vdt-text-slate-500">Sign up</Typography>
                 <Stack className="vdt-flex vdt-flex-col vdt-space-y-3">
-                    <TextField id="standard-basic" fullWidth label="First name" type="text" variant="standard"
+                    <TextField id="standard-basic" fullWidth label="First name" type="text" variant="standard" autoFocus
                         {...register("firstName", { required: true })}
                         error={errors.firstName?.message ? true : false}
                         helperText={errors.firstName?.message} />

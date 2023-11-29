@@ -143,6 +143,7 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                                         fullWidth
                                         label="Category"
                                         margin="dense"
+                                        autoFocus
                                         error={!!errors.category}
                                         helperText={
                                             errors.category && `${errors.category.message}`
@@ -247,7 +248,6 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                                         size="small"
                                         fullWidth
                                         margin="dense"
-                                        autoFocus
                                         error={!!errors.paidTo}
                                         helperText={
                                             errors.paidTo && `${errors.paidTo.message}`

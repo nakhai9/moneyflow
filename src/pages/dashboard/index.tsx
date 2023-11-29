@@ -127,6 +127,7 @@ const Dashboard: NextPage = () => {
                                     fullWidth
                                     label="Wallet name"
                                     margin="dense"
+                                    autoFocus
                                     error={!!errors.name}
                                     helperText={
                                         errors.name && `${errors.name.message}`

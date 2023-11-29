@@ -63,6 +63,13 @@ export enum FirestoreCollections {
     CATEGORIES = 'categories'
 }
 
+export enum ModalType {
+    ADD = "add",
+    EDIT = "edit",
+    DELETE = "delete",
+    DEFAULT = "primary"
+}
+
 // Interface
 
 export interface IUserSignIn {
@@ -88,6 +95,7 @@ export interface IUser {
     sex: UserGender;
     photoUrl: string;
     password?: string;
+    dob?: Timestamp;
 }
 
 export interface IWallet {
@@ -104,7 +112,7 @@ export interface ITransaction {
     type: TransactionType;
     category: Category;
     description: string;
-    excutedAt: Timestamp | Date | string;
+    excutedAt: Timestamp;
     amount: number;
     paymentMethod: PaymentMethod;
     isPaid: boolean;
@@ -133,8 +141,8 @@ export interface IBase {
     readonly id?: string;
     // virtual id: id use uuid4
     readonly _vid: string;  
-    readonly createdAt: Date | string | Timestamp;
-    updatedAt: Date | string | null | Timestamp;
+    readonly createdAt: Timestamp;
+    updatedAt: Timestamp | null;
     isDelete: boolean;
 }
 

@@ -9,8 +9,7 @@ export enum FormatDate {
 }
 
 export const formatTimestampToDateString = (timestamp: Timestamp, formatTo?: FormatDate): string => {
-    let result: string = ''
-    const timeStamp = new Timestamp(timestamp.seconds, timestamp.nanoseconds);
-    const date = timeStamp.toDate();
-    return formatTo ? format(date, formatTo) : format(date, FormatDate.YYYYMMDD);
+    const date = new Timestamp(timestamp.seconds ?? 0, timestamp.nanoseconds).toDate();
+    console.log(format(date, FormatDate.YYYYMMDD));    
+    return formatTo ? format(date, formatTo) : format(date, "yyyy-MM-dd");
 }
