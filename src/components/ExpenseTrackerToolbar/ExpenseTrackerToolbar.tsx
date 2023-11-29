@@ -48,11 +48,10 @@ const ExpenseTrackerToolbar: React.FC<ExpenseTrackerToolbarProps> = ({ user, log
                         noWrap
                         component="a"
                         href="/dashboard"
+                        className='logo-font'
                         sx={{
-                            mr: 2,
+                            mr: 4,
                             display: { xs: 'none', md: 'flex' },
-                            fontFamily: 'monospace',
-                            fontWeight: 600,
                             color: 'inherit',
                             textDecoration: 'none',
                         }}
@@ -100,12 +99,11 @@ const ExpenseTrackerToolbar: React.FC<ExpenseTrackerToolbarProps> = ({ user, log
                         noWrap
                         component="a"
                         href="/dashboard"
+                        className='logo-font'
                         sx={{
                             mr: 4,
                             display: { xs: 'flex', md: 'none' },
                             flexGrow: 1,
-                            fontFamily: 'monospace',
-                            fontWeight: 600,
                             color: 'inherit',
                             textDecoration: 'none',
                         }}

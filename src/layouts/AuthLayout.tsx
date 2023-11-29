@@ -7,10 +7,10 @@ type AuthLayoutProps = {
 }
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
     const dispatch = useDispatch();
-    const { isOpen } = useSelector((state: RootState) => state.backdrop)
+    const { isOpenBackdrop } = useSelector((state: RootState) => state.global)
 
     return <>
-        <Backdrop className="vdt-z-50" open={isOpen}>
+        <Backdrop className="vdt-z-50" open={isOpenBackdrop}>
             <CircularProgress color="primary" />
         </Backdrop>
         <div className="vdt-h-screen vdt-w-full vdt-bg-zinc-100">

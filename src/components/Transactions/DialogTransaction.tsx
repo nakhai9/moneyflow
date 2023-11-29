@@ -1,6 +1,5 @@
 import { Category, FirestoreCollections, IBase, ITransaction, PaymentMethod, TransactionType } from '@/common/drafts/prisma';
 import { ModalType, } from '@/common/enums';
-import { setLoadData, toggle } from '@/store/features/backdrop/backdropSlice';
 import { RootState } from '@/store/store';
 import { Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, TextField } from '@mui/material';
 import { Timestamp } from 'firebase/firestore';
@@ -8,7 +7,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from 'react-redux';
 import { firestoreService } from '@/common/services/firestore';
-import { FormatDate } from '@/common/utils/date';
+import { FormatDate, formatTimestampToDateString } from '@/common/utils/date';
+import { toggleBackdrop } from '@/store/features/global/globalSlice';
 
 type TransactionSubmitForm = {
     description: string,
@@ -71,12 +71,12 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
             }
             console.log(newTransaction);
 
-            // const response = await firestoreService.addDoc(FirestoreCollections.TRANSACTIONS, newTransaction);
+            const response = await firestoreService.addDoc(FirestoreCollections.TRANSACTIONS, newTransaction);
         } catch (error) {
             console.log(error);
         } finally {
             reset(initialForm);
-            dispatch(setLoadData(true));
+            dispatch(toggleBackdrop(true));
         }
 
         handleClose && handleClose();
@@ -90,7 +90,7 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
         setValue("description", transaction.description);
         setValue("amount", transaction.amount);
         setValue("category", transaction.category);
-        setValue("excutedAt", "2022-1-23" as string);
+        setValue("excutedAt", formatTimestampToDateString(transaction.excutedAt as Timestamp));
         setValue("paymentMethod", transaction.paymentMethod);
     }, [setValue]);
 

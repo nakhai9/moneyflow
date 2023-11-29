@@ -1,9 +1,9 @@
 import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
-import backdropReducer from "./features/backdrop/backdropSlice";
 import authReducer from "./features/auth/authSlice";
+import globalReducer from "./features/global/globalSlice";
 
 const rootReducer = {
-  backdrop: backdropReducer,
+  global: globalReducer,
   auth: authReducer
 }
 

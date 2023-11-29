@@ -2,7 +2,7 @@ import { FirestoreCollections, IUserInfo } from "@/common/drafts/prisma";
 import { firestoreService } from "@/common/services/firestore";
 import AuthLayout from "@/layouts/AuthLayout";
 import { setCurrentUser, setUserInfo } from "@/store/features/auth/authSlice";
-import { toggle } from "@/store/features/backdrop/backdropSlice";
+import { toggleBackdrop } from "@/store/features/global/globalSlice";
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Stack, TextField, Typography } from '@mui/material';
 import { NextPage } from "next";
@@ -27,7 +27,7 @@ const LoginPage: NextPage = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const { register, handleSubmit, formState: { errors } } = useForm<LoginSubmitForm>({ resolver: yupResolver(loginSchema) })
     const onSubmit: SubmitHandler<LoginSubmitForm> = async (data) => {
-        dispatch(toggle())
+        dispatch(toggleBackdrop(true))
         try {
             const { userCredential, error } = await firestoreService.signIn({ ...data });
             if (userCredential && userCredential.user) {
@@ -42,7 +42,7 @@ const LoginPage: NextPage = () => {
         } catch (error) {
             console.log(error);
         } finally {
-            dispatch(toggle());
+            dispatch(toggleBackdrop(false));
         }
     };
 

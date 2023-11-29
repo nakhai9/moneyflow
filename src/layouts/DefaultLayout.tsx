@@ -3,9 +3,9 @@ import { auth } from "@/common/configs/firebaseConfig";
 // import { OPTIONS_MENU_ON_APPBAR } from "@/common/constants/routes";
 import { FirestoreCollections, IUser } from "@/common/drafts/prisma";
 import { firestoreService } from "@/common/services/firestore";
-import { ExpenseTrackerToolbar } from "@/components";
+import { ExpenseTrackerSnackbar, ExpenseTrackerToolbar } from "@/components";
 import { setCurrentUser } from "@/store/features/auth/authSlice";
-import { toggle } from "@/store/features/backdrop/backdropSlice";
+import { toggleBackdrop } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
 import { Backdrop, Box, CircularProgress, Container } from "@mui/material";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -22,7 +22,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
   const dispatch = useDispatch();
 
   const { user } = useSelector((state: RootState) => state.auth)
-  const { isOpen } = useSelector((state: RootState) => state.backdrop)
+  const { isOpenBackdrop } = useSelector((state: RootState) => state.global);
 
   const logout = () => {
     signOut(auth);
@@ -31,7 +31,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
   }
 
   const fetchUser = useCallback(async (userId: string) => {
-    dispatch(toggle())
+    dispatch(toggleBackdrop(true))
     try {
       const user = await firestoreService.getDocById<IUser>(FirestoreCollections.USERS, userId);
       if (user) {
@@ -40,7 +40,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
     } catch (error) {
       console.log(error);
     } finally {
-      dispatch(toggle())
+      dispatch(toggleBackdrop(false))
     }
   }, [dispatch]);
 
@@ -55,23 +55,24 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
       }
     })
     return () => unsubscribe();
-    
+
   }, [router]);
 
   return <>
-    <Backdrop className="vdt-z-50" open={isOpen}>
-      <CircularProgress color="primary" />
-    </Backdrop>
-    <Box className="vdt-flex-1 vdt-w-100">
-      <ExpenseTrackerToolbar user={user} logout={logout}/>
-      <main className='vdt-overflow-auto'>
-        <Container>
-          <Box py={4}>
-            {children}
-          </Box>
-        </Container>
-      </main>
-    </Box >
+    <Backdrop className="vdt-z-50" sx={{ background: 'white' }} open={isOpenBackdrop}><CircularProgress color="primary" /></Backdrop>
+    {/* <ExpenseTrackerSnackbar open={true} message="Success" /> */}
+    {
+      !isOpenBackdrop && <Box className="vdt-flex-1 vdt-w-100">
+        <ExpenseTrackerToolbar user={user} logout={logout} />
+        <main className='vdt-overflow-auto'>
+          <Container>
+            <Box py={4}>
+              {children}
+            </Box>
+          </Container>
+        </main>
+      </Box >
+    }
   </>
 }
 

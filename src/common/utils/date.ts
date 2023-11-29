@@ -1,15 +1,14 @@
-import { format } from "date-fns";
+import dayjs from "dayjs";
 import { Timestamp } from "firebase/firestore";
 
 export enum FormatDate {
     MMDDYYYY = "MM-dd-yyyy",
-    DDMMYYYY = "dd-MM-yyyy",
+    DDMMYYYY = "DD-MM-YYYY",
     YYYYDDMM = "yyyy-dd-MM",
-    YYYYMMDD = "yyyy-MM-dd"
+    YYYYMMDD = "YYYY-MM-DD"
 }
 
 export const formatTimestampToDateString = (timestamp: Timestamp, formatTo?: FormatDate): string => {
-    const date = new Timestamp(timestamp.seconds ?? 0, timestamp.nanoseconds).toDate();
-    console.log(format(date, FormatDate.YYYYMMDD));    
-    return formatTo ? format(date, formatTo) : format(date, "yyyy-MM-dd");
+    const date = timestamp.toDate();
+    return formatTo ? dayjs(date).format(formatTo) : dayjs(date).format(FormatDate.YYYYMMDD);
 }

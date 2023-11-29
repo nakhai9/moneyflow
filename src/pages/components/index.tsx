@@ -1,5 +1,6 @@
 import { FirestoreCollections, ICategory, ICurrency, IUserSignUp } from "@/common/drafts/prisma";
 import { firestoreService } from "@/common/services/firestore";
+import { ExpenseTrackerSnackbar } from "@/components";
 import { RootState } from "@/store/store";
 import { Button, Stack } from "@mui/material";
 import { useRouter } from "next/router";
@@ -110,6 +111,7 @@ const Components: React.FC<ComponentsProps> = () => {
         </Stack>
 
         {JSON.stringify(user)}
+        <ExpenseTrackerSnackbar open={true} positions="top-center" severity="success" message="Success" />
     </>
 }
 export default Components;

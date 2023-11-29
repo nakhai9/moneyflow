@@ -52,7 +52,7 @@ export enum Category {
     ENTERTAIMENT = 'Entertaiment',
     BODY_CARE = 'Body care',
     RENT = "Rent",
-    
+
 }
 
 export enum FirestoreCollections {
@@ -135,12 +135,12 @@ export interface ICategory {
     icon?: any;
 }
 
-export interface IAccount {}
+export interface IAccount { }
 
 export interface IBase {
     readonly id?: string;
     // virtual id: id use uuid4
-    readonly _vid: string;  
+    readonly _vid: string;
     readonly createdAt: Timestamp;
     updatedAt: Timestamp | null;
     isDelete: boolean;
@@ -157,8 +157,16 @@ export interface IUserInfo {
 // type IUserRecord = IUser & IBase;
 // type IAccountRecord = IAccount & IBase;
 // or 
-export interface IWalletRecord extends IWallet, IBase {}
-export interface ITransactionRecord extends ITransaction, IBase {}
-export interface ICurrencyRecord extends ICurrency, IBase {}
-export interface IUserRecord extends IUser, IBase {}
-export interface IAccountRecord extends IAccount, IBase {}
+export interface IWalletRecord extends IWallet, IBase { }
+export interface ITransactionRecord extends ITransaction, IBase { }
+export interface ICurrencyRecord extends ICurrency, IBase { }
+export interface IUserRecord extends IUser, IBase { }
+export interface IAccountRecord extends IAccount, IBase { }
+
+
+export interface ICommonMessages {
+    success?: string;
+    warning?: string;
+    info?: string;
+    error?: string;
+}

@@ -1,6 +1,6 @@
 import { firestoreService } from "@/common/services/firestore";
 import AuthLayout from "@/layouts/AuthLayout";
-import { toggle } from "@/store/features/backdrop/backdropSlice";
+import { toggleBackdrop } from "@/store/features/global/globalSlice";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Button, Stack, TextField, Typography } from "@mui/material";
 import { NextPage } from "next";
@@ -30,7 +30,7 @@ const RegisterPage: NextPage = () => {
     const onSubmit: SubmitHandler<SignUpForm> = async (data) => {
 
         if (data.password === data.confirmPassword) {
-            dispatch(toggle())
+            dispatch(toggleBackdrop(true));
             try {
                 const response = await firestoreService.signUp({
                     email: data.email,
@@ -50,7 +50,7 @@ const RegisterPage: NextPage = () => {
             } catch (error) {
                 console.log(error);
             } finally {
-                dispatch(toggle())
+                dispatch(toggleBackdrop(false));
             }
         }
     }

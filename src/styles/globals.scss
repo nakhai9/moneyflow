@@ -1,5 +1,6 @@
 // Component styles
 @import "./component-styles/expense-tracker-toolbar.scss";
+@import url('https://fonts.googleapis.com/css2?family=Allison&family=Roboto:wght@300&display=swap');
 
 // Tailwindcss
 @tailwind base;
@@ -14,4 +15,9 @@ body {
 .css-6hp17o-MuiList-root-MuiMenu-list {
     padding: 0;
     margin: 0;
+}
+
+.logo-font {
+    font-family: 'Allison', cursive !important;
+    font-size: 40px !important;
 }

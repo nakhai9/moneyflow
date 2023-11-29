@@ -1,7 +1,7 @@
 import { FirestoreCollections, IBase, ICurrency, IWallet, WalletType } from "@/common/drafts/prisma";
 import { firestoreService } from "@/common/services/firestore";
 import DefaultLayout from "@/layouts/DefaultLayout";
-import { toggle } from "@/store/features/backdrop/backdropSlice";
+import { toggleBackdrop } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
 import { yupResolver } from "@hookform/resolvers/yup";
 import AddIcon from '@mui/icons-material/Add';
@@ -68,7 +68,7 @@ const Dashboard: NextPage = () => {
 
 
     const onSubmit = async (data: WalletSubmitForm) => {
-        dispatch(toggle());
+        dispatch(toggleBackdrop(true));
         try {
             setOpen(!open);
             const wallet: IWallet = {
@@ -86,12 +86,12 @@ const Dashboard: NextPage = () => {
         } catch (error) {
             console.log(error);
         } finally {
-            dispatch(toggle());
+            dispatch(toggleBackdrop(false));
         }
     };
 
     const fetchDataOnFirestore = useCallback(async () => {
-        dispatch(toggle());
+        dispatch(toggleBackdrop(true));
         try {
             const wallets = await firestoreService.getDocs(FirestoreCollections.WALLETS);
             const currencies = await firestoreService.getDocs(FirestoreCollections.CURRENCIES);
@@ -100,7 +100,7 @@ const Dashboard: NextPage = () => {
         } catch (error) {
             console.log(error);
         } finally {
-            dispatch(toggle())
+            dispatch(toggleBackdrop(false));
         }
 
     }, [dispatch])
