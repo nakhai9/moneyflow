@@ -2,6 +2,7 @@ import { FirestoreCollections, IBase, ITransaction, IWallet } from "@/common/dra
 import { ModalType, TransactionType } from "@/common/enums";
 import { firestoreService } from "@/common/services/firestore";
 import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
+import { ExpenseTrackerFilter } from "@/components";
 import DialogTransaction from "@/components/Transactions/DialogTransaction";
 import { AddIcon } from "@/components/common/VIcons";
 import useToggle from "@/hooks/useToggle";
@@ -60,10 +61,10 @@ const Transactions = () => {
                         Add transaction
                     </Button>
                 </Grid>
-                <Grid container item xs={12} >
-                    <Paper sx={{ width: '100%', padding: 2 }}>
-                        Filter
-                    </Paper>
+                <Grid container item xs={12}>
+                    <Grid container item component={Paper} xs={12} p={3}>
+                        <ExpenseTrackerFilter />
+                    </Grid>
                 </Grid>
                 <Grid container item xs={12}>
                     {
