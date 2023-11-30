@@ -46,8 +46,8 @@ const Dashboard: NextPage = () => {
 
     const { user } = useSelector((state: RootState) => state.auth);
 
-    const [walletsOnFirestore, setWalletsOnFirestore] = useState<(IWallet & IBase)[]>([]);
-    const [currenciesOnFirestore, setCurrenciesOnFirestore] = useState<(ICurrency & IBase)[]>([]);
+    const [walletsOnFirestore, setWalletsOnFirestore] = useState<(IWallet & IBase)[] | null>(null);
+    const [currenciesOnFirestore, setCurrenciesOnFirestore] = useState<(ICurrency & IBase)[] | null>(null);
 
     const { handleSubmit, control, formState: { errors }, reset } = useForm<WalletSubmitForm>({
         defaultValues: initialForm,
@@ -106,7 +106,7 @@ const Dashboard: NextPage = () => {
     }, [dispatch])
 
     const getCurrencyCode = (currencyId: string) => {
-        return currenciesOnFirestore.find(currency => currency.id === currencyId)?.code.toUpperCase() ?? "XXX";
+        return currenciesOnFirestore?.find(currency => currency.id === currencyId)?.code.toUpperCase() ?? "XXX";
     }
 
     useEffect(() => {
@@ -188,7 +188,7 @@ const Dashboard: NextPage = () => {
                                             None
                                         </MenuItem>
                                         {
-                                            currenciesOnFirestore.map((currency: (ICurrency & IBase)) => (
+                                            currenciesOnFirestore?.map((currency: (ICurrency & IBase)) => (
                                                 <MenuItem key={currency.id} value={currency.id}>
                                                     {currency.code.toUpperCase()}
                                                 </MenuItem>
@@ -225,7 +225,7 @@ const Dashboard: NextPage = () => {
                 </div>
                 <Grid container spacing={4}>
                     {
-                        walletsOnFirestore.length > 0 && walletsOnFirestore.map((item, index: number) => (
+                        walletsOnFirestore && walletsOnFirestore.map((item, index: number) => (
                             <Grid key={index} item xs={6} sm={4} md={3}>
                                 <Paper elevation={4} onClick={() => { openWallet(item.id!) }} className="vdt-flex vdt-h-24 vdt-bg-white vdt-rounded vdt-cursor-pointer vdt-font-thin vdt-overflow-hidden hover:vdt-shadow-lg">
                                     <div className="vdt-w-5 vdt-bg-blue-500"></div>

@@ -25,9 +25,11 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
   const { isOpenBackdrop } = useSelector((state: RootState) => state.global);
 
   const logout = () => {
+    dispatch(toggleBackdrop(true));
     signOut(auth);
     localStorage.clear();
     router.push("/auth/login");
+    dispatch(toggleBackdrop(false));
   }
 
   const fetchUser = useCallback(async (userId: string) => {
