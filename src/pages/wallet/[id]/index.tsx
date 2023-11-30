@@ -1,4 +1,4 @@
-import { FirestoreCollections, IBase, ITransaction, IWallet } from "@/common/drafts/prisma";
+import { FirestoreCollections, IBase, ICurrency, ITransaction, IWallet } from "@/common/drafts/prisma";
 import { ModalType, TransactionType } from "@/common/enums";
 import { firestoreService } from '@/common/services/firestore';
 import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
@@ -33,6 +33,7 @@ const WalletDetailPage: NextPage = () => {
 
     const [transactions, setTransactions] = useState<(ITransaction & IBase)[]>([]);
     const [currentWallet, setCurrentWallet] = useState<(IWallet & IBase) | null>(null);
+    const [currency, setCurrency] = useState<string>('');
 
     const { isOpenBackdrop } = useSelector((state: RootState) => state.global);
 
@@ -50,8 +51,10 @@ const WalletDetailPage: NextPage = () => {
     const fetch = useCallback(async () => {
         const snapshotTransactions = await firestoreService.getDocs(FirestoreCollections.TRANSACTIONS);
         const wallet = await firestoreService.getDocById<IWallet>(FirestoreCollections.WALLETS, id as string);
+        const currency = await firestoreService.getDocById<ICurrency & IBase>(FirestoreCollections.CURRENCIES, wallet?.currencyId as string);
         if (wallet) {
             setCurrentWallet(wallet);
+            setCurrency(currency?.code as string);
             const transactionsByWalletId = snapshotTransactions.filter((transaction: (ITransaction & IBase)) => transaction.walletId === id);
             setTransactions(transactionsByWalletId);
         }
@@ -113,7 +116,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer">
                             <Typography variant="body2" className="vdt-font-semibold">Current Wallet Balance</Typography>
                             <div>
-                                <Typography variant="h6" color="primary">{(currentWallet?.amount! - (getTotalPeriodExpenseValue(transactions) + getTotalPeriodIncomeValue(transactions))).toLocaleString('en-US')}</Typography>
+                                <Typography variant="h6" color="primary">{(currentWallet?.amount! - (getTotalPeriodExpenseValue(transactions) + getTotalPeriodIncomeValue(transactions))).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography>
                             </div>
                         </Paper>
                     </Grid>
@@ -122,7 +125,7 @@ const WalletDetailPage: NextPage = () => {
                             <Typography variant="body2" className="vdt-font-semibold">Total Period Change</Typography>
                             <div>
                                 <Typography variant="h6" color="primary">
-                                    {(getTotalPeriodExpenseValue(transactions) + getTotalPeriodIncomeValue(transactions)).toLocaleString('en-US')}
+                                    {(getTotalPeriodExpenseValue(transactions) + getTotalPeriodIncomeValue(transactions)).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span>
                                 </Typography>
                             </div>
                         </Paper>
@@ -131,7 +134,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer" >
                             <Typography variant="body2" className="vdt-font-semibold">Total Period Expenses</Typography>
                             <div>
-                                <Typography variant="h6" color="primary">{getTotalPeriodExpenseValue(transactions).toLocaleString('en-US')}</Typography>
+                                <Typography variant="h6" color="primary">{getTotalPeriodExpenseValue(transactions).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography>
                             </div>
                         </Paper>
                     </Grid>
@@ -139,7 +142,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer" >
                             <Typography variant="body2" className="vdt-font-semibold">Total Period Income</Typography>
                             <div>
-                                <Typography variant="h6" color="primary">{getTotalPeriodIncomeValue(transactions).toLocaleString('en-US')}</Typography>
+                                <Typography variant="h6" color="primary">{getTotalPeriodIncomeValue(transactions).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography>
                             </div>
                         </Paper>
                     </Grid>
