@@ -9,7 +9,7 @@ import { Provider } from 'react-redux'
 export default function App({ Component, pageProps }: AppProps) {
   return <>
     <Head>
-      <title>Wallet NextJS</title>
+      <title>Expense Tracker App</title>
     </Head>
     <Provider store={store}>
       <ThemeProvider theme={theme}>

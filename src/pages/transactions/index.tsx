@@ -7,7 +7,7 @@ import { AddIcon } from "@/components/common/VIcons";
 import useToggle from "@/hooks/useToggle";
 import DefaultLayout from "@/layouts/DefaultLayout";
 import { toggleBackdrop } from "@/store/features/global/globalSlice";
-import { Button, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { Button, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -79,22 +79,29 @@ const Transactions = () => {
                                 </TableHead>
                                 <TableBody>
                                     {
+                                        !transaction && <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
+                                            <TableCell colSpan={columns.length} align="center">No data to load</TableCell>
+                                        </TableRow>
+                                    }
+                                    {
                                         transactions.map((item, index) => {
-                                            return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
-                                                <TableCell component="td" className="vdt-border-none">{index + 1}</TableCell>
-                                                <TableCell component="td" className="vdt-border-none">
-                                                    {item.category}
-                                                </TableCell>
-                                                <TableCell className="vdt-border-none">
-                                                    {item.walletId && getWalletName(item.walletId)}
-                                                </TableCell>
-                                                <TableCell component="td" className="vdt-border-none">{item.description ?? "---"}</TableCell>
-                                                <TableCell component="td" className="vdt-border-none">{item.paymentMethod}</TableCell>
-                                                <TableCell component="td" className="vdt-border-none">
-                                                    {formatTimestampToDateString(item.excutedAt as Timestamp, FormatDate.DDMMYYYY)}
-                                                </TableCell>
-                                                <TableCell component="td" className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
-                                            </TableRow>
+                                            return <Tooltip key={index} title="Double click to open">
+                                                <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
+                                                    <TableCell component="td" className="vdt-border-none">{index + 1}</TableCell>
+                                                    <TableCell component="td" className="vdt-border-none">
+                                                        {item.category}
+                                                    </TableCell>
+                                                    <TableCell className="vdt-border-none">
+                                                        {item.walletId && getWalletName(item.walletId)}
+                                                    </TableCell>
+                                                    <TableCell component="td" className="vdt-border-none">{item.description ?? "---"}</TableCell>
+                                                    <TableCell component="td" className="vdt-border-none">{item.paymentMethod}</TableCell>
+                                                    <TableCell component="td" className="vdt-border-none">
+                                                        {formatTimestampToDateString(item.excutedAt as Timestamp, FormatDate.DDMMYYYY)}
+                                                    </TableCell>
+                                                    <TableCell component="td" className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
+                                                </TableRow>
+                                            </Tooltip>
                                         })
                                     }
                                 </TableBody>

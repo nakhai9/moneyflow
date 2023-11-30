@@ -157,6 +157,11 @@ const WalletDetailPage: NextPage = () => {
                                 </TableHead>
                                 <TableBody>
                                     {
+                                        !transaction && <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
+                                            <TableCell colSpan={columns.length} align="center">No data to load</TableCell>
+                                        </TableRow>
+                                    }
+                                    {
                                         transactions.map((item, index) => {
                                             return <Tooltip title="Double click to open transaction" key={index}>
                                                 <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
