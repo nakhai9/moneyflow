@@ -174,7 +174,7 @@ const WalletDetailPage: NextPage = () => {
                                 {
                                     transactions?.map((item, index) => {
                                         return <Tooltip title="Double click to open transaction" key={index}>
-                                            <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
+                                            <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} onTouchStart={() => { handleEditTransaction(item) }} onTouchEnd={(e) => e.preventDefault()}>
                                                 <TableCell component="td" className="vdt-border-none">{index + 1}</TableCell>
                                                 <TableCell component="td" className="vdt-border-none">{item.category}</TableCell>
                                                 <TableCell component="td" className="vdt-border-none">{item.description}</TableCell>
