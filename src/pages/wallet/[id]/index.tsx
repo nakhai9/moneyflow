@@ -8,7 +8,6 @@ import useToggle from "@/hooks/useToggle";
 import DefaultLayout from "@/layouts/DefaultLayout";
 import { toggleBackdrop } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
-import { getTotalPeriodExpenseValue, getTotalPeriodIncomeValue } from "@/utils";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { Box, Button, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
@@ -31,7 +30,7 @@ const WalletDetailPage: NextPage = () => {
     const [transaction, setTransaction] = useState<ITransaction & IBase>();
     const { open, handleOpen, handleClose } = useToggle();
 
-    const [transactions, setTransactions] = useState<(ITransaction & IBase)[]>([]);
+    const [transactions, setTransactions] = useState<(ITransaction & IBase)[] | null>(null);
     const [currentWallet, setCurrentWallet] = useState<(IWallet & IBase) | null>(null);
     const [currency, setCurrency] = useState<string>('');
 
@@ -56,7 +55,10 @@ const WalletDetailPage: NextPage = () => {
             setCurrentWallet(wallet);
             setCurrency(currency?.code as string);
             const transactionsByWalletId = snapshotTransactions.filter((transaction: (ITransaction & IBase)) => transaction.walletId === id);
-            setTransactions(transactionsByWalletId);
+            if (transactionsByWalletId.length > 0) {
+                setTransactions(transactionsByWalletId);
+            }
+
         }
         disptach(toggleBackdrop(false));
     }, [id, disptach, isOpenBackdrop])
@@ -116,7 +118,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer">
                             <Typography variant="body2" className="vdt-font-semibold">Current Wallet Balance</Typography>
                             <div>
-                                <Typography variant="h6" color="primary">{(currentWallet?.amount!).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography>
+                                {/* <Typography variant="h6" color="primary">{(currentWallet?.amount!).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography> */}
                             </div>
                         </Paper>
                     </Grid>
@@ -125,7 +127,7 @@ const WalletDetailPage: NextPage = () => {
                             <Typography variant="body2" className="vdt-font-semibold">Total Period Change</Typography>
                             <div>
                                 <Typography variant="h6" color="primary">
-                                    {(getTotalPeriodExpenseValue(transactions) + getTotalPeriodIncomeValue(transactions)).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span>
+                                    {/* {(getTotalPeriodIncomeValue(transactions) - getTotalPeriodExpenseValue(transactions)).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span> */}
                                 </Typography>
                             </div>
                         </Paper>
@@ -134,7 +136,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer" >
                             <Typography variant="body2" className="vdt-font-semibold">Total Period Expenses</Typography>
                             <div>
-                                <Typography variant="h6" color="primary">{getTotalPeriodExpenseValue(transactions).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography>
+                                {/* <Typography variant="h6" color="primary">{getTotalPeriodExpenseValue(transactions).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography> */}
                             </div>
                         </Paper>
                     </Grid>
@@ -142,54 +144,56 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer" >
                             <Typography variant="body2" className="vdt-font-semibold">Total Period Income</Typography>
                             <div>
-                                <Typography variant="h6" color="primary">{getTotalPeriodIncomeValue(transactions).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography>
+                                {/* <Typography variant="h6" color="primary">{getTotalPeriodIncomeValue(transactions).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography> */}
                             </div>
                         </Paper>
                     </Grid>
                 </Grid>
                 <Grid container item xs={12}>
-                    {
-                        transactions && (<TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
-                            <Table size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        {
-                                            columns.map((columnHeading: string, index: number) => <TableCell key={index} align={columnHeading === 'Amount' ? 'right' : 'left'} sx={{ 'fontWeight': "bold" }} component="th">{columnHeading}</TableCell>)
-                                        }
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
+                    <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+                        <Table size="small">
+                            <TableHead>
+                                <TableRow>
                                     {
-                                        transaction ? transactions.map((item, index) => {
-                                            return <Tooltip title="Double click to open transaction" key={index}>
-                                                <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
-                                                    <TableCell component="td" className="vdt-border-none">{index + 1}</TableCell>
-                                                    <TableCell component="td" className="vdt-border-none">{item.category}</TableCell>
-                                                    <TableCell component="td" className="vdt-border-none">{item.description}</TableCell>
-                                                    <TableCell component="td" className="vdt-border-none">{item.paymentMethod}</TableCell>
-                                                    <TableCell component="td" className="vdt-border-none">
-                                                        {formatTimestampToDateString(item.excutedAt as Timestamp, FormatDate.DDMMYYYY)}
-                                                    </TableCell>
-                                                    <TableCell className="vdt-border-none" align="right">
-                                                        <div className="vdt-flex vdt-justify-end vdt-gap-2 vdt-items-center">
-                                                            <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span>
-                                                            {
-                                                                !item.isPaid && <Tooltip title="Not paid">
-                                                                    <ErrorOutlineIcon color="error" fontSize="small" />
-                                                                </Tooltip>
-                                                            }
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            </Tooltip>
-                                        }) :  <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
+                                        columns.map((columnHeading: string, index: number) => <TableCell key={index} align={columnHeading === 'Amount' ? 'right' : 'left'} sx={{ 'fontWeight': "bold" }} component="th">{columnHeading}</TableCell>)
+                                    }
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {
+                                    !transactions?.length && <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
                                         <TableCell colSpan={columns.length} align="center">No data to load</TableCell>
                                     </TableRow>
-                                    }
-                                </TableBody>
-                            </Table>
-                        </TableContainer>)
-                    }
+                                }
+                                {
+                                    transactions?.map((item, index) => {
+                                        return <Tooltip title="Double click to open transaction" key={index}>
+                                            <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
+                                                <TableCell component="td" className="vdt-border-none">{index + 1}</TableCell>
+                                                <TableCell component="td" className="vdt-border-none">{item.category}</TableCell>
+                                                <TableCell component="td" className="vdt-border-none">{item.description}</TableCell>
+                                                <TableCell component="td" className="vdt-border-none">{item.paymentMethod}</TableCell>
+                                                <TableCell component="td" className="vdt-border-none">
+                                                    {formatTimestampToDateString(item.excutedAt as Timestamp, FormatDate.DDMMYYYY)}
+                                                </TableCell>
+                                                <TableCell className="vdt-border-none" align="right">
+                                                    <div className="vdt-flex vdt-justify-end vdt-gap-2 vdt-items-center">
+                                                        <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span>
+                                                        {
+                                                            !item.isPaid && <Tooltip title="Not paid">
+                                                                <ErrorOutlineIcon color="error" fontSize="small" />
+                                                            </Tooltip>
+                                                        }
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        </Tooltip>
+                                    })
+                                }
+
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 </Grid>
             </Grid>
         </DefaultLayout>
