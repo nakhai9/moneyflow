@@ -8,11 +8,13 @@ import useToggle from "@/hooks/useToggle";
 import DefaultLayout from "@/layouts/DefaultLayout";
 import { toggleBackdrop } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
+import { getTotalPeriodExpenseValue, getTotalPeriodIncomeValue } from "@/utils";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { Box, Button, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { NextPage } from "next";
+import Link from "next/link";
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -77,6 +79,8 @@ const WalletDetailPage: NextPage = () => {
         }
     }
 
+
+
     useEffect(() => {
         disptach(toggleBackdrop(true));
         fetch();
@@ -97,9 +101,11 @@ const WalletDetailPage: NextPage = () => {
                     <Typography variant="h6" sx={{ flex: 1 }}>{currentWallet?.name}</Typography>
                     <Box>
                         <Tooltip title="Settings">
-                            <IconButton aria-label="setting" size="small">
-                                <SettingsIcon />
-                            </IconButton>
+                            <Link href={`${id}/settings`}>
+                                <IconButton aria-label="setting" size="small">
+                                    <SettingsIcon />
+                                </IconButton>
+                            </Link>
                         </Tooltip>
                         <Tooltip title="Export to PDF">
                             <IconButton aria-label="setting" size="small">
@@ -117,9 +123,9 @@ const WalletDetailPage: NextPage = () => {
                     <Grid item xs={6} md={3}>
                         <Paper className="vdt-p-4 vdt-cursor-pointer">
                             <Typography variant="body2" className="vdt-font-semibold">Current Wallet Balance</Typography>
-                            <div>
-                                {/* <Typography variant="h6" color="primary">{(currentWallet?.amount!).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography> */}
-                            </div>
+                            <Typography variant="h6" color="primary">
+                                {transactions && (currentWallet?.amount as number + (getTotalPeriodIncomeValue(transactions) - getTotalPeriodExpenseValue(transactions))).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span>
+                            </Typography>
                         </Paper>
                     </Grid>
                     <Grid item xs={6} md={3}>
@@ -127,7 +133,7 @@ const WalletDetailPage: NextPage = () => {
                             <Typography variant="body2" className="vdt-font-semibold">Total Period Change</Typography>
                             <div>
                                 <Typography variant="h6" color="primary">
-                                    {/* {(getTotalPeriodIncomeValue(transactions) - getTotalPeriodExpenseValue(transactions)).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span> */}
+                                    {transactions && (getTotalPeriodIncomeValue(transactions) - getTotalPeriodExpenseValue(transactions)).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span>
                                 </Typography>
                             </div>
                         </Paper>
@@ -136,7 +142,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer" >
                             <Typography variant="body2" className="vdt-font-semibold">Total Period Expenses</Typography>
                             <div>
-                                {/* <Typography variant="h6" color="primary">{getTotalPeriodExpenseValue(transactions).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography> */}
+                                <Typography variant="h6" color="primary">{transactions && getTotalPeriodExpenseValue(transactions).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography>
                             </div>
                         </Paper>
                     </Grid>
@@ -144,7 +150,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer" >
                             <Typography variant="body2" className="vdt-font-semibold">Total Period Income</Typography>
                             <div>
-                                {/* <Typography variant="h6" color="primary">{getTotalPeriodIncomeValue(transactions).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography> */}
+                                <Typography variant="h6" color="primary">{transactions && getTotalPeriodIncomeValue(transactions).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography>
                             </div>
                         </Paper>
                     </Grid>
