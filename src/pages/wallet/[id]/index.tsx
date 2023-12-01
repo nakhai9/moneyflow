@@ -116,7 +116,7 @@ const WalletDetailPage: NextPage = () => {
                         <Paper className="vdt-p-4 vdt-cursor-pointer">
                             <Typography variant="body2" className="vdt-font-semibold">Current Wallet Balance</Typography>
                             <div>
-                                <Typography variant="h6" color="primary">{(currentWallet?.amount! - (getTotalPeriodExpenseValue(transactions) + getTotalPeriodIncomeValue(transactions))).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography>
+                                <Typography variant="h6" color="primary">{(currentWallet?.amount!).toLocaleString('en-US')} <span className="vdt-uppercase">{currency}</span></Typography>
                             </div>
                         </Paper>
                     </Grid>
@@ -160,12 +160,7 @@ const WalletDetailPage: NextPage = () => {
                                 </TableHead>
                                 <TableBody>
                                     {
-                                        !transaction && <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
-                                            <TableCell colSpan={columns.length} align="center">No data to load</TableCell>
-                                        </TableRow>
-                                    }
-                                    {
-                                        transactions.map((item, index) => {
+                                        transaction ? transactions.map((item, index) => {
                                             return <Tooltip title="Double click to open transaction" key={index}>
                                                 <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
                                                     <TableCell component="td" className="vdt-border-none">{index + 1}</TableCell>
@@ -187,7 +182,9 @@ const WalletDetailPage: NextPage = () => {
                                                     </TableCell>
                                                 </TableRow>
                                             </Tooltip>
-                                        })
+                                        }) :  <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
+                                        <TableCell colSpan={columns.length} align="center">No data to load</TableCell>
+                                    </TableRow>
                                     }
                                 </TableBody>
                             </Table>
