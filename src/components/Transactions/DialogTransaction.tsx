@@ -68,8 +68,6 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                 payee: data.paidTo ?? null,
                 isPaid: data.category === Category.LOAN || data.category === Category.DEBT ? false : true
             }
-            console.log(newTransaction);
-
             const response = await firestoreService.addDoc(FirestoreCollections.TRANSACTIONS, newTransaction);
         } catch (error) {
             console.log(error);
