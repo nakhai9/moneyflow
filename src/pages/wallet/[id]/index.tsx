@@ -1,5 +1,4 @@
-import { FirestoreCollections, IBase, ICurrency, ITransaction, IWallet } from "@/common/drafts/prisma";
-import { ModalType, TransactionType } from "@/common/enums";
+import { FirestoreCollections, IBase, ICurrency, ITransaction, IWallet, ModalType, TransactionType } from "@/common/drafts/prisma";
 import { firestoreService } from '@/common/services/firestore';
 import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
 import DialogTransaction from "@/components/Transactions/DialogTransaction";

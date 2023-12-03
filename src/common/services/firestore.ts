@@ -2,8 +2,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "fire
 import { Timestamp, addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, setDoc, updateDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from 'uuid';
 import { _db, auth } from "../configs/firebaseConfig";
-import { FirestoreCollections, IBase, IUserSignIn, IUserSignUp } from "../drafts/prisma";
-import { UserGender, UserRole } from "../enums";
+import { FirestoreCollections, IBase, IUserSignIn, IUserSignUp, UserGender, UserRole } from "../drafts/prisma";
 
 const base: IBase = {
     _vid: uuidv4(),
@@ -75,7 +74,7 @@ export const firestoreService = {
             const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password!);
             if (userCredential) {
                 const customId = userCredential.user.uid;
-                const payload = { ...user, ...base, photoUrl: null, role: UserRole.USER, sex: UserGender.OTHER };
+                const payload = { ...user, ...base, photoUrl: null, role: UserRole.USER, sex: UserGender.OTHER, dob: null };
                 await setDoc(doc(_db, FirestoreCollections.USERS, customId), payload);
             }
             return userCredential;

@@ -1,5 +1,4 @@
-import { IBase, ITransaction } from "@/common/drafts/prisma";
-import { TransactionType } from "@/common/enums/transaction-type";
+import { IBase, ITransaction, TransactionType } from "@/common/drafts/prisma";
 
 const getTotalPeriodExpenseValue = (transactions: (ITransaction & IBase)[]): number => {
     let totalPeriodExpense: number = 0;

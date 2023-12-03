@@ -1,5 +1,4 @@
-import { Category, FirestoreCollections, IBase, ITransaction, PaymentMethod, TransactionType } from '@/common/drafts/prisma';
-import { ModalType, } from '@/common/enums';
+import { Category, FirestoreCollections, IBase, ITransaction, ModalType, PaymentMethod, TransactionType } from '@/common/drafts/prisma';
 import { RootState } from '@/store/store';
 import { Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, TextField } from '@mui/material';
 import { Timestamp } from 'firebase/firestore';
