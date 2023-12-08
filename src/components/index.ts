@@ -1,9 +1,9 @@
-import ExpenseTrackerToolbar from "./ExpenseTrackerToolbar/ExpenseTrackerToolbar";
-import ExpenseTrackerSnackbar from "./ExpenseTrackerSnackbar/ExpenseTrackerSnackbar";
-import ExpenseTrackerFilter from "./ExpenseTrackerFilter/ExpenseTrackerFilter";
+import AppToolbar from "./AppToolbar/AppToolbar";
+import AppSnackbar from "./AppSnackbar/AppSnackbar";
+import AppFilter from "./AppFilter/AppFilter";
 
 export {
-    ExpenseTrackerToolbar,
-    ExpenseTrackerSnackbar,
-    ExpenseTrackerFilter
+    AppToolbar,
+    AppSnackbar,
+    AppFilter
 }

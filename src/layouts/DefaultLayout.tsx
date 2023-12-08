@@ -3,7 +3,7 @@ import { auth } from "@/common/configs/firebaseConfig";
 // import { OPTIONS_MENU_ON_APPBAR } from "@/common/constants/routes";
 import { FirestoreCollections, IUser } from "@/common/drafts/prisma";
 import { firestoreService } from "@/common/services/firestore";
-import { ExpenseTrackerSnackbar, ExpenseTrackerToolbar } from "@/components";
+import { AppSnackbar, AppToolbar } from "@/components";
 import { setCurrentUser } from "@/store/features/auth/authSlice";
 import { toggleBackdrop } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
@@ -62,10 +62,10 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
 
   return <>
     <Backdrop className="vdt-z-50" sx={{ background: 'white' }} open={isOpenBackdrop}><CircularProgress color="primary" /></Backdrop>
-    {/* <ExpenseTrackerSnackbar open={true} message="Success" /> */}
+    {/* <AppSnackbar open={true} message="Success" /> */}
     {
       !isOpenBackdrop && <Box className="vdt-flex-1 vdt-w-100">
-        <ExpenseTrackerToolbar user={user} logout={logout} />
+        <AppToolbar user={user} logout={logout} />
         <main className='vdt-overflow-auto'>
           <Container>
             <Box py={4}>

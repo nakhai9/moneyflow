@@ -1,7 +1,7 @@
 import { FirestoreCollections, IBase, ITransaction, IWallet, ModalType, TransactionType } from "@/common/drafts/prisma";
 import { firestoreService } from "@/common/services/firestore";
 import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
-import { ExpenseTrackerFilter } from "@/components";
+import { AppFilter } from "@/components";
 import DialogTransaction from "@/components/Transactions/DialogTransaction";
 import { AddIcon } from "@/components/common/VIcons";
 import useToggle from "@/hooks/useToggle";
@@ -62,7 +62,7 @@ const Transactions = () => {
                 </Grid>
                 <Grid container item xs={12}>
                     <Grid container item component={Paper} xs={12} p={3}>
-                        <ExpenseTrackerFilter />
+                        <AppFilter />
                     </Grid>
                 </Grid>
                 <Grid container item xs={12}>
