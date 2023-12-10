@@ -52,6 +52,11 @@ export enum Category {
     ENTERTAIMENT = 'Entertaiment',
     BODY_CARE = 'Body care',
     RENT = "Rent",
+    TRANSFER = "Transfer",
+    LAUNDRY = 'Laundry',
+    FOOD_ONLY = "Food only",
+    DRINK_ONLY = "Drink only",
+    MAINTENANCE = "Maintenance"
 
 }
 
@@ -169,4 +174,10 @@ export interface ICommonMessages {
     warning?: string;
     info?: string;
     error?: string;
+}
+
+export interface IOption {
+    id?: any;
+    prop: string;
+    value: any;
 }

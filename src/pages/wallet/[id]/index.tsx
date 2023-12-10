@@ -1,5 +1,5 @@
 import { FirestoreCollections, IBase, ICurrency, ITransaction, IWallet, ModalType, TransactionType } from "@/common/drafts/prisma";
-import { firestoreService } from '@/common/services/firestore';
+import { accountService, firestoreService } from '@/common/services/firestore';
 import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
 import DialogTransaction from "@/components/Transactions/DialogTransaction";
 import { AddIcon, FileDownloadIcon, SettingsIcon } from "@/components/common/VIcons";
@@ -10,7 +10,7 @@ import { RootState } from "@/store/store";
 import { getTotalPeriodExpenseValue, getTotalPeriodIncomeValue } from "@/utils";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import { Box, Button, Grid, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Grid, IconButton, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { NextPage } from "next";
 import Link from "next/link";
@@ -37,6 +37,8 @@ const WalletDetailPage: NextPage = () => {
 
     const { isOpenBackdrop } = useSelector((state: RootState) => state.global);
 
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
     const handleAddTransaction = () => {
         handleOpen();
         setType(ModalType.ADD);
@@ -49,6 +51,7 @@ const WalletDetailPage: NextPage = () => {
     }
 
     const fetch = useCallback(async () => {
+        setIsLoading(true);
         const snapshotTransactions = await firestoreService.getDocs(FirestoreCollections.TRANSACTIONS);
         const wallet = await firestoreService.getDocById<IWallet>(FirestoreCollections.WALLETS, id as string);
         const currency = await firestoreService.getDocById<ICurrency & IBase>(FirestoreCollections.CURRENCIES, wallet?.currencyId as string);
@@ -61,14 +64,15 @@ const WalletDetailPage: NextPage = () => {
             }
 
         }
-        disptach(toggleBackdrop(false));
+        setIsLoading(false);
+
     }, [id, disptach, isOpenBackdrop])
 
     const deleteWalletById = async (wallet: (IWallet & IBase) | null) => {
         disptach(toggleBackdrop(true));
         try {
             if (wallet && wallet.id) {
-                await firestoreService.deleteDoc(FirestoreCollections.WALLETS, wallet.id);
+                await accountService.deleteAccountById(wallet.id);
             }
         } catch (error) {
             console.log(error);
@@ -78,12 +82,8 @@ const WalletDetailPage: NextPage = () => {
         }
     }
 
-
-
     useEffect(() => {
-        disptach(toggleBackdrop(true));
         fetch();
-        disptach(toggleBackdrop(false));
     }, [fetch, disptach])
 
     return (
@@ -94,10 +94,9 @@ const WalletDetailPage: NextPage = () => {
                     <Button type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={handleAddTransaction}>
                         Add transaction
                     </Button>
-
                 </Grid>
                 <Grid container item xs={12}>
-                    <Typography variant="h6" sx={{ flex: 1 }}>{currentWallet?.name}</Typography>
+                    <Typography variant="h6" sx={{ flex: 1, fontWeight: 600 }}>{currentWallet?.name}</Typography>
                     <Box>
                         <Tooltip title="Settings">
                             <Link href={`${id}/settings`}>
@@ -166,36 +165,44 @@ const WalletDetailPage: NextPage = () => {
                             </TableHead>
                             <TableBody>
                                 {
-                                    !transactions?.length && <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
-                                        <TableCell colSpan={columns.length} align="center">No data to load</TableCell>
+                                    (isLoading) && <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
+                                        <TableCell colSpan={columns.length} align="center">
+                                            <LinearProgress />
+                                        </TableCell>
+                                    </TableRow>
+                                }
+                                {
+                                    (!isLoading && !transactions?.length) && <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
+                                        <TableCell colSpan={columns.length} align="center">
+                                            No data
+                                        </TableCell>
                                     </TableRow>
                                 }
                                 {
                                     transactions?.map((item, index) => {
-                                        return <Tooltip title="Double click to open transaction" key={index}>
-                                            <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]"
-                                                onDoubleClick={() => { handleEditTransaction(item) }}
-                                                // onTouchStart={() => { handleEditTransaction(item) }} onTouchEnd={(e) => e.preventDefault()}
-                                            >
-                                                <TableCell component="td" className="vdt-border-none">{index + 1}</TableCell>
-                                                <TableCell component="td" className="vdt-border-none">{item.category}</TableCell>
-                                                <TableCell component="td" className="vdt-border-none">{item.description}</TableCell>
-                                                <TableCell component="td" className="vdt-border-none">{item.paymentMethod}</TableCell>
-                                                <TableCell component="td" className="vdt-border-none">
-                                                    {formatTimestampToDateString(item.excutedAt as Timestamp, FormatDate.DDMMYYYY)}
-                                                </TableCell>
-                                                <TableCell className="vdt-border-none" align="right">
-                                                    <div className="vdt-flex vdt-justify-end vdt-gap-2 vdt-items-center">
-                                                        <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span>
-                                                        {
-                                                            !item.isPaid && <Tooltip title="Not paid">
-                                                                <ErrorOutlineIcon color="error" fontSize="small" />
-                                                            </Tooltip>
-                                                        }
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        </Tooltip>
+                                        return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]"
+                                            onDoubleClick={() => { handleEditTransaction(item) }}
+                                        // onTouchStart={() => { handleEditTransaction(item) }} onTouchEnd={(e) => e.preventDefault()}
+                                        >
+                                            <TableCell component="td" className="vdt-border-none">{index + 1}</TableCell>
+                                            <TableCell component="td" className="vdt-border-none">{item.category}</TableCell>
+                                            <TableCell component="td" className="vdt-border-none">{item.description}</TableCell>
+                                            <TableCell component="td" className="vdt-border-none">{item.paymentMethod}</TableCell>
+                                            <TableCell component="td" className="vdt-border-none">
+                                                {formatTimestampToDateString(item.excutedAt as Timestamp, FormatDate.DDMMYYYY)}
+                                            </TableCell>
+                                            <TableCell className="vdt-border-none" align="right">
+                                                <div className="vdt-flex vdt-justify-end vdt-gap-2 vdt-items-center">
+                                                    <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span>
+                                                    {
+                                                        !item.isPaid && <Tooltip title="Not paid">
+                                                            <ErrorOutlineIcon color="error" fontSize="small" />
+                                                        </Tooltip>
+                                                    }
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+
                                     })
                                 }
 

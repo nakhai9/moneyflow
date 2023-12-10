@@ -1,8 +1,8 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { Timestamp, addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, setDoc, updateDoc } from "firebase/firestore";
+import { FieldValue, Timestamp, addDoc, collection, deleteDoc, doc, getDoc, getDocs, increment, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { v4 as uuidv4 } from 'uuid';
 import { _db, auth } from "../configs/firebaseConfig";
-import { FirestoreCollections, IBase, IUserSignIn, IUserSignUp, UserGender, UserRole } from "../drafts/prisma";
+import { FirestoreCollections, IBase, ICurrency, IOption, IUserSignIn, IUserSignUp, IWallet, UserGender, UserRole } from "../drafts/prisma";
 
 const base: IBase = {
     _vid: uuidv4(),
@@ -58,6 +58,19 @@ export const firestoreService = {
         const payload: (T & IBase) = { ...data, ...base };
         return await setDoc(docRef, payload);
     },
+    updateDoc: async <T>(collectionName: FirestoreCollections, id: string, data: T) => {
+        const docRef = doc(_db, collectionName, id);
+        try {
+            const payload = { ...data, updatedAt: Timestamp.now() }
+            return await updateDoc(docRef, payload)
+        } catch (error) {
+            console.log(error);
+
+        }
+    },
+}
+
+export const authService = {
     signIn: async (user: IUserSignIn) => {
         let userCredential = null, error = null;
 
@@ -82,15 +95,68 @@ export const firestoreService = {
             console.log(error);
         }
     },
-    updateDoc: async <T>(collectionName: FirestoreCollections, id: string, data: T) => {
-        const docRef = doc(_db, collectionName, id);
+}
+
+export const accountService = {
+    addNewAccount: async (wallet: IWallet) => {
         try {
-            const payload = { ...data, updatedAt: Timestamp.now() }
-            return await updateDoc(docRef, payload)
+            await firestoreService.addDoc<IWallet>(FirestoreCollections.WALLETS, wallet);
+        } catch (error) {
+            throw error;
+        }
+    },
+    getAccountsByUserId: async (userId: string) => {
+        try {
+            const _query = query(collection(_db, FirestoreCollections.WALLETS), where('userId', '==', userId));
+            const snapshotDocuments = await getDocs(_query);
+            const result: any = [];
+            snapshotDocuments.docs.forEach((doc) => {
+                result.push({ id: doc.id, ...doc.data() });
+            });
+
+            return result;
         } catch (error) {
             console.log(error);
-
+        }
+    },
+    deleteAccountById: async (accountId: string) => {
+        try {
+            await firestoreService.deleteDoc(FirestoreCollections.WALLETS, accountId);
+        } catch (error) {
+            throw error;
         }
     }
+}
 
+export const transactionService = {
+    getTransactions: async () => {
+        try {
+            const collectionRef = collection(_db, FirestoreCollections.TRANSACTIONS)
+            const q = query(collectionRef, orderBy("createdAt", "asc"));
+            const snapshotDocuments = await getDocs(q);
+            const transactions: any = [];
+            snapshotDocuments.docs.forEach((doc) => {
+                transactions.push({ id: doc.id, ...doc.data() });
+            });
+            return transactions;
+        } catch (error) {
+            throw error;
+        }
+    },
+    getTransactionsByUserID: async () => {},
+    getTransactionsByWalletID: async () => {},
+    addNewTransaction: async () => {},
+    updateTransaction: async () => {},
+    deleteTransaction: async () => {},
+}
+
+export const currencyService = {
+    getCurrencies: async () => {
+        try {
+            const result = await firestoreService.getDocs(FirestoreCollections.CURRENCIES);
+            return result;
+        } catch (error) {
+            console.log(error);
+        }
+    }
 }

@@ -1,7 +1,7 @@
-import { FirestoreCollections, IUserInfo } from "@/common/drafts/prisma";
-import { firestoreService } from "@/common/services/firestore";
+import { IUserInfo } from "@/common/drafts/prisma";
+import { authService } from "@/common/services/firestore";
 import AuthLayout from "@/layouts/AuthLayout";
-import { setCurrentUser, setUserInfo } from "@/store/features/auth/authSlice";
+import { setUserInfo } from "@/store/features/auth/authSlice";
 import { toggleBackdrop } from "@/store/features/global/globalSlice";
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Stack, TextField, Typography } from '@mui/material';
@@ -29,7 +29,7 @@ const LoginPage: NextPage = () => {
     const onSubmit: SubmitHandler<LoginSubmitForm> = async (data) => {
         dispatch(toggleBackdrop(true))
         try {
-            const { userCredential, error } = await firestoreService.signIn({ ...data });
+            const { userCredential, error } = await authService.signIn({ ...data });
             if (userCredential && userCredential.user) {
                 const userInfo: IUserInfo = {
                     id: userCredential.user.uid,

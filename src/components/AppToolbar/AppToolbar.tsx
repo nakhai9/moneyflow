@@ -55,7 +55,7 @@ const AppToolbar: React.FC<AppToolbarProps> = ({ user, logout }) => {
                             textDecoration: 'none',
                         }}
                     >
-                        Spendee
+                        $pendee
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
                         <IconButton
@@ -106,7 +106,7 @@ const AppToolbar: React.FC<AppToolbarProps> = ({ user, logout }) => {
                             textDecoration: 'none',
                         }}
                     >
-                        Spendee
+                        $pendee
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: { md: 4 } }}>
                         {PAGES.map((page) => (
@@ -117,7 +117,7 @@ const AppToolbar: React.FC<AppToolbarProps> = ({ user, logout }) => {
                     <Box sx={{ flexGrow: 0 }}>
                         {
                             user && (<Box sx={{ display: 'flex', alignItems: "center", gap: 2, cursor: "pointer" }} onClick={handleOpenUserMenu}>
-                                <Avatar alt={`${user.firstName} ${user?.lastName}`} src={`${user.photoUrl}`} />
+                                <Avatar alt={`${user.firstName} ${user?.lastName}`} src={`${user.photoUrl ? user.photoUrl : ''}`} />
                                 <Typography sx={{ display: { xs: 'none', md: 'flex' }, mr: { xs: 'unset', md: 2 } }}>{`${user.firstName} ${user.lastName}`}</Typography>
                                 <KeyboardArrowDownIcon fontSize='small' />
                             </Box>)

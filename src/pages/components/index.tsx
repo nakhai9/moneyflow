@@ -52,11 +52,7 @@ const Components: React.FC<ComponentsProps> = () => {
     }
 
     const createTransactions = async () => {
-        // const transactions: ITransaction[] = []
 
-        // for(let item of transactions) {
-        //     await firestoreService.setDoc(FirestoreCollection.TRANSACTIONS, item);
-        // }
     }
 
     const createCategories = async () => {
@@ -92,26 +88,26 @@ const Components: React.FC<ComponentsProps> = () => {
     return <>
         <Stack spacing={3}>
 
-            <Button type="button" variant="contained" color="primary" onClick={createNewWallet}>
+            <Button type="button" variant="contained" color="primary" onClick={createNewWallet} disabled>
                 CREATE NEW WALLET
             </Button>
 
-            <Button type="button" variant="contained" color="primary" onClick={createCurrencies}>
+            <Button type="button" variant="contained" color="primary" onClick={createCurrencies} disabled>
                 CREATE CURRENCIES
             </Button>
 
-            <Button type="button" variant="contained" color="primary" onClick={createTransactions}>
+            <Button type="button" variant="contained" color="primary" onClick={createTransactions} >
                 CREATE TRANSACTIONS
             </Button>
 
-            <Button type="button" variant="contained" color="primary" onClick={createCategories}>
+            <Button type="button" variant="contained" color="primary" onClick={createCategories} disabled>
                 CREATE CATEGORIES
             </Button>
 
         </Stack>
 
-        {JSON.stringify(user)}
-        <AppSnackbar open={true} positions="top-center" severity="success" message="Success" />
+        {/* {JSON.stringify(user)}
+        <AppSnackbar open={true} positions="top-center" severity="success" message="Success" /> */}
     </>
 }
 export default Components;

@@ -1,4 +1,4 @@
-import { ICommonMessages } from "@/common/drafts/prisma";
+import { IBase, ICommonMessages, ICurrency, IOption } from "@/common/drafts/prisma";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit"
 
 export interface GlobalState {
@@ -6,13 +6,20 @@ export interface GlobalState {
     snackbarMessages: ICommonMessages | null;
 
     isOpenBackdrop: boolean;
+
+    currencyOptions: IOption[];
+    formSubmited: boolean;
 }
 
 const initialState: GlobalState = {
     isOpenSnackbar: false,
     snackbarMessages: null,
 
-    isOpenBackdrop: false
+    isOpenBackdrop: false,
+
+    currencyOptions: [],
+
+    formSubmited: false
 }
 
 export const globalState = createSlice({
@@ -27,13 +34,27 @@ export const globalState = createSlice({
         },
         setSnackbarMessages: (state, action: PayloadAction<ICommonMessages>) => {
             state.snackbarMessages = action.payload;
-        }
+        },
+        setCurrencyOptions: (state, action: PayloadAction<(ICurrency & IBase)[]>) => {
+            state.currencyOptions = action.payload.map((currency, index) => {
+                return {
+                    id: currency.id,
+                    prop: currency.code,
+                    value: currency.id,
+                }
+            });
+        },
+        toggleFormSubmited: (state, action: PayloadAction<boolean>) => {
+            state.formSubmited = action.payload;
+        },
     }
 });
 
 export const {
     toggleSnackbar,
     toggleBackdrop,
-    setSnackbarMessages
+    setSnackbarMessages,
+    setCurrencyOptions,
+    toggleFormSubmited
 } = globalState.actions;
 export default globalState.reducer;

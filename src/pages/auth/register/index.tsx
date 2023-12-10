@@ -1,4 +1,4 @@
-import { firestoreService } from "@/common/services/firestore";
+import { authService } from "@/common/services/firestore";
 import AuthLayout from "@/layouts/AuthLayout";
 import { toggleBackdrop } from "@/store/features/global/globalSlice";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -32,7 +32,7 @@ const RegisterPage: NextPage = () => {
         if (data.password === data.confirmPassword) {
             dispatch(toggleBackdrop(true));
             try {
-                const response = await firestoreService.signUp({
+                const response = await authService.signUp({
                     email: data.email,
                     firstName: data.firstName,
                     lastName: data.lastName,

@@ -7,10 +7,11 @@ import { AddIcon } from "@/components/common/VIcons";
 import useToggle from "@/hooks/useToggle";
 import DefaultLayout from "@/layouts/DefaultLayout";
 import { toggleBackdrop } from "@/store/features/global/globalSlice";
-import { Button, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from "@mui/material";
+import { RootState } from "@/store/store";
+import { Button, Grid, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { useCallback, useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const columns = ['Nr', 'Category', 'Wallet', 'Description', 'Payment method', 'Excuted Date', 'Amount'];
 
@@ -19,9 +20,11 @@ const Transactions = () => {
     const dispatch = useDispatch();
     const [type, setType] = useState<ModalType>();
     const [wallets, setWallets] = useState<(IWallet & IBase)[] | null>(null);
-    const [transactions, setTransactions] = useState<(ITransaction & IBase)[]>([]);
+    const [transactions, setTransactions] = useState<(ITransaction & IBase)[] | null>(null);
     const [transaction, setTransaction] = useState<(ITransaction & IBase)>();
     const { open, handleOpen, handleClose } = useToggle();
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const { formSubmited } = useSelector((state: RootState) => state.global);
 
     const handleAddTransaction = () => {
         handleOpen();
@@ -35,11 +38,13 @@ const Transactions = () => {
     }
 
     const fetchTransactions = useCallback(async () => {
+        setIsLoading(true);
         const snapshotWallets = await firestoreService.getDocs(FirestoreCollections.WALLETS);
         const snapshotTransactions = await firestoreService.getDocs(FirestoreCollections.TRANSACTIONS);
         setTransactions(snapshotTransactions);
         setWallets(snapshotWallets);
-    }, []);
+        setIsLoading(false);
+    }, [formSubmited]);
 
     const getWalletName = (walletId: string): (string | undefined) => {
         return wallets?.find((wallet: IWallet & IBase) => wallet.id === walletId)?.name;
@@ -66,48 +71,53 @@ const Transactions = () => {
                     </Grid>
                 </Grid>
                 <Grid container item xs={12}>
-                    {
-                        transactions &&
-                        (<TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
-                            <Table size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        {
-                                            columns.map((columnHeading: string, index: number) => <TableCell key={index} align={columnHeading === 'Amount' ? 'right' : 'left'} sx={{ 'fontWeight': "bold" }} component="th">{columnHeading}</TableCell>)
-                                        }
+
+                    <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: 'auto' }}>
+                        <Table size="small">
+                            <TableHead>
+                                <TableRow>
+                                    {
+                                        columns.map((columnHeading: string, index: number) => <TableCell key={index} align={columnHeading === 'Amount' ? 'right' : 'left'} sx={{ 'fontWeight': "bold" }} component="th">{columnHeading}</TableCell>)
+                                    }
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {
+                                    (isLoading) && <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
+                                        <TableCell colSpan={columns.length} align="center">
+                                            <LinearProgress />
+                                        </TableCell>
                                     </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {
-                                        !transaction && <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
-                                            <TableCell colSpan={columns.length} align="center">No data to load</TableCell>
+                                }
+                                {
+                                    (!isLoading && !transactions?.length) && <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
+                                        <TableCell colSpan={columns.length} align="center">
+                                            No data
+                                        </TableCell>
+                                    </TableRow>
+                                }
+                                {
+                                    transactions?.map((item, index) => {
+                                        return <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
+                                            <TableCell component="td" className="vdt-border-none">{index + 1}</TableCell>
+                                            <TableCell component="td" className="vdt-border-none">
+                                                {item.category}
+                                            </TableCell>
+                                            <TableCell className="vdt-border-none">
+                                                {item.walletId && getWalletName(item.walletId)}
+                                            </TableCell>
+                                            <TableCell component="td" className="vdt-border-none">{item.description ?? "---"}</TableCell>
+                                            <TableCell component="td" className="vdt-border-none">{item.paymentMethod}</TableCell>
+                                            <TableCell component="td" className="vdt-border-none">
+                                                {formatTimestampToDateString(item.excutedAt as Timestamp, FormatDate.DDMMYYYY)}
+                                            </TableCell>
+                                            <TableCell component="td" className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
                                         </TableRow>
-                                    }
-                                    {
-                                        transactions.map((item, index) => {
-                                            return <Tooltip key={index} title="Double click to open">
-                                                <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
-                                                    <TableCell component="td" className="vdt-border-none">{index + 1}</TableCell>
-                                                    <TableCell component="td" className="vdt-border-none">
-                                                        {item.category}
-                                                    </TableCell>
-                                                    <TableCell className="vdt-border-none">
-                                                        {item.walletId && getWalletName(item.walletId)}
-                                                    </TableCell>
-                                                    <TableCell component="td" className="vdt-border-none">{item.description ?? "---"}</TableCell>
-                                                    <TableCell component="td" className="vdt-border-none">{item.paymentMethod}</TableCell>
-                                                    <TableCell component="td" className="vdt-border-none">
-                                                        {formatTimestampToDateString(item.excutedAt as Timestamp, FormatDate.DDMMYYYY)}
-                                                    </TableCell>
-                                                    <TableCell component="td" className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
-                                                </TableRow>
-                                            </Tooltip>
-                                        })
-                                    }
-                                </TableBody>
-                            </Table>
-                        </TableContainer>)
-                    }
+                                    })
+                                }
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 </Grid>
             </Grid>
         </DefaultLayout>

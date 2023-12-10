@@ -33,7 +33,6 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
   }
 
   const fetchUser = useCallback(async (userId: string) => {
-    dispatch(toggleBackdrop(true))
     try {
       const user = await firestoreService.getDocById<IUser>(FirestoreCollections.USERS, userId);
       if (user) {
