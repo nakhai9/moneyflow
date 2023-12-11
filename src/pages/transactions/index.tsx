@@ -98,7 +98,7 @@ const Transactions = () => {
                                 }
                                 {
                                     transactions?.map((item, index) => {
-                                        return <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
+                                        return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
                                             <TableCell component="td" className="vdt-border-none">{index + 1}</TableCell>
                                             <TableCell component="td" className="vdt-border-none">
                                                 {item.category}
