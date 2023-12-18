@@ -1,16 +1,19 @@
-import { FirestoreCollections, IBase, ICurrency, ITransaction, IWallet, ModalType, TransactionType } from "@/common/drafts/prisma";
+import { FirestoreCollections, IBase, ICurrency, ITransaction, IWallet, ModalAction, TransactionType } from "@/common/drafts/prisma";
 import { accountService, firestoreService } from '@/common/services/firestore';
 import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
+import { ConfirmModal, TransactionModal } from "@/components";
+import { Modal } from "@/components/Modals/modal";
 import DialogTransaction from "@/components/Transactions/DialogTransaction";
 import { AddIcon, FileDownloadIcon, SettingsIcon } from "@/components/common/VIcons";
+import useModal from "@/hooks/useModal";
 import useToggle from "@/hooks/useToggle";
 import DefaultLayout from "@/layouts/DefaultLayout";
-import { toggleBackdrop } from "@/store/features/global/globalSlice";
+import { togglePageLoading } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
 import { getTotalPeriodExpenseValue, getTotalPeriodIncomeValue } from "@/utils";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import { Box, Button, CircularProgress, Grid, IconButton, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Grid, IconButton, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { NextPage } from "next";
 import Link from "next/link";
@@ -27,27 +30,31 @@ const WalletDetailPage: NextPage = () => {
 
     const [columns] = useState<string[]>(['Nr', 'Category', 'Description', 'Payment method', 'Excuted Date', 'Amount']);
 
-    const [type, setType] = useState<ModalType>();
+    const [type, setType] = useState<ModalAction>();
     const [transaction, setTransaction] = useState<ITransaction & IBase>();
-    const { open, handleOpen, handleClose } = useToggle();
+    // const { open, handleOpen, handleClose } = useToggle();
+    const { open, onOpen, onClose } = useModal();
+    const [modal, setModal] = useState<Modal | null>(null);
 
     const [transactions, setTransactions] = useState<(ITransaction & IBase)[] | null>(null);
     const [currentWallet, setCurrentWallet] = useState<(IWallet & IBase) | null>(null);
     const [currency, setCurrency] = useState<string>('');
 
-    const { isOpenBackdrop } = useSelector((state: RootState) => state.global);
+    const { pageLoading: isOpenBackdrop } = useSelector((state: RootState) => state.global);
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const handleAddTransaction = () => {
-        handleOpen();
-        setType(ModalType.ADD);
+    const openAddTransactionModal = () => {
+        onOpen();
+        // handleOpen();
+        setModal(Modal.TRANSACTION);
+        setType(ModalAction.ADD);
     }
 
     const handleEditTransaction = (transaction: ITransaction & IBase) => {
-        handleOpen();
-        setType(ModalType.EDIT);
-        setTransaction(transaction)
+        // handleOpen();
+        // setType(ModalType.EDIT);
+        // setTransaction(transaction)
     }
 
     const fetch = useCallback(async () => {
@@ -69,7 +76,7 @@ const WalletDetailPage: NextPage = () => {
     }, [id, disptach, isOpenBackdrop])
 
     const deleteWalletById = async (wallet: (IWallet & IBase) | null) => {
-        disptach(toggleBackdrop(true));
+        disptach(togglePageLoading(true));
         try {
             if (wallet && wallet.id) {
                 await accountService.deleteAccountById(wallet.id);
@@ -77,9 +84,19 @@ const WalletDetailPage: NextPage = () => {
         } catch (error) {
             console.log(error);
         } finally {
-            disptach(toggleBackdrop(false));
+            disptach(togglePageLoading(false));
             router.push("/");
         }
+    }
+
+    const openConfirmModal = () => {
+        onOpen();
+        setModal(Modal.CONFIRM);
+    }
+
+    const closeConfirmModal = () => {
+        deleteWalletById(currentWallet);
+        onClose();
     }
 
     useEffect(() => {
@@ -88,10 +105,19 @@ const WalletDetailPage: NextPage = () => {
 
     return (
         <DefaultLayout>
-            <DialogTransaction transaction={transaction} walletId={id} type={type} open={open} handleClose={handleClose} />
+            {/* <DialogTransaction transaction={transaction} walletId={id} type={type} open={open} handleClose={handleClose} /> */}
+            <TransactionModal open={open && modal === Modal.TRANSACTION} type={type} onClose={onClose} transaction={null} />
+            <ConfirmModal
+                title="Do you want to delete wallet?"
+                message="You won't be able to restore your data after deleting this account."
+                type="delete"
+                open={open && modal === Modal.CONFIRM}
+                onClose={onClose}
+            />
+
             <Grid container spacing={4}>
                 <Grid container item xs={12} justifyContent="space-between">
-                    <Button type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={handleAddTransaction}>
+                    <Button type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={openAddTransactionModal}>
                         Add transaction
                     </Button>
                 </Grid>
@@ -110,7 +136,7 @@ const WalletDetailPage: NextPage = () => {
                                 <FileDownloadIcon />
                             </IconButton>
                         </Tooltip>
-                        <Tooltip title="Delete wallet" onClick={() => { deleteWalletById(currentWallet) }}>
+                        <Tooltip title="Delete wallet" onClick={openConfirmModal}>
                             <IconButton aria-label="setting" size="small">
                                 <DeleteIcon />
                             </IconButton>

@@ -1,10 +1,12 @@
 import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
 import authReducer from "./features/auth/authSlice";
 import globalReducer from "./features/global/globalSlice";
+import walletReducer from "./features/wallet/walletSlice";
 
 const rootReducer = {
   global: globalReducer,
-  auth: authReducer
+  auth: authReducer,
+  wallet: walletReducer
 }
 
 export const store = configureStore({

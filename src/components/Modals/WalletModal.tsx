@@ -1,6 +1,6 @@
-import { IBase, ICurrency, IOption, IWallet, WalletType } from "@/common/drafts/prisma";
+import { IOption, IWallet, WalletType } from "@/common/drafts/prisma";
 import { accountService } from "@/common/services/firestore";
-import { toggleBackdrop, toggleFormSubmited } from "@/store/features/global/globalSlice";
+import { toggleFormSubmited } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, MenuItem, TextField } from "@mui/material";
@@ -43,15 +43,12 @@ const WalletModal: FC<WalletModalProp> = ({ open, onCloseModal }) => {
     
     const dispatch = useDispatch();
     const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('xs');
-
     const { user } = useSelector((state: RootState) => state.auth);
     const { currencyOptions } = useSelector((state: RootState) => state.global);
-
     const { handleSubmit, control, formState: { errors }, reset } = useForm<WalletSubmitForm>({
         defaultValues: initialForm,
         resolver: yupResolver(validationSchema)
     })
-
     const onSubmit = async (data: WalletSubmitForm) => {
         try {
             onCloseModal();
@@ -71,7 +68,7 @@ const WalletModal: FC<WalletModalProp> = ({ open, onCloseModal }) => {
             console.log(error);
         } 
     };
-
+    
     return <Dialog open={open} fullWidth={true} maxWidth={maxWidth} onClose={onCloseModal}>
         <form onSubmit={handleSubmit(onSubmit)} >
             <DialogTitle>Create wallet</DialogTitle>

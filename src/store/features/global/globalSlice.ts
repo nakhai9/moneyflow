@@ -5,7 +5,7 @@ export interface GlobalState {
     isOpenSnackbar: boolean;
     snackbarMessages: ICommonMessages | null;
 
-    isOpenBackdrop: boolean;
+    pageLoading: boolean;
 
     currencyOptions: IOption[];
     formSubmited: boolean;
@@ -15,7 +15,7 @@ const initialState: GlobalState = {
     isOpenSnackbar: false,
     snackbarMessages: null,
 
-    isOpenBackdrop: false,
+    pageLoading: true,
 
     currencyOptions: [],
 
@@ -29,8 +29,8 @@ export const globalState = createSlice({
         toggleSnackbar: (state, action: PayloadAction<boolean>) => {
             state.isOpenSnackbar = action.payload;
         },
-        toggleBackdrop: (state, action: PayloadAction<boolean>) => {
-            state.isOpenBackdrop = action.payload;
+        togglePageLoading: (state, action: PayloadAction<boolean>) => {
+            state.pageLoading = action.payload;
         },
         setSnackbarMessages: (state, action: PayloadAction<ICommonMessages>) => {
             state.snackbarMessages = action.payload;
@@ -52,7 +52,7 @@ export const globalState = createSlice({
 
 export const {
     toggleSnackbar,
-    toggleBackdrop,
+    togglePageLoading,
     setSnackbarMessages,
     setCurrencyOptions,
     toggleFormSubmited

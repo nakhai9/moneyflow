@@ -68,7 +68,7 @@ export enum FirestoreCollections {
     CATEGORIES = 'categories'
 }
 
-export enum ModalType {
+export enum ModalAction {
     ADD = "add",
     EDIT = "edit",
     DELETE = "delete",
@@ -89,6 +89,14 @@ export interface IUserSignUp {
     email: string;
     phoneNumber: string;
     password?: string;
+}
+
+export interface IUpdateUser {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    sex?: UserGender;
+    dob: string;
 }
 
 export interface IUser {

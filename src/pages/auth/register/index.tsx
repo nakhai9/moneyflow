@@ -1,6 +1,6 @@
 import { authService } from "@/common/services/firestore";
 import AuthLayout from "@/layouts/AuthLayout";
-import { toggleBackdrop } from "@/store/features/global/globalSlice";
+import { togglePageLoading } from "@/store/features/global/globalSlice";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Button, Stack, TextField, Typography } from "@mui/material";
 import { NextPage } from "next";
@@ -20,7 +20,6 @@ const signupSchema = yup.object({
 
 type SignUpForm = yup.InferType<typeof signupSchema>;
 
-
 const RegisterPage: NextPage = () => {
 
     const router = useRouter();
@@ -30,7 +29,7 @@ const RegisterPage: NextPage = () => {
     const onSubmit: SubmitHandler<SignUpForm> = async (data) => {
 
         if (data.password === data.confirmPassword) {
-            dispatch(toggleBackdrop(true));
+            dispatch(togglePageLoading(true));
             try {
                 const response = await authService.signUp({
                     email: data.email,
@@ -50,7 +49,7 @@ const RegisterPage: NextPage = () => {
             } catch (error) {
                 console.log(error);
             } finally {
-                dispatch(toggleBackdrop(false));
+                dispatch(togglePageLoading(false));
             }
         }
     }

@@ -1,8 +1,8 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { FieldValue, Timestamp, addDoc, collection, deleteDoc, doc, getDoc, getDocs, increment, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
+import { Timestamp, addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { v4 as uuidv4 } from 'uuid';
 import { _db, auth } from "../configs/firebaseConfig";
-import { FirestoreCollections, IBase, ICurrency, IOption, IUserSignIn, IUserSignUp, IWallet, UserGender, UserRole } from "../drafts/prisma";
+import { FirestoreCollections, IBase, ITransaction, IUpdateUser, IUserSignIn, IUserSignUp, IWallet, UserGender, UserRole } from "../drafts/prisma";
 
 const base: IBase = {
     _vid: uuidv4(),
@@ -95,6 +95,13 @@ export const authService = {
             console.log(error);
         }
     },
+    updateUserInfo: async (userId: string, newUpdate: IUpdateUser) => {
+        try {
+            await firestoreService.updateDoc(FirestoreCollections.USERS, userId, newUpdate);
+        } catch (error) {
+            console.log(error);
+        }
+    }
 }
 
 export const accountService = {
@@ -143,11 +150,26 @@ export const transactionService = {
             throw error;
         }
     },
-    getTransactionsByUserID: async () => {},
-    getTransactionsByWalletID: async () => {},
-    addNewTransaction: async () => {},
-    updateTransaction: async () => {},
-    deleteTransaction: async () => {},
+    getTransactionsByUserID: async (userId: string) => {
+        const _query = query(collection(_db, FirestoreCollections.TRANSACTIONS), where('userId', '==', userId));
+        const snapshotDocuments = await getDocs(_query);
+        const result: any = [];
+        snapshotDocuments.docs.forEach((doc) => {
+            result.push({ id: doc.id, ...doc.data() });
+        });
+
+        return result as (ITransaction & IBase)[];
+    },
+    getTransactionsByWalletID: async () => { },
+    addNewTransaction: async (transactions: ITransaction) => {
+        try {
+            return await firestoreService.addDoc<ITransaction>(FirestoreCollections.TRANSACTIONS, transactions);
+        } catch (error) {
+            console.log(error);
+        }
+    },
+    updateTransaction: async () => { },
+    deleteTransaction: async () => { },
 }
 
 export const currencyService = {
@@ -157,6 +179,23 @@ export const currencyService = {
             return result;
         } catch (error) {
             console.log(error);
+        }
+    }
+}
+
+export const categoryService = {
+    getCategories: async () => {
+        try {
+            const collectionRef = collection(_db, FirestoreCollections.CATEGORIES)
+            const q = query(collectionRef, orderBy("createdAt", "asc"));
+            const snapshotDocuments = await getDocs(q);
+            const categories: any = [];
+            snapshotDocuments.docs.forEach((doc) => {
+                categories.push({ id: doc.id, ...doc.data() });
+            });
+            return categories;
+        } catch (error) {
+            throw error;
         }
     }
 }

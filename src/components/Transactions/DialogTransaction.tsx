@@ -1,4 +1,4 @@
-import { Category, FirestoreCollections, IBase, ITransaction, ModalType, PaymentMethod, TransactionType } from '@/common/drafts/prisma';
+import { Category, FirestoreCollections, IBase, ITransaction, ModalAction, PaymentMethod, TransactionType } from '@/common/drafts/prisma';
 import { RootState } from '@/store/store';
 import { Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, TextField } from '@mui/material';
 import { Timestamp } from 'firebase/firestore';
@@ -7,7 +7,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from 'react-redux';
 import { firestoreService } from '@/common/services/firestore';
 import { FormatDate, formatTimestampToDateString } from '@/common/utils/date';
-import { toggleBackdrop } from '@/store/features/global/globalSlice';
+import { togglePageLoading } from '@/store/features/global/globalSlice';
 
 type TransactionSubmitForm = {
     description: string,
@@ -23,7 +23,7 @@ type DialogTransactionProps = {
     open: boolean;
     handleOpen?: () => void;
     handleClose?: () => void;
-    type?: ModalType;
+    type?: ModalAction;
     walletId?: string;
     transaction?: (ITransaction & IBase)
 }
@@ -73,7 +73,7 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
             console.log(error);
         } finally {
             reset(initialForm);
-            dispatch(toggleBackdrop(true));
+            dispatch(togglePageLoading(true));
         }
 
         handleClose && handleClose();
@@ -92,7 +92,7 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
     }, [setValue]);
 
     useEffect(() => {
-        const openTransactionModal = (type: ModalType, transaction?: (ITransaction & IBase)) => {
+        const openTransactionModal = (type: ModalAction, transaction?: (ITransaction & IBase)) => {
             if (!type) return
             if (transaction) {
                 const transactionDetail: TransactionSubmitForm = {
@@ -259,7 +259,7 @@ export default function DialogTransaction({ open, type, transaction, walletId, h
                 <DialogActions>
                     <Button type="button" onClick={handleCloseDialog} variant="contained" color="inherit">Cancel</Button>
                     {
-                        type === ModalType.ADD ? <Button type="submit" variant="contained" color="primary">Create</Button> :
+                        type === ModalAction.ADD ? <Button type="submit" variant="contained" color="primary">Create</Button> :
                             <>
                                 <Button type="button" variant="contained" color="error">Delete</Button>
                                 <Button type="submit" variant="contained" color="primary">Save</Button>

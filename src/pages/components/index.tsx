@@ -1,10 +1,10 @@
 import { FirestoreCollections, ICategory, ICurrency, IUserSignUp } from "@/common/drafts/prisma";
-import { firestoreService } from "@/common/services/firestore";
+import { categoryService, firestoreService } from "@/common/services/firestore";
 import { AppSnackbar } from "@/components";
 import { RootState } from "@/store/store";
 import { Button, Stack } from "@mui/material";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 type ComponentsProps = {}
@@ -84,25 +84,25 @@ const Components: React.FC<ComponentsProps> = () => {
         }
     }
 
+    const [data, setData] = useState(null)
+    const fetch = useCallback(async ()=>{
+        try {
+            const d = await categoryService.getCategories();
+            setData(d)
+            console.log(d);
+        } catch (error) {
+            console.log(error);
+        }
+    }, [])
+    useEffect(() => {
+       fetch()
+    }, [fetch]);
+
 
     return <>
         <Stack spacing={3}>
 
-            <Button type="button" variant="contained" color="primary" onClick={createNewWallet} disabled>
-                CREATE NEW WALLET
-            </Button>
-
-            <Button type="button" variant="contained" color="primary" onClick={createCurrencies} disabled>
-                CREATE CURRENCIES
-            </Button>
-
-            <Button type="button" variant="contained" color="primary" onClick={createTransactions} >
-                CREATE TRANSACTIONS
-            </Button>
-
-            <Button type="button" variant="contained" color="primary" onClick={createCategories} disabled>
-                CREATE CATEGORIES
-            </Button>
+          
 
         </Stack>
 

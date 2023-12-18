@@ -16,8 +16,9 @@ const nextConfig = {
     return BLOCK_ROUTES;
   },
   images: {
-    domain: ["https://scontent.fvca1-3.fna.fbcdn.net"]
-  }
+    domain: ["https://scontent.fvca1-3.fna.fbcdn.net", "https://www.google.com"]
+  },
+  transpilePackages: ['@mui/x-charts'],
 }
 
 module.exports = nextConfig
