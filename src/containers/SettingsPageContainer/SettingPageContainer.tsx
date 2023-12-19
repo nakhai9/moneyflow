@@ -1,12 +1,13 @@
 import { IRoute } from '@/common/constants/routes';
-import { FirestoreCollections, IBase, ICategory, IUpdateUser, IUser, UserGender } from '@/common/drafts/prisma';
-import { authService, categoryService, firestoreService } from '@/common/services/firestore';
+import { IBase, ICategory, IUpdateUser, IUser, UserGender } from '@/common/drafts/prisma';
+import { authService, categoryService } from '@/common/services/firestore';
 import { formatTimestampToDateString } from '@/common/utils/date';
 import { DeleteIcon } from '@/components/common/VIcons';
 import { RootState } from '@/store/store';
 import { yupResolver } from '@hookform/resolvers/yup';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CategoryIcon from '@mui/icons-material/Category';
+import CreateIcon from '@mui/icons-material/Create';
 import SecurityIcon from '@mui/icons-material/Security';
 import { Alert, Avatar, Box, Button, Grid, IconButton, ListItemIcon, ListItemText, MenuItem, MenuList, Paper, Snackbar, SnackbarOrigin, TextField, Tooltip, Typography, styled } from '@mui/material';
 import { Timestamp } from 'firebase/firestore';
@@ -14,8 +15,6 @@ import { FC, useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import * as yup from 'yup';
-import CreateIcon from '@mui/icons-material/Create';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 type SettingPageContainerProps = {}
 
@@ -255,6 +254,7 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
             }
         </Grid>
     </Grid>
+    
     const securityTemplate = 'Security Template: We are building this.'
 
     return (
