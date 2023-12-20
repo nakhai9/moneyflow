@@ -71,7 +71,7 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
         }
         setIsLoading(false);
 
-    }, [id, dispatch, formSubmited])
+    }, [id, formSubmited])
 
     const deleteWalletById = async (wallet: (IAccount & IBase) | null) => {
         dispatch(togglePageLoading(true));
@@ -100,6 +100,7 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
     useEffect(() => {
         fetch();
     }, [fetch])
+    
     return <>
         <TransactionModal open={open && modal === Modal.TRANSACTION} action={modalAction} onClose={onClose} transaction={transaction} />
         <ConfirmModal
@@ -200,7 +201,7 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
                                 </TableRow>
                             }
                             {
-                                transactions?.map((item, index) => {
+                                transactions && transactions?.map((item, index) => {
                                     return <TableRow key={index} className="tw-cursor-pointer hover:tw-bg-[#F4F6F8]"
                                         onDoubleClick={() => { openEditTransactionModal(item) }}
                                     // onTouchStart={() => { handleEditTransaction(item) }} onTouchEnd={(e) => e.preventDefault()}

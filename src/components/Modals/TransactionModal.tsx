@@ -8,7 +8,6 @@ import { accountService, transactionService } from "@/common/services/firestore"
 import { formatTimestampToDateString } from "@/common/utils/date";
 import { toggleFormSubmited } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
-import { yupResolver } from "@hookform/resolvers/yup";
 import { Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, TextField } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { useRouter } from "next/router";
@@ -91,9 +90,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
             }
             if (action === ModalAction.ADD) {
                 const response = await transactionService.addNewTransaction(newTransaction);
-                console.log(newTransaction);
             } else {
-                console.log(newTransaction);
                 const transactionId = transaction?.id as string;
                 const response = await transactionService.updateTransaction(transactionId, newTransaction);
             }
@@ -127,16 +124,14 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
     const deleteTransaction = async (id: string) => {
         try {
             await transactionService.deleteTransaction(id);
-            dispatch(toggleFormSubmited(true));
         } catch (error) {
             console.log(error);
         }
+        dispatch(toggleFormSubmited(true));
         onCancel();
     }
 
-    const updateFormValues = useCallback(async (transaction: ITransaction) => {
-        console.log(transaction);
-        
+    const updateFormValues = useCallback(async (transaction: ITransaction) => {        
         if (transaction) {
             setValue("description", transaction.description);
             setValue("amount", transaction.amount);

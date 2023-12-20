@@ -8,7 +8,7 @@ import { accountService, transactionService } from "@/common/services/firestore"
 import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
 import { AppFilter, TransactionModal } from "@/components";
 import useModal from "@/hooks/useModal";
-import { togglePageLoading } from "@/store/features/global/globalSlice";
+import { toggleFormSubmited, togglePageLoading } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
 import { Button, Grid, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
@@ -41,6 +41,9 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
     }
 
     const fetchTransactions = useCallback(async () => {
+        if (formSubmited) {
+            dispatch(toggleFormSubmited(false));
+        }
         setIsLoading(true);
         if (user) {
             const snapshotWallets = await accountService.getAccountsByUserId(user?.id as string);
@@ -49,7 +52,7 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
             setWallets(snapshotWallets);
         }
         setIsLoading(false);
-    }, [user]);
+    }, [user, formSubmited]);
 
     const getWalletName = (walletId: string): (string | undefined) => {
         return wallets?.find((wallet: IAccount & IBase) => wallet.id === walletId)?.name;
