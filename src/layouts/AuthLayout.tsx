@@ -4,8 +4,8 @@ type AuthLayoutProps = {
     children: React.ReactNode
 }
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
-    return <div className="vdt-h-screen vdt-w-full vdt-bg-zinc-100">
-        <Paper className="vdt-absolute vdt-flex vdt-top-1/2 vdt-left-1/2 -vdt-translate-y-1/2 -vdt-translate-x-1/2 vdt-w-80 vdt-bg-white vdt-p-5 vdt-rounded">
+    return <div className="tw-h-screen tw-w-full tw-bg-zinc-100">
+        <Paper className="tw-absolute tw-flex tw-top-1/2 tw-left-1/2 -tw-translate-y-1/2 -tw-translate-x-1/2 tw-w-80 tw-bg-white tw-p-5 tw-rounded">
             {children}
         </Paper>
     </div>

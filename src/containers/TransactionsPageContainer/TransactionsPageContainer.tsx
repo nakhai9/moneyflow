@@ -1,11 +1,13 @@
-import { FirestoreCollections, IBase, ITransaction, IWallet, ModalAction, TransactionType } from "@/common/drafts/prisma";
-import { accountService, firestoreService, transactionService } from "@/common/services/firestore";
+import { AddIcon } from "@/common/constants/icons";
+import { ModalAction } from "@/common/enums/modal";
+import { TransactionType } from "@/common/enums/transaction";
+import { IAccount } from "@/common/interfaces/account";
+import { IBase } from "@/common/interfaces/base";
+import { ITransaction } from "@/common/interfaces/transaction";
+import { accountService, transactionService } from "@/common/services/firestore";
 import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
 import { AppFilter, TransactionModal } from "@/components";
-import DialogTransaction from "@/components/Transactions/DialogTransaction";
-import { AddIcon } from "@/components/common/VIcons";
 import useModal from "@/hooks/useModal";
-import useToggle from "@/hooks/useToggle";
 import { togglePageLoading } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
 import { Button, Grid, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
@@ -18,7 +20,7 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
 
     const dispatch = useDispatch();
     const [modalType, setModalType] = useState<ModalAction>();
-    const [wallets, setWallets] = useState<(IWallet & IBase)[] | null>(null);
+    const [wallets, setWallets] = useState<(IAccount & IBase)[] | null>(null);
     const [transactions, setTransactions] = useState<(ITransaction & IBase)[] | null>(null);
     const [transaction, setTransaction] = useState<(ITransaction & IBase) | null>(null);
     const { open, onOpen, onClose } = useModal();
@@ -47,10 +49,10 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
             setWallets(snapshotWallets);
         }
         setIsLoading(false);
-    }, [formSubmited]);
+    }, [user]);
 
     const getWalletName = (walletId: string): (string | undefined) => {
-        return wallets?.find((wallet: IWallet & IBase) => wallet.id === walletId)?.name;
+        return wallets?.find((wallet: IAccount & IBase) => wallet.id === walletId)?.name;
     }
 
     const closeModal = () => {
@@ -64,11 +66,10 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
     }, [fetchTransactions, dispatch])
 
     return <div>
-        {/* <DialogTransaction open={open} type={type} transaction={transaction} handleClose={handleClose} /> */}
-        <TransactionModal open={open} onClose={closeModal} type={modalType} transaction={transaction}/>
+        <TransactionModal open={open} onClose={closeModal} action={modalType} transaction={transaction}/>
         <Grid container spacing={4}>
             <Grid container item xs={12}>
-                <Button type="button" size="small" variant="contained" color="primary" className="vdt-normal-case" startIcon={<AddIcon />} onClick={handleAddTransaction}>
+                <Button type="button" size="small" variant="contained" color="primary" className="tw-normal-case" startIcon={<AddIcon />} onClick={handleAddTransaction}>
                     Add transaction
                 </Button>
             </Grid>
@@ -89,14 +90,14 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
                         </TableHead>
                         <TableBody>
                             {
-                                (isLoading) && <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
+                                (isLoading) && <TableRow className="tw-cursor-pointer hover:tw-bg-[#F4F6F8]">
                                     <TableCell colSpan={columns.length} align="center">
                                         <LinearProgress />
                                     </TableCell>
                                 </TableRow>
                             }
                             {
-                                (!isLoading && !transactions?.length) && <TableRow className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]">
+                                (!isLoading && !transactions?.length) && <TableRow className="tw-cursor-pointer hover:tw-bg-[#F4F6F8]">
                                     <TableCell colSpan={columns.length} align="center">
                                         No data
                                     </TableCell>
@@ -104,20 +105,20 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
                             }
                             {
                                 transactions?.map((item, index) => {
-                                    return <TableRow key={index} className="vdt-cursor-pointer hover:vdt-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
-                                        <TableCell component="td" className="vdt-border-none">{index + 1}</TableCell>
-                                        <TableCell component="td" className="vdt-border-none">
+                                    return <TableRow key={index} className="tw-cursor-pointer hover:tw-bg-[#F4F6F8]" onDoubleClick={() => { handleEditTransaction(item) }} >
+                                        <TableCell component="td" className="tw-border-none">{index + 1}</TableCell>
+                                        <TableCell component="td" className="tw-border-none">
                                             {item.category}
                                         </TableCell>
-                                        <TableCell className="vdt-border-none">
+                                        <TableCell className="tw-border-none">
                                             {item.walletId && getWalletName(item.walletId)}
                                         </TableCell>
-                                        <TableCell component="td" className="vdt-border-none">{item.description ?? "---"}</TableCell>
-                                        <TableCell component="td" className="vdt-border-none">{item.paymentMethod}</TableCell>
-                                        <TableCell component="td" className="vdt-border-none">
+                                        <TableCell component="td" className="tw-border-none">{item.description ?? "---"}</TableCell>
+                                        <TableCell component="td" className="tw-border-none">{item.paymentMethod}</TableCell>
+                                        <TableCell component="td" className="tw-border-none">
                                             {formatTimestampToDateString(item.excutedAt as Timestamp, FormatDate.DDMMYYYY)}
                                         </TableCell>
-                                        <TableCell component="td" className="vdt-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "vdt-text-blue-500" : "vdt-text-red-500"}  vdt-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
+                                        <TableCell component="td" className="tw-border-none" align="right"> <span className={`${(item.amount > 0 && item.type === TransactionType.INCOME) ? "tw-text-blue-500" : "tw-text-red-500"}  tw-font-semibold`}>{item.amount.toLocaleString()}</span> </TableCell>
                                     </TableRow>
                                 })
                             }

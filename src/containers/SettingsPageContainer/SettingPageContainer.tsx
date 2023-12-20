@@ -1,14 +1,13 @@
+import { AccountCircleIcon, CategoryIcon, CreateIcon, DeleteIcon, SecurityIcon } from '@/common/constants/icons';
 import { IRoute } from '@/common/constants/routes';
-import { IBase, ICategory, IUpdateUser, IUser, UserGender } from '@/common/drafts/prisma';
-import { authService, categoryService } from '@/common/services/firestore';
+import { UserGender } from '@/common/enums/user';
+import { IBase } from '@/common/interfaces/base';
+import { ICategory } from '@/common/interfaces/category';
+import { IUpdateUser, IUser } from '@/common/interfaces/user';
+import { authService, categoryService, imageService } from '@/common/services/firestore';
 import { formatTimestampToDateString } from '@/common/utils/date';
-import { DeleteIcon } from '@/components/common/VIcons';
 import { RootState } from '@/store/store';
 import { yupResolver } from '@hookform/resolvers/yup';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import CategoryIcon from '@mui/icons-material/Category';
-import CreateIcon from '@mui/icons-material/Create';
-import SecurityIcon from '@mui/icons-material/Security';
 import { Alert, Avatar, Box, Button, Grid, IconButton, ListItemIcon, ListItemText, MenuItem, MenuList, Paper, Snackbar, SnackbarOrigin, TextField, Tooltip, Typography, styled } from '@mui/material';
 import { Timestamp } from 'firebase/firestore';
 import { FC, useCallback, useEffect, useState } from 'react';
@@ -93,27 +92,33 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
         },
         resolver: yupResolver(validationSchema)
     });
+    const [avatarUpload, setAvatarUpload] = useState<string | null>(null);
 
-    const setFormValue = (user: IUser & IBase) => {
+    const setFormValue = useCallback(async (user: IUser & IBase) => {
         setValue("firstName", user.firstName);
         setValue("lastName", user.lastName);
         setValue("sex", user.sex);
         // setValue("email", user.email);
         setValue("phoneNumber", user.phoneNumber);
         setValue("dob", user?.dob ? formatTimestampToDateString(user?.dob as Timestamp) : "2020-01-20");
-    }
+    }, [setValue])
 
     const onSubmit = async (data: PublicAccountForm) => {
         try {
             const newUpdate: IUpdateUser = {
-                ...data
+                ...data,
             }
+            if (avatarUpload) {
+                newUpdate['photoUrl'] = avatarUpload;
+            }
+            newUpdate["dob"] = Timestamp.fromDate(new Date(newUpdate["dob"] as string));
             if (user && user.id) {
-                await authService.updateUserInfo(user.id, data);
+                await authService.updateUserInfo(user.id, newUpdate);
             }
             setIsUpdated(true);
         } catch (error) {
-            setHasError(true)
+            setHasError(true);
+            setIsUpdated(false);
         }
     }
 
@@ -130,12 +135,22 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
         }
     }, [])
 
+    const handleAvatarChange = async (event: any) => {
+        const selectedFile = event.target.files[0] as File;
+        try {
+            const url = await imageService.getDownloadURL(selectedFile);
+            setAvatarUpload(url)
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     useEffect(() => {
         if (user) {
             setFormValue(user);
             fetchCategories();
         }
-    }, [user, fetchCategories]);
+    }, [user, fetchCategories, setFormValue]);
 
     const accountTemplate = <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={4}>
@@ -156,8 +171,8 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
                             />
                         </Box>
                         <IconButton component="label">
-                            <Avatar sx={{ width: 64, height: 64 }} alt="a" src={user ? user.photoUrl : ''}></Avatar>
-                            <VisuallyHiddenInput type="file" />
+                            <Avatar sx={{ width: 64, height: 64 }} alt="a" src={avatarUpload ?? user?.photoUrl}></Avatar>
+                            <VisuallyHiddenInput type="file" onChange={handleAvatarChange} />
                         </IconButton>
                     </Box>
                 </Paper>
@@ -177,7 +192,7 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
                             >
                                 {Object.values(UserGender).map((gender, index) => (
                                     <MenuItem key={index} value={gender}>
-                                        <span className="vdt-capitalize">
+                                        <span className="tw-capitalize">
                                             {gender}
                                         </span>
                                     </MenuItem>
@@ -202,7 +217,7 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
                 <Paper sx={{ p: 4 }}>
                     <Typography variant="body2" mb={1} fontWeight={600}>Email</Typography>
                     <div>
-                        <Typography variant="subtitle2">Currently, you cannot change the email <span className="vdt-font-semibold vdt-cursor-pointer hover:vdt-text-blue-500">{user?.email}</span> because you are using it to log in to this account.</Typography>
+                        <Typography variant="subtitle2">Currently, you cannot change the email <span className="tw-font-semibold tw-cursor-pointer hover:tw-text-blue-500">{user?.email}</span> because you are using it to log in to this account.</Typography>
                     </div>
                     {/* <Controller control={control} name="email" render={({ field }) => <TextField {...field} size="small" sx={{ width: 300 }} disabled={true} />} /> */}
                 </Paper>
@@ -234,7 +249,7 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
             {
                 categories && categories.map((cat, index) => {
                     return <Grid key={index} item xs={12} md={12}>
-                        <Paper sx={{ p: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} className='hover:vdt-bg-slate-100'>
+                        <Paper sx={{ p: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} className='hover:tw-bg-slate-100'>
                             <Box>{cat.title}</Box>
                             <Box sx={{ display: 'none' }}>
                                 <Tooltip title="Edit">
@@ -254,7 +269,7 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
             }
         </Grid>
     </Grid>
-    
+
     const securityTemplate = 'Security Template: We are building this.'
 
     return (

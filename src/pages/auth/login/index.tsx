@@ -1,4 +1,4 @@
-import { IUserInfo } from "@/common/drafts/prisma";
+import { IUserInfo } from "@/common/interfaces/user";
 import { authService } from "@/common/services/firestore";
 import AuthLayout from "@/layouts/AuthLayout";
 import { setUserInfo } from "@/store/features/auth/authSlice";
@@ -48,9 +48,9 @@ const LoginPage: NextPage = () => {
 
     return <>
         <AuthLayout>
-            <form onSubmit={handleSubmit(onSubmit)} className="vdt-flex vdt-w-full vdt-flex-block vdt-flex-col vdt-space-y-2">
-                <Typography variant="h6" className="vdt-text-slate-500">Sign in</Typography>
-                <Stack className="vdt-flex vdt-flex-col vdt-space-y-3">
+            <form onSubmit={handleSubmit(onSubmit)} className="tw-flex tw-w-full tw-flex-block tw-flex-col tw-space-y-2">
+                <Typography variant="h6" className="tw-text-slate-500">Sign in</Typography>
+                <Stack className="tw-flex tw-flex-col tw-space-y-3">
                     <TextField id="standard-basic" fullWidth label="Email" type="text" variant="standard"
                         {...register("email", { required: true })}
                         error={errors.email?.message ? true : false}
@@ -61,12 +61,12 @@ const LoginPage: NextPage = () => {
                         error={errors.password?.message ? true : false}
                         helperText={errors.password?.message} />
 
-                    <Stack className="vdt-flex vdt-flex-col vdt-space-y-2">
-                        <div className="vdt-flex vdt-justify-between">
-                            <p className="vdt-text-xs vdt-text-slate-500 hover:vdt-text-blue-500"><Link href={"/auth/register"}>New account</Link></p>
-                            <p className="vdt-text-xs vdt-text-slate-500 hover:vdt-text-blue-500"><Link href={"/forgot-password"}>Forgot password?</Link></p>
+                    <Stack className="tw-flex tw-flex-col tw-space-y-2">
+                        <div className="tw-flex tw-justify-between">
+                            <p className="tw-text-xs tw-text-slate-500 hover:tw-text-blue-500"><Link href={"/auth/register"}>New account</Link></p>
+                            <p className="tw-text-xs tw-text-slate-500 hover:tw-text-blue-500"><Link href={"/forgot-password"}>Forgot password?</Link></p>
                         </div>
-                        <Button type="submit" className="vdt-bg-blue-500 vdt-w-full hover:vdt-bg-blue-600" variant="contained">Login</Button>
+                        <Button type="submit" className="tw-bg-blue-500 tw-w-full hover:tw-bg-blue-600" variant="contained">Login</Button>
                     </Stack>
                 </Stack>
             </form>

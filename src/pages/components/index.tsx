@@ -1,8 +1,9 @@
-import { FirestoreCollections, ICategory, ICurrency, IUserSignUp } from "@/common/drafts/prisma";
+import { FirestoreCollections } from "@/common/enums/firestore-collections";
+import { ICategory } from "@/common/interfaces/category";
+import { ICurrency } from "@/common/interfaces/currency";
 import { categoryService, firestoreService } from "@/common/services/firestore";
-import { AppSnackbar } from "@/components";
 import { RootState } from "@/store/store";
-import { Button, Stack } from "@mui/material";
+import { Stack } from "@mui/material";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";

@@ -1,18 +1,27 @@
-import { Category, IBase, ITransaction, IWallet, ModalAction, PaymentMethod, TransactionType } from "@/common/drafts/prisma";
-import { accountService } from "@/common/services/firestore";
+import { Category } from "@/common/enums/categories";
+import { ModalAction } from "@/common/enums/modal";
+import { PaymentMethod, TransactionType } from "@/common/enums/transaction";
+import { IAccount } from "@/common/interfaces/account";
+import { IBase } from "@/common/interfaces/base";
+import { ITransaction } from "@/common/interfaces/transaction";
+import { accountService, transactionService } from "@/common/services/firestore";
+import { formatTimestampToDateString } from "@/common/utils/date";
+import { toggleFormSubmited } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, TextField } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
+import * as yup from 'yup';
 
 type TransactionModalProps = {
     open: boolean;
-    type?: ModalAction;
-
+    action?: ModalAction;
     transaction: (ITransaction & IBase) | null;
+
     onClose?: () => void;
 }
 
@@ -27,12 +36,23 @@ type TransactionSubmitForm = {
     walletId: string;
 }
 
-const TransactionModal: React.FC<TransactionModalProps> = ({ open, type, transaction, onClose }) => {
+const validationSchema = yup.object().shape({
+    description: yup.string().required("Field is required"),
+    transactionType: yup.mixed<TransactionType>().oneOf(Object.values(TransactionType), "Invalid type").required("Type is required"),
+    category: yup.mixed<Category>().notOneOf([Category.NONE], "Invalid category").required("Category is required"),
+    excutedAt: yup.string().required("Field is required"),
+    paymentMethod: yup.mixed<PaymentMethod>().oneOf(Object.values(PaymentMethod), "Invalid type").required("Payment method is required"),
+    amount: yup.number().positive('Amount must be a positive number').required('Amount is required'),
+    paidTo: yup.string().nullable(),
+    walletId: yup.string().required("Field is required"),
+})
+
+const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, transaction, onClose }) => {
     const router = useRouter();
     const id = router.query.id as string;
-    const [title, setTitle] = useState<string>("Transaction");
+    const dispatch = useDispatch();
     const { user } = useSelector((state: RootState) => state.auth);
-    const [wallets, setWallets] = useState<(IBase & IWallet)[] | null>(null)
+    const [wallets, setWallets] = useState<(IBase & IAccount)[] | null>(null)
     const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('lg');
     const [currentType, setCurrentType] = useState<TransactionType>(TransactionType.DEFAULT);
     const [initialForm] = useState<TransactionSubmitForm>({
@@ -43,25 +63,56 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, type, transac
         paymentMethod: PaymentMethod.CASH,
         description: '',
         paidTo: '',
-        walletId: id
+        walletId: id ? id : "none"
     })
 
     const { handleSubmit, control, setValue, formState: { errors }, reset } = useForm<TransactionSubmitForm>({
         defaultValues: initialForm,
+        // resolver: yupResolver(validationSchema)
     })
-
-    const setFormValue = (transaction: ITransaction & IBase) => {
-
-    }
 
     const chooseType = (type: TransactionType) => {
         setCurrentType(type);
     }
 
     const onSubmitTransaction = async (data: TransactionSubmitForm) => {
-        // TODO: create transactions
+        try {
+            const newTransaction: ITransaction = {
+                type: currentType,
+                category: data.category,
+                description: data.description,
+                excutedAt: Timestamp.fromDate(new Date(data.excutedAt as string)),
+                amount: parseInt(data.amount.toString(), 10),
+                paymentMethod: data.paymentMethod,
+                walletId: data.walletId,
+                userId: user?.id,
+                payee: data.paidTo ?? null,
+                isPaid: data.category === Category.LOAN || data.category === Category.DEBT ? false : true
+            }
+            if (action === ModalAction.ADD) {
+                const response = await transactionService.addNewTransaction(newTransaction);
+                console.log(newTransaction);
+            } else {
+                console.log(newTransaction);
+                const transactionId = transaction?.id as string;
+                const response = await transactionService.updateTransaction(transactionId, newTransaction);
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            reset(initialForm);
+            dispatch(toggleFormSubmited(true));
+        }
+        if (onClose) {
+            onClose();
+        }
+    }
 
-        console.log(data);
+    const onCancel = () => {
+        reset();
+        if (onClose) {
+            onClose();
+        }
     }
 
     const fetchWalletByUserID = useCallback(async () => {
@@ -71,35 +122,44 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, type, transac
         } catch (error) {
             console.log(error);
         }
-    }, [])
+    }, [user?.id])
 
-    const handleSetTitle = () => {
-        switch (type) {
-            case ModalAction.ADD:
-                setTitle("Add Transaction");
-                break;
-            case ModalAction.EDIT:
-                setTitle("Update Transaction");
-                break;
-            default:
-                setTitle("Transaction");;
-                break;
+    const deleteTransaction = async (id: string) => {
+        try {
+            await transactionService.deleteTransaction(id);
+            dispatch(toggleFormSubmited(true));
+        } catch (error) {
+            console.log(error);
         }
+        onCancel();
     }
 
+    const updateFormValues = useCallback(async (transaction: ITransaction) => {
+        console.log(transaction);
+        
+        if (transaction) {
+            setValue("description", transaction.description);
+            setValue("amount", transaction.amount);
+            setValue("category", transaction.category);
+            setValue("excutedAt", formatTimestampToDateString(transaction.excutedAt as Timestamp));
+            setValue("paymentMethod", transaction.paymentMethod);
+            setValue("walletId", transaction.walletId as string);
+            setValue("paidTo", transaction.payee as string);
+        }
+    }, [setValue])
+
     useEffect(() => {
-        handleSetTitle;
         fetchWalletByUserID();
-
-        // init data to form when user click detail 
-
-    }, [fetchWalletByUserID])
+        if (transaction) {
+            updateFormValues(transaction);
+        }
+    }, [transaction, updateFormValues, fetchWalletByUserID])
 
     return (<>
-        <Dialog open={open} fullWidth={true} maxWidth={maxWidth} onClose={onClose} >
+        <Dialog open={open} fullWidth={true} maxWidth={maxWidth} onClose={onCancel} >
             <form onSubmit={handleSubmit(onSubmitTransaction)}>
-                <DialogTitle> {title} </DialogTitle>
-                <DialogContent >
+                <DialogTitle> <span className="tw-capitalize">{action} transaction</span>  </DialogTitle>
+                <DialogContent>
                     <Box mb={2}>
                         <ButtonGroup size='small' variant="contained" >
                             <Button type="button" color={currentType === TransactionType.EXPENSE ? "warning" : "inherit"} onClick={() => { chooseType(TransactionType.EXPENSE) }}>{TransactionType.EXPENSE}</Button>
@@ -123,6 +183,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, type, transac
                                         helperText={
                                             errors.category && `${errors.category.message}`
                                         }>
+                                        <MenuItem key={0} value={"none"}> None </MenuItem>
                                         {Object.values(Category).map((category, index) => (
                                             <MenuItem key={index} value={category}>
                                                 {category}
@@ -140,13 +201,18 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, type, transac
                                         select
                                         size="small"
                                         fullWidth
-                                        label="Wallet"
+                                        label="Account"
                                         margin="dense"
                                         autoFocus
                                         error={!!errors.walletId}
                                         helperText={
                                             errors.walletId && `${errors.walletId.message}`
-                                        }>
+                                        }
+                                        disabled={id ? true : false}
+                                    >
+                                        <MenuItem key={0} value="none">
+                                            None
+                                        </MenuItem>
                                         {wallets?.map((wallet, index) => (
                                             <MenuItem key={index} value={wallet.id}>
                                                 {wallet.name}
@@ -155,48 +221,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, type, transac
                                     </TextField>
                                 )}
                             />
-                            {/* <Controller control={control} name="category" rules={{ required: true }}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        select
-                                        size="small"
-                                        fullWidth
-                                        label="Category"
-                                        margin="dense"
-                                        autoFocus
-                                        error={!!errors.category}
-                                        helperText={
-                                            errors.category && `${errors.category.message}`
-                                        }>
-                                        {Object.values(Category).map((category, index) => (
-                                            <MenuItem key={index} value={category}>
-                                                {category}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                )}
-                            /> */}
                         </Grid>
-                        {/* <Grid item xs={12} md={2}>
-                            <Controller control={control} name="description" rules={{ required: false }}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        label="Description"
-                                        type="text"
-                                        size="small"
-                                        fullWidth
-                                        margin="dense"
-                                        autoFocus
-                                        error={!!errors.description}
-                                        helperText={
-                                            errors.description && `${errors.description.message}`
-                                        }
-                                    />
-                                )}
-                            />
-                        </Grid> */}
                         <Grid item xs={12} md={2}>
                             <Controller control={control} name="excutedAt" rules={{ required: true }}
                                 render={({ field }) => (
@@ -231,7 +256,6 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, type, transac
                                         helperText={
                                             errors.amount && `${errors.amount.message}`
                                         }
-
                                     />
                                 )}
                             />
@@ -278,32 +302,34 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, type, transac
                             />
                         </Grid>
                     </Grid>
-                    <Grid item xs={12} md={12}>
-                        <Controller control={control} name="description" rules={{ required: false }}
-                            render={({ field }) => (
-                                <TextField
-                                    {...field}
-                                    label="Description"
-                                    type="text"
-                                    size="small"
-                                    fullWidth
-                                    margin="dense"
-                                    autoFocus
-                                    error={!!errors.description}
-                                    helperText={
-                                        errors.description && `${errors.description.message}`
-                                    }
-                                />
-                            )}
-                        />
+                    <Grid container>
+                        <Grid item xs={12} md={12}>
+                            <Controller control={control} name="description" rules={{ required: false }}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label="Description"
+                                        type="text"
+                                        size="small"
+                                        fullWidth
+                                        margin="dense"
+                                        autoFocus
+                                        error={!!errors.description}
+                                        helperText={
+                                            errors.description && `${errors.description.message}`
+                                        }
+                                    />
+                                )}
+                            />
+                        </Grid>
                     </Grid>
                 </DialogContent>
                 <DialogActions>
-                    <Button type="button" variant="contained" color="inherit" onClick={onClose}>Cancel</Button>
+                    <Button type="button" variant="contained" color="inherit" onClick={onCancel}>Cancel</Button>
                     {
-                        type === ModalAction.ADD ? <Button type="submit" variant="contained" color="primary">Create</Button> :
+                        action === ModalAction.ADD ? <Button type="submit" variant="contained" color="primary">Create</Button> :
                             <>
-                                <Button type="button" variant="contained" color="error">Delete</Button>
+                                <Button type="button" variant="contained" color="error" onClick={() => { deleteTransaction(transaction?.id as string) }}>Delete</Button>
                                 <Button type="submit" variant="contained" color="primary">Save</Button>
                             </>
                     }

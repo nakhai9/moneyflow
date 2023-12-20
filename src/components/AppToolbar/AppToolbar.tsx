@@ -1,5 +1,6 @@
 import { PAGES, SETTINGS } from '@/common/constants/routes';
-import { IBase, IUser } from '@/common/drafts/prisma';
+import { IBase } from '@/common/interfaces/base';
+import { IUser } from '@/common/interfaces/user';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import MenuIcon from '@mui/icons-material/Menu';
 import AppBar from '@mui/material/AppBar';
@@ -110,7 +111,7 @@ const AppToolbar: React.FC<AppToolbarProps> = ({ user, logout }) => {
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: { md: 4 } }}>
                         {PAGES.map((page) => (
-                            <Link key={page.id} href={page.path} passHref className='vdt-no-underline vdt-text-white'>{page.text}</Link>
+                            <Link key={page.id} href={page.path} passHref className='tw-no-underline tw-text-white'>{page.text}</Link>
                         ))}
                     </Box>
 
@@ -141,7 +142,7 @@ const AppToolbar: React.FC<AppToolbarProps> = ({ user, logout }) => {
                         >
                             {SETTINGS.map((setting) => (
                                 <MenuItem key={setting.id} onClick={handleCloseUserMenu}>
-                                    <Typography component="a" href={setting.path} variant='subtitle2' className='vdt-no-underline vdt-text-inherit'>{setting.text}</Typography>
+                                    <Typography component="a" href={setting.path} variant='subtitle2' className='tw-no-underline tw-text-inherit'>{setting.text}</Typography>
                                 </MenuItem>
                             ))}
                             <MenuItem key="logout" onClick={logout}>

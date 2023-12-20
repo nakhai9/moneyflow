@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
-  prefix: 'vdt-',
+  prefix: 'tw-',
   import: "#__next",
   corePlugins: {
     preflight: false

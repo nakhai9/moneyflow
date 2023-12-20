@@ -1,4 +1,4 @@
-import { ICommonMessages } from "@/common/drafts/prisma";
+import { ICommonMessages } from "@/common/interfaces/base";
 import { Alert, Snackbar, SnackbarOrigin } from "@mui/material";
 import { FC } from "react";
 

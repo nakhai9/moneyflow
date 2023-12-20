@@ -1,4 +1,5 @@
-import { IBase, IUser, IUserInfo } from '@/common/drafts/prisma';
+import { IBase } from '@/common/interfaces/base';
+import { IUser, IUserInfo } from '@/common/interfaces/user';
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
 export interface AuthState {

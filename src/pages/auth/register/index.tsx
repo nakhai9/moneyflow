@@ -56,9 +56,9 @@ const RegisterPage: NextPage = () => {
 
     return <>
         <AuthLayout>
-            <form onSubmit={handleSubmit(onSubmit)} className="vdt-flex vdt-w-full vdt-flex-block vdt-flex-col vdt-space-y-2">
-                <Typography variant="h6" className="vdt-text-slate-500">Sign up</Typography>
-                <Stack className="vdt-flex vdt-flex-col vdt-space-y-3">
+            <form onSubmit={handleSubmit(onSubmit)} className="tw-flex tw-w-full tw-flex-block tw-flex-col tw-space-y-2">
+                <Typography variant="h6" className="tw-text-slate-500">Sign up</Typography>
+                <Stack className="tw-flex tw-flex-col tw-space-y-3">
                     <TextField id="standard-basic" fullWidth label="First name" type="text" variant="standard" autoFocus
                         {...register("firstName", { required: true })}
                         error={errors.firstName?.message ? true : false}
@@ -89,8 +89,8 @@ const RegisterPage: NextPage = () => {
                         error={errors.confirmPassword?.message ? true : false}
                         helperText={errors.confirmPassword?.message} />
 
-                    <Stack className="vdt-flex vdt-flex-col vdt-space-y-2">
-                        <Button type="submit" className="vdt-bg-blue-500 vdt-w-full hover:vdt-bg-blue-600" variant="contained">Sign up</Button>
+                    <Stack className="tw-flex tw-flex-col tw-space-y-2">
+                        <Button type="submit" className="tw-bg-blue-500 tw-w-full hover:tw-bg-blue-600" variant="contained">Sign up</Button>
                     </Stack>
                 </Stack>
             </form>

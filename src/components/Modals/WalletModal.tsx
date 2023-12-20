@@ -1,4 +1,6 @@
-import { IOption, IWallet, WalletType } from "@/common/drafts/prisma";
+import { AccountType } from "@/common/enums/account";
+import { IAccount } from "@/common/interfaces/account";
+import { IOption } from "@/common/interfaces/base";
 import { accountService } from "@/common/services/firestore";
 import { toggleFormSubmited } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
@@ -17,7 +19,7 @@ type WalletModalProp = {
 
 type WalletSubmitForm = {
     name: string;
-    type: WalletType,
+    type: AccountType,
     currencyId: string;
     amount: number;
     note?: string;
@@ -25,7 +27,7 @@ type WalletSubmitForm = {
 
 const validationSchema = yup.object().shape({
     name: yup.string().required("Wallet name is required"),
-    type: yup.mixed<WalletType>().oneOf(Object.values(WalletType), 'Invalid wallet type').required('Type is required'),
+    type: yup.mixed<AccountType>().oneOf(Object.values(AccountType), 'Invalid wallet type').required('Type is required'),
     amount: yup.number().positive('Amount must be a positive number').required('Amount is required'),
     currencyId: yup.string().required('Currency is required').notOneOf(['none'], 'Currency must not be "None"'),
     note: yup.string(),
@@ -33,14 +35,14 @@ const validationSchema = yup.object().shape({
 
 const initialForm: WalletSubmitForm = {
     name: '',
-    type: WalletType.CASH,
+    type: AccountType.CASH,
     amount: 0,
     currencyId: 'none',
     note: ''
 }
 
 const WalletModal: FC<WalletModalProp> = ({ open, onCloseModal }) => {
-    
+
     const dispatch = useDispatch();
     const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('xs');
     const { user } = useSelector((state: RootState) => state.auth);
@@ -52,7 +54,7 @@ const WalletModal: FC<WalletModalProp> = ({ open, onCloseModal }) => {
     const onSubmit = async (data: WalletSubmitForm) => {
         try {
             onCloseModal();
-            const wallet: IWallet = {
+            const account: IAccount = {
                 amount: data.amount,
                 name: data.name,
                 type: data.type,
@@ -61,15 +63,22 @@ const WalletModal: FC<WalletModalProp> = ({ open, onCloseModal }) => {
                 userId: user?.id,
                 isClose: false
             }
-            await accountService.addNewAccount(wallet);
+            await accountService.addNewAccount(account);
             reset();
             dispatch(toggleFormSubmited(true));
         } catch (error) {
             console.log(error);
-        } 
+        }
     };
-    
-    return <Dialog open={open} fullWidth={true} maxWidth={maxWidth} onClose={onCloseModal}>
+
+    const onCancel = () => {
+        reset();
+        if(onCloseModal) {
+            onCloseModal();
+        }
+    }
+
+    return <Dialog open={open} fullWidth={true} maxWidth={maxWidth} onClose={onCancel}>
         <form onSubmit={handleSubmit(onSubmit)} >
             <DialogTitle>Create wallet</DialogTitle>
             <DialogContent>
@@ -101,9 +110,9 @@ const WalletModal: FC<WalletModalProp> = ({ open, onCloseModal }) => {
                             helperText={
                                 errors.type && `${errors.type.message}`
                             }>
-                            {Object.values(WalletType).map((type) => (
+                            {Object.values(AccountType).map((type) => (
                                 <MenuItem key={type} value={type}>
-                                    {type}
+                                    <span className="tw-capitalize">{type}</span>
                                 </MenuItem>
                             ))}
                         </TextField>
@@ -168,7 +177,7 @@ const WalletModal: FC<WalletModalProp> = ({ open, onCloseModal }) => {
                 />
             </DialogContent>
             <DialogActions>
-                <Button type="button" onClick={onCloseModal} variant="contained" color="inherit">Cancel</Button>
+                <Button type="button" onClick={onCancel} variant="contained" color="inherit">Cancel</Button>
                 <Button type="submit" variant="contained" color="primary">Create</Button>
             </DialogActions>
         </form>

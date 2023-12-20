@@ -1,9 +1,9 @@
 'use client'
 import { auth } from "@/common/configs/firebaseConfig";
-// import { OPTIONS_MENU_ON_APPBAR } from "@/common/constants/routes";
-import { FirestoreCollections, IUser } from "@/common/drafts/prisma";
+import { FirestoreCollections } from "@/common/enums/firestore-collections";
+import { IUser } from "@/common/interfaces/user";
 import { firestoreService } from "@/common/services/firestore";
-import { AppSnackbar, AppToolbar } from "@/components";
+import { AppToolbar } from "@/components";
 import { setCurrentUser } from "@/store/features/auth/authSlice";
 import { togglePageLoading } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
@@ -56,12 +56,12 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
     })
     return () => unsubscribe();
 
-  }, [router]);
+  }, [router, dispatch]);
 
   return <>
     {
-      pageLoading ? <Backdrop className="vdt-z-50" sx={{ background: 'white' }} open={pageLoading}><CircularProgress color="primary" /></Backdrop> : (<Box className="vdt-flex-1 vdt-w-100"><AppToolbar user={user} logout={logout} />
-        <main className='vdt-overflow-auto'>
+      pageLoading ? <Backdrop className="tw-z-50" sx={{ background: 'white' }} open={pageLoading}><CircularProgress color="primary" /></Backdrop> : (<Box className="tw-flex-1 tw-w-100"><AppToolbar user={user} logout={logout} />
+        <main className='tw-overflow-auto'>
           <Container>
             <Box py={4}>
               {children}

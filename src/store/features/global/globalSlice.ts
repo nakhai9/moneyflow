@@ -1,4 +1,5 @@
-import { IBase, ICommonMessages, ICurrency, IOption } from "@/common/drafts/prisma";
+import { IBase, ICommonMessages, IOption } from "@/common/interfaces/base";
+import { ICurrency } from "@/common/interfaces/currency";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit"
 
 export interface GlobalState {
