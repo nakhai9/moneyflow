@@ -137,7 +137,6 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
     }
 
     const updateFormValues = useCallback(async (transaction: ITransaction) => {
-        console.log(transaction);
         if (transaction) {
             setValue("description", transaction.description);
             setValue("amount", transaction.amount);
