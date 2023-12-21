@@ -15,3 +15,10 @@ export interface ITransaction {
     walletId?: string;
     userId?: string;
 }
+
+export interface ITransactionsFilterProps {
+    walletName: string;
+    categoryName: string;
+    description: string;
+    // amount: number;
+}

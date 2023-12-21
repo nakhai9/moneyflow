@@ -189,6 +189,14 @@ export const transactionService = {
             console.log(error);
         }
     },
+    filterTransaction: async (conditionFilter: any) => {
+        try {
+            const transactionCollectionRef = collection(_db, FirestoreCollections.TRANSACTIONS);
+            const _query = query(transactionCollectionRef, where("title", ">=", conditionFilter.title))
+        } catch (error) {
+            console.log(error);
+        }
+    }
 }
 
 export const currencyService = {

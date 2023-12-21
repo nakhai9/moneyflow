@@ -3,16 +3,17 @@ import { ModalAction } from "@/common/enums/modal";
 import { TransactionType } from "@/common/enums/transaction";
 import { IAccount } from "@/common/interfaces/account";
 import { IBase } from "@/common/interfaces/base";
-import { ITransaction } from "@/common/interfaces/transaction";
+import { ITransaction, ITransactionsFilterProps } from "@/common/interfaces/transaction";
 import { accountService, transactionService } from "@/common/services/firestore";
 import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
 import { AppFilter, TransactionModal } from "@/components";
 import useModal from "@/hooks/useModal";
 import { toggleFormSubmited, togglePageLoading } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
-import { Button, Grid, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { Button, Grid, LinearProgress, Paper, Slider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { FC, useCallback, useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 type TransactionsPageContainerProps = {}
 
@@ -28,6 +29,15 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
     const { formSubmited } = useSelector((state: RootState) => state.global);
     const { user } = useSelector((state: RootState) => state.auth);
     const [columns] = useState(['Nr', 'Category', 'Wallet', 'Description', 'Payment method', 'Excuted Date', 'Amount']);
+    const [initForm] = useState<ITransactionsFilterProps>({
+        walletName: '',
+        categoryName: '',
+        description: '',
+        // amount: 0
+    });
+    const { handleSubmit, control, setValue, formState: { errors }, reset } = useForm<ITransactionsFilterProps>({
+        defaultValues: initForm
+    })
 
     const handleAddTransaction = () => {
         onOpen();
@@ -62,6 +72,11 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
         onClose();
     }
 
+    const onFilter = async (data: ITransactionsFilterProps) => {
+        console.log(data);
+
+    }
+
     useEffect(() => {
         dispatch(togglePageLoading(true));
         fetchTransactions();
@@ -69,7 +84,7 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
     }, [fetchTransactions, dispatch])
 
     return <div>
-        <TransactionModal open={open} onClose={closeModal} action={modalType} transaction={transaction}/>
+        <TransactionModal open={open} onClose={closeModal} action={modalType} transaction={transaction} />
         <Grid container spacing={4}>
             <Grid container item xs={12}>
                 <Button type="button" size="small" variant="contained" color="primary" className="tw-normal-case" startIcon={<AddIcon />} onClick={handleAddTransaction}>
@@ -78,7 +93,32 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
             </Grid>
             <Grid container item xs={12}>
                 <Grid container item component={Paper} xs={12} p={3}>
-                    <AppFilter />
+                    <Grid item container xs={12} md={12}>
+                        <Typography variant="h6" fontWeight={600} mb={3}>Filter</Typography>
+                    </Grid>
+                    {/* Filter Component */}
+                    <Grid component={"form"} item container xs={12} md={12} spacing={2} onSubmit={handleSubmit(onFilter)}>
+                        <Grid item xs={12} md={3}>
+                            <Controller name="walletName" control={control}
+                                render={({ field }) => (<TextField {...field} label="By Wallet" size="small" fullWidth />)} />
+                        </Grid>
+                        <Grid item xs={12} md={3}>
+                            <Controller name="categoryName" control={control}
+                                render={({ field }) => (<TextField {...field} label="By Category" size="small" fullWidth />)} />
+                        </Grid>
+                        <Grid item xs={12} md={3}>
+                            <Controller name="description" control={control}
+                                render={({ field }) => (<TextField {...field} label="By Description" size="small" fullWidth />)} />
+                        </Grid>
+                        <Grid item xs={12} md={3}>
+                            <Typography variant="subtitle2">By Amount</Typography>
+                            <Slider defaultValue={50} aria-label="Default" valueLabelDisplay="auto" />
+                        </Grid>
+                        <Grid item container xs={12} md={12} justifyContent={"right"}>
+                            <Button type="submit" size="small">Filter</Button>
+                        </Grid>
+                    </Grid>
+                    {/* End Filter Component */}
                 </Grid>
             </Grid>
             <Grid container item xs={12}>

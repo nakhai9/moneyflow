@@ -8,7 +8,7 @@ import { accountService, transactionService } from "@/common/services/firestore"
 import { formatTimestampToDateString } from "@/common/utils/date";
 import { toggleFormSubmited } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
-import { Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, TextField } from "@mui/material";
+import { Box, Button, ButtonGroup, Checkbox, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, FormControlLabel, Grid, MenuItem, TextField } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
@@ -33,6 +33,7 @@ type TransactionSubmitForm = {
     amount: number,
     paidTo: string,
     walletId: string;
+    isPaid: boolean;
 }
 
 const validationSchema = yup.object().shape({
@@ -44,6 +45,9 @@ const validationSchema = yup.object().shape({
     amount: yup.number().positive('Amount must be a positive number').required('Amount is required'),
     paidTo: yup.string().nullable(),
     walletId: yup.string().required("Field is required"),
+    isPaid: yup.boolean().test("isPaid", "Required", (value) => {
+        return value;
+    })
 })
 
 const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, transaction, onClose }) => {
@@ -62,7 +66,8 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
         paymentMethod: PaymentMethod.CASH,
         description: '',
         paidTo: '',
-        walletId: id ? id : "none"
+        walletId: id ? id : "none",
+        isPaid: false
     })
 
     const { handleSubmit, control, setValue, formState: { errors }, reset } = useForm<TransactionSubmitForm>({
@@ -131,7 +136,8 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
         onCancel();
     }
 
-    const updateFormValues = useCallback(async (transaction: ITransaction) => {        
+    const updateFormValues = useCallback(async (transaction: ITransaction) => {
+        console.log(transaction);
         if (transaction) {
             setValue("description", transaction.description);
             setValue("amount", transaction.amount);
@@ -140,6 +146,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
             setValue("paymentMethod", transaction.paymentMethod);
             setValue("walletId", transaction.walletId as string);
             setValue("paidTo", transaction.payee as string);
+            setValue("isPaid", transaction.isPaid);
         }
     }, [setValue])
 
@@ -296,9 +303,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
                                 )}
                             />
                         </Grid>
-                    </Grid>
-                    <Grid container>
-                        <Grid item xs={12} md={12}>
+                        <Grid item xs={10} md={10}>
                             <Controller control={control} name="description" rules={{ required: false }}
                                 render={({ field }) => (
                                     <TextField
@@ -317,7 +322,29 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
                                 )}
                             />
                         </Grid>
+                        <Grid item xs={2} md={2}>
+                            <TextField
+                                select
+                                size="small"
+                                fullWidth
+                                label="Status"
+                                margin="dense"
+                                error={!!errors.paymentMethod}
+                                helperText={
+                                    errors.paymentMethod && `${errors.paymentMethod.message}`
+                                }
+                                disabled={true}
+                            >
+                                {[false, true].map((isPaidStatus, index) => (
+                                    <MenuItem key={index} value={`${isPaidStatus}`}>
+                                        {isPaidStatus ? "Paid" : "Not paid"}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </Grid>
                     </Grid>
+
+
                 </DialogContent>
                 <DialogActions>
                     <Button type="button" variant="contained" color="inherit" onClick={onCancel}>Cancel</Button>
