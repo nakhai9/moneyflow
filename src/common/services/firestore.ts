@@ -1,5 +1,5 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { Timestamp, addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { EmailAuthProvider, createUserWithEmailAndPassword, deleteUser, getAuth, reauthenticateWithCredential, signInWithEmailAndPassword } from "firebase/auth";
+import { QueryFieldFilterConstraint, Timestamp, addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { v4 as uuidv4 } from 'uuid';
 import { _db, auth, storage } from "../configs/firebaseConfig";
 import { log } from "console";
@@ -10,6 +10,7 @@ import { IUpdateUser, IUserSignIn, IUserSignUp } from "../interfaces/user";
 import { UserGender, UserRole } from "../enums/user";
 import { IAccount } from "../interfaces/account";
 import { ITransaction } from "../interfaces/transaction";
+import { ICurrency } from "../interfaces/currency";
 
 const base: IBase = {
     _vid: uuidv4(),
@@ -108,6 +109,26 @@ export const authService = {
         } catch (error) {
             console.log(error);
         }
+    },
+    deleteUser: async () => {
+        try {
+            // const user = auth.currentUser;
+            // if (user) {
+            //     const credential = EmailAuthProvider.credential(
+            //         "test@app.com",
+            //         "12345678"
+            //     )
+
+            //     const result = await reauthenticateWithCredential(
+            //         user,
+            //         credential
+            //     )
+            //     // Pass result.user here
+            //     await deleteUser(result.user)
+            // }
+        } catch (error) {
+            console.log(error);
+        }
     }
 }
 
@@ -117,6 +138,13 @@ export const accountService = {
             await firestoreService.addDoc<IAccount>(FirestoreCollections.WALLETS, wallet);
         } catch (error) {
             throw error;
+        }
+    },
+    getAccountById: async (walletId: string) => {
+        try {
+            return await firestoreService.getDocById<IAccount>(FirestoreCollections.WALLETS, walletId);
+        } catch (error) {
+            console.log(walletId);
         }
     },
     getAccountsByUserId: async (userId: string) => {
@@ -143,31 +171,25 @@ export const accountService = {
 }
 
 export const transactionService = {
-    getTransactions: async () => {
-        try {
-            const collectionRef = collection(_db, FirestoreCollections.TRANSACTIONS)
-            const q = query(collectionRef, orderBy("createdAt", "asc"));
-            const snapshotDocuments = await getDocs(q);
-            const transactions: any = [];
-            snapshotDocuments.docs.forEach((doc) => {
-                transactions.push({ id: doc.id, ...doc.data() });
-            });
-            return transactions;
-        } catch (error) {
-            throw error;
+    getTransactions: async (userId?: string, walletId?: string, title?: string) => {
+        const constraints: QueryFieldFilterConstraint[] = [];
+        if (userId) {
+            constraints.push(where("userId", '==', userId));
         }
-    },
-    getTransactionsByUserID: async (userId: string) => {
-        const _query = query(collection(_db, FirestoreCollections.TRANSACTIONS), where('userId', '==', userId));
+        if (walletId) {
+            constraints.push(where('walletId', '==', walletId));
+        }
+        if (title) {
+            constraints.push(where('title', '>=', title));
+        }
+        const _query = query(collection(_db, FirestoreCollections.TRANSACTIONS), ...constraints);
         const snapshotDocuments = await getDocs(_query);
         const result: any = [];
         snapshotDocuments.docs.forEach((doc) => {
             result.push({ id: doc.id, ...doc.data() });
         });
-
         return result as (ITransaction & IBase)[];
     },
-    getTransactionsByWalletID: async () => { },
     addNewTransaction: async (transactions: ITransaction) => {
         try {
             return await firestoreService.addDoc<ITransaction>(FirestoreCollections.TRANSACTIONS, transactions);
@@ -188,14 +210,6 @@ export const transactionService = {
         } catch (error) {
             console.log(error);
         }
-    },
-    filterTransaction: async (conditionFilter: any) => {
-        try {
-            const transactionCollectionRef = collection(_db, FirestoreCollections.TRANSACTIONS);
-            const _query = query(transactionCollectionRef, where("title", ">=", conditionFilter.title))
-        } catch (error) {
-            console.log(error);
-        }
     }
 }
 
@@ -206,6 +220,14 @@ export const currencyService = {
             return result;
         } catch (error) {
             console.log(error);
+        }
+    },
+    convertCurrency: async (currencyId: string) => {
+        try {
+            const currency = await firestoreService.getDocById<ICurrency & IBase>(FirestoreCollections.CURRENCIES, currencyId);
+            return currency?.code;
+        } catch (error) {
+            console.log(error)
         }
     }
 }

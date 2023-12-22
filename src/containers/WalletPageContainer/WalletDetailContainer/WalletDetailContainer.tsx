@@ -1,12 +1,10 @@
 import { AddIcon, DeleteIcon, ErrorOutlineIcon, FileDownloadIcon, SettingsIcon } from "@/common/constants/icons";
-import { FirestoreCollections } from "@/common/enums/firestore-collections";
 import { ModalAction } from "@/common/enums/modal";
 import { TransactionType } from "@/common/enums/transaction";
 import { IAccount } from "@/common/interfaces/account";
 import { IBase } from "@/common/interfaces/base";
-import { ICurrency } from "@/common/interfaces/currency";
 import { ITransaction } from "@/common/interfaces/transaction";
-import { accountService, firestoreService } from "@/common/services/firestore";
+import { accountService, transactionService } from "@/common/services/firestore";
 import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
 import { ConfirmModal, TransactionModal } from "@/components";
 import { Modal } from "@/components/Modals/modal";
@@ -58,16 +56,11 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
         if (formSubmited) {
             dispatch(toggleFormSubmited(false));
         }
-        const snapshotTransactions = await firestoreService.getDocs(FirestoreCollections.TRANSACTIONS);
-        const wallet = await firestoreService.getDocById<IAccount>(FirestoreCollections.WALLETS, id as string);
-        const currency = await firestoreService.getDocById<ICurrency & IBase>(FirestoreCollections.CURRENCIES, wallet?.currencyId as string);
+        const wallet = await accountService.getAccountById(id as string);
         if (wallet) {
             setCurrentWallet(wallet);
-            setCurrency(currency?.code as string);
-            const transactionsByWalletId = snapshotTransactions.filter((transaction: (ITransaction & IBase)) => transaction.walletId === id);
-            if (transactionsByWalletId.length > 0) {
-                setTransactions(transactionsByWalletId);
-            }
+            const snapshotTransactions = await transactionService.getTransactions(undefined, wallet.id);
+            setTransactions(snapshotTransactions)
         }
         setIsLoading(false);
 

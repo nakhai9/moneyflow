@@ -12,10 +12,15 @@ type ConfirmModalProp = {
     onClose?: () => void,
     onConfirm?: () => void,
 }
-const ConfirmModal: FC<ConfirmModalProp> = ({ open, title, message, type, onClose }) => {
+const ConfirmModal: FC<ConfirmModalProp> = ({ open, title, message, type, onClose, onConfirm }) => {
 
     const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('xs');
     const { user } = useSelector((state: RootState) => state.auth);
+
+    const handleConfirm = () => {
+      onClose && onClose();
+      onConfirm && onConfirm();
+    }
 
     return <Dialog open={open} fullWidth={true} maxWidth={maxWidth} onClose={onClose}>
         <DialogTitle>{title}</DialogTitle>
@@ -25,7 +30,7 @@ const ConfirmModal: FC<ConfirmModalProp> = ({ open, title, message, type, onClos
         <DialogActions>
           <Button color="inherit" variant="contained" onClick={onClose}>Cancel</Button>
           {
-            type === "delete" && <Button color="error" variant="contained">Delete</Button>
+            type === "delete" && <Button color="error" variant="contained" onClick={handleConfirm} disabled={true}>Delete</Button>
           }
         </DialogActions>
     </Dialog>

@@ -6,6 +6,8 @@ import { ICategory } from '@/common/interfaces/category';
 import { IUpdateUser, IUser } from '@/common/interfaces/user';
 import { authService, categoryService, imageService } from '@/common/services/firestore';
 import { formatTimestampToDateString } from '@/common/utils/date';
+import { ConfirmModal } from '@/components';
+import useModal from '@/hooks/useModal';
 import { RootState } from '@/store/store';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Alert, Avatar, Box, Button, Grid, IconButton, ListItemIcon, ListItemText, MenuItem, MenuList, Paper, Snackbar, SnackbarOrigin, TextField, Tooltip, Typography, styled } from '@mui/material';
@@ -56,6 +58,7 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
         horizontal: 'center',
     });
     const [categories, setCategories] = useState<(ICategory & IBase)[] | null>(null);
+    const { open, onOpen, onClose } = useModal();
 
     const [ACCOUNT_SETTINGS] = useState<IRoute[]>([
         {
@@ -67,13 +70,6 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
         },
         {
             id: 2,
-            text: "Categories",
-            path: "/category",
-            isHide: false,
-            icon: <CategoryIcon fontSize="small" />
-        },
-        {
-            id: 3,
             text: "Password and Security",
             path: "/security",
             isHide: false,
@@ -152,7 +148,7 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
         }
     }, [user, fetchCategories, setFormValue]);
 
-    const accountTemplate = <form onSubmit={handleSubmit(onSubmit)}>
+    const AccountTemplate = () => (<form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={4}>
             <Grid item xs={12} md={12}>
                 <Paper sx={{ p: 4 }}>
@@ -235,48 +231,37 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
                 <Paper sx={{ p: 4 }}>
                     <Typography variant="body1" fontWeight={600}>Delete account</Typography>
                     <Typography variant="subtitle2">Once you delete your account, there is no going back. Please be certain.</Typography>
-                    <Button sx={{ mt: 2 }} type="button" variant="contained" color="error" size="small" disabled={true}>Delete account</Button>
+                    <Button sx={{ mt: 2 }} type="button" variant="contained" color="error" size="small" onClick={handleOpenModal} >Delete account</Button>
                 </Paper>
             </Grid>
         </Grid>
-    </form>
+    </form>)
 
-    const categoriesTemplate = <Grid container>
-        <Grid item xs={12} md={12}>
-            <Typography variant="h6" mb={1} fontWeight={600}>Categories</Typography>
-        </Grid>
-        <Grid container spacing={3}>
-            {
-                categories && categories.map((cat, index) => {
-                    return <Grid key={index} item xs={12} md={12}>
-                        <Paper sx={{ p: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} className='hover:tw-bg-slate-100'>
-                            <Box>{cat.title}</Box>
-                            <Box sx={{ display: 'none' }}>
-                                <Tooltip title="Edit">
-                                    <IconButton aria-label="delete" size='small' disabled={true}>
-                                        <CreateIcon fontSize='small' />
-                                    </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Delete">
-                                    <IconButton aria-label="delete" size='small' disabled={true}>
-                                        <DeleteIcon fontSize='small' />
-                                    </IconButton>
-                                </Tooltip>
-                            </Box>
-                        </Paper>
-                    </Grid>
-                })
-            }
-        </Grid>
-    </Grid>
+    const SecurityTemplate = () => <>Security template</>
 
-    const securityTemplate = 'Security Template: We are building this.'
+    const deleteUser = async () => {
+        console.log("handle delete")
+        try {
+            await authService.deleteUser();            
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const handleOpenModal = () => {
+        onOpen();
+    }
+
+    const handleCloseModal = () => {
+        onClose();
+    }
 
     return (
         <div>
             <Snackbar anchorOrigin={snackPosition} open={isUpdated} onClose={handleClose}>
                 <Alert severity="success" sx={{ minWidth: 300 }}>{isUpdated ? "Your changes have been successfully saved." : "Failed to save."}</Alert>
             </Snackbar>
+            <ConfirmModal open={open} title='Delete Account' type='delete' onConfirm={deleteUser} onClose={handleCloseModal} message='Are you sure you want to delete your account?'/>
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Account Settings</Typography>
             <Grid container spacing={4}>
                 <Grid item xs={0} md={3} sx={{ display: { xs: 'none', md: 'block' } }}>
@@ -296,7 +281,7 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
                     </Paper>
                 </Grid>
                 <Grid item xs={12} md={9}>
-                    {(activeIndex === 1) ? accountTemplate : categoriesTemplate}
+                    {(activeIndex === 1) ? <AccountTemplate /> : <SecurityTemplate />}
                 </Grid>
             </Grid>
         </div>

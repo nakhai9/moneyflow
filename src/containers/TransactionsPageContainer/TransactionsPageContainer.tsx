@@ -57,7 +57,7 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
         setIsLoading(true);
         if (user) {
             const snapshotWallets = await accountService.getAccountsByUserId(user?.id as string);
-            const snapshotTransactions = await transactionService.getTransactionsByUserID(user?.id as string);
+            const snapshotTransactions = await transactionService.getTransactions(user?.id as string, undefined);
             setTransactions(snapshotTransactions);
             setWallets(snapshotWallets);
         }
