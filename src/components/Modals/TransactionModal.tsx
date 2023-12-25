@@ -8,7 +8,7 @@ import { accountService, transactionService } from "@/common/services/firestore"
 import { formatTimestampToDateString } from "@/common/utils/date";
 import { toggleFormSubmited } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
-import { Box, Button, ButtonGroup, Checkbox, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, FormControlLabel, Grid, MenuItem, TextField } from "@mui/material";
+import { Box, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, Grid, MenuItem, TextField } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
@@ -55,7 +55,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
     const id = router.query.id as string;
     const dispatch = useDispatch();
     const { user } = useSelector((state: RootState) => state.auth);
-    const [wallets, setWallets] = useState<(IBase & IAccount)[] | null>(null)
+    const [wallets, setWallets] = useState<(IBase & IAccount)[]>()
     const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('lg');
     const [currentType, setCurrentType] = useState<TransactionType>(TransactionType.DEFAULT);
     const [initialForm] = useState<TransactionSubmitForm>({
@@ -120,7 +120,9 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
     const fetchWalletByUserID = useCallback(async () => {
         try {
             const snapshotWallets = await accountService.getAccountsByUserId(user?.id as string);
-            setWallets(snapshotWallets);
+            if (snapshotWallets) {
+                setWallets(snapshotWallets);
+            }
         } catch (error) {
             console.log(error);
         }

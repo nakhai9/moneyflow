@@ -21,8 +21,8 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
 
     const dispatch = useDispatch();
     const [modalType, setModalType] = useState<ModalAction>();
-    const [wallets, setWallets] = useState<(IAccount & IBase)[] | null>(null);
-    const [transactions, setTransactions] = useState<(ITransaction & IBase)[] | null>(null);
+    const [wallets, setWallets] = useState<(IAccount & IBase)[]>();
+    const [transactions, setTransactions] = useState<(ITransaction & IBase)[]>();
     const [transaction, setTransaction] = useState<(ITransaction & IBase) | null>(null);
     const { open, onOpen, onClose } = useModal();
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -56,10 +56,16 @@ const TransactionsPageContainer: FC<TransactionsPageContainerProps> = ({ }) => {
         }
         setIsLoading(true);
         if (user) {
-            const snapshotWallets = await accountService.getAccountsByUserId(user?.id as string);
-            const snapshotTransactions = await transactionService.getTransactions(user?.id as string, undefined);
+            // const snapshotWallets = await accountService.getAccountsByUserId(user?.id as string);
+            // const snapshotTransactions = await transactionService.getTransactions(user?.id as string, undefined);
+
+            const [snapshotWallets, snapshotTransactions] = await Promise.all([
+                accountService.getAccountsByUserId(user?.id as string),
+                transactionService.getTransactions(user?.id as string, undefined)
+            ])
             setTransactions(snapshotTransactions);
-            setWallets(snapshotWallets);
+            setWallets(snapshotWallets)
+
         }
         setIsLoading(false);
     }, [user, formSubmited]);

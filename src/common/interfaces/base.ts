@@ -11,6 +11,8 @@ export interface IBase {
     readonly createdAt: Timestamp;
     updatedAt: Timestamp | null;
     isDelete: boolean;
+
+    [key: string]: any;
 }
 
 export interface IWalletRecord extends IAccount, IBase { }

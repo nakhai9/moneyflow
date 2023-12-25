@@ -6,7 +6,7 @@ import { ICategory } from '@/common/interfaces/category';
 import { IUpdateUser, IUser } from '@/common/interfaces/user';
 import { authService, categoryService, imageService } from '@/common/services/firestore';
 import { formatTimestampToDateString } from '@/common/utils/date';
-import { ConfirmModal } from '@/components';
+import { AppSnackbar, ConfirmModal } from '@/components';
 import useModal from '@/hooks/useModal';
 import { RootState } from '@/store/store';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -258,9 +258,7 @@ const SettingPageContainer: FC<SettingPageContainerProps> = ({ }) => {
 
     return (
         <div>
-            <Snackbar anchorOrigin={snackPosition} open={isUpdated} onClose={handleClose}>
-                <Alert severity="success" sx={{ minWidth: 300 }}>{isUpdated ? "Your changes have been successfully saved." : "Failed to save."}</Alert>
-            </Snackbar>
+            <AppSnackbar open={isUpdated} message={isUpdated ? "Your changes have been successfully saved." : "Failed to save."} handleClose={handleClose}/>
             <ConfirmModal open={open} title='Delete Account' type='delete' onConfirm={deleteUser} onClose={handleCloseModal} message='Are you sure you want to delete your account?'/>
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Account Settings</Typography>
             <Grid container spacing={4}>

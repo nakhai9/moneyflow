@@ -1,10 +1,11 @@
 import { IUserInfo } from "@/common/interfaces/user";
 import { authService } from "@/common/services/firestore";
+import { AppSnackbar } from "@/components";
 import AuthLayout from "@/layouts/AuthLayout";
 import { setUserInfo } from "@/store/features/auth/authSlice";
 import { togglePageLoading } from "@/store/features/global/globalSlice";
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Button, Snackbar, Stack, TextField, Typography } from '@mui/material';
 import { NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -25,7 +26,9 @@ const LoginPage: NextPage = () => {
     const router = useRouter();
     const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const { register, handleSubmit, formState: { errors } } = useForm<LoginSubmitForm>({ resolver: yupResolver(loginSchema) })
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginSubmitForm>({ resolver: yupResolver(loginSchema) })
+    const [error, setError] = useState<any>(null);
+    const [open, setOpen] = useState<boolean>(false);
     const onSubmit: SubmitHandler<LoginSubmitForm> = async (data) => {
         dispatch(togglePageLoading(true))
         try {
@@ -38,15 +41,26 @@ const LoginPage: NextPage = () => {
                 localStorage.setItem("userInfo", JSON.stringify(userInfo));
                 dispatch(setUserInfo(userInfo));
                 router.push("/dashboard");
+            } else {
+                setError(error);
+                setOpen(true);
+                reset();
             }
         } catch (error) {
-            console.log(error);
+            throw error
         } finally {
             dispatch(togglePageLoading(false));
         }
     };
 
+    const handleCloseSnackbar = () => {
+        setOpen(false);
+    };
+
+
     return <>
+        <AppSnackbar open={open} severity="error" message={error && "Login failed"} handleClose={handleCloseSnackbar}/>
+
         <AuthLayout>
             <form onSubmit={handleSubmit(onSubmit)} className="tw-flex tw-w-full tw-flex-block tw-flex-col tw-space-y-2">
                 <Typography variant="h6" className="tw-text-slate-500">Sign in</Typography>

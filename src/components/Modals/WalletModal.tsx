@@ -1,12 +1,12 @@
 import { AccountType } from "@/common/enums/account";
 import { IAccount } from "@/common/interfaces/account";
 import { IOption } from "@/common/interfaces/base";
-import { accountService } from "@/common/services/firestore";
+import { accountService, currencyService } from "@/common/services/firestore";
 import { toggleFormSubmited } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogProps, DialogTitle, MenuItem, TextField } from "@mui/material";
-import { FC, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import * as yup from 'yup';
@@ -46,7 +46,7 @@ const WalletModal: FC<WalletModalProp> = ({ open, onCloseModal }) => {
     const dispatch = useDispatch();
     const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('xs');
     const { user } = useSelector((state: RootState) => state.auth);
-    const { currencyOptions } = useSelector((state: RootState) => state.global);
+    const [currencyOptions, setCurrencyOptions] = useState<IOption[] | null>(null);
     const { handleSubmit, control, formState: { errors }, reset } = useForm<WalletSubmitForm>({
         defaultValues: initialForm,
         resolver: yupResolver(validationSchema)
@@ -71,12 +71,27 @@ const WalletModal: FC<WalletModalProp> = ({ open, onCloseModal }) => {
         }
     };
 
+    const fetch = useCallback(async () => {
+        try {
+            const options = await currencyService.getCurrencies();
+            if (options) {
+                setCurrencyOptions(options);
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }, [])
+
     const onCancel = () => {
         reset();
-        if(onCloseModal) {
+        if (onCloseModal) {
             onCloseModal();
         }
     }
+
+    useEffect(() => {
+        fetch();
+    }, [fetch])
 
     return <Dialog open={open} fullWidth={true} maxWidth={maxWidth} onClose={onCancel}>
         <form onSubmit={handleSubmit(onSubmit)} >
@@ -153,7 +168,7 @@ const WalletModal: FC<WalletModalProp> = ({ open, onCloseModal }) => {
                                 {
                                     currencyOptions?.map((option: IOption) => (
                                         <MenuItem key={option.value} value={option.value}>
-                                            {option.prop.toUpperCase()}
+                                            <span className="tw-uppercase"> {option.prop} </span>
                                         </MenuItem>
                                     ))
                                 }

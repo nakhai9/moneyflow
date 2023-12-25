@@ -19,13 +19,21 @@ type AppSnackbarProps = {
     positions?: string;
     severity?: SnackbarSeverity;
 
-    onClose?: () => void;
+    handleClose?: () => void;
 }
 
-const AppSnackbar: FC<AppSnackbarProps> = ({ positions = "top-center", severity = "success", message, open, onClose }) => {
+const AppSnackbar: FC<AppSnackbarProps> = ({ positions = "top-center", severity = "success", message, open, handleClose }) => {
+    const handleCloseSnackbar = (event?: React.SyntheticEvent | Event, reason?: string) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        if (handleClose) {
+            handleClose();
+        }
+    };
     return (<>
-        <Snackbar anchorOrigin={SNACKBAR_POSITIONS.get(positions)} open={open} onClose={onClose}>
-            <Alert severity={severity} sx={{ minWidth: 300 }}>{message as string}</Alert>
+        <Snackbar anchorOrigin={SNACKBAR_POSITIONS.get(positions)} autoHideDuration={3000} open={open} onClose={handleCloseSnackbar}>
+            <Alert severity={severity} sx={{ minWidth: 300 }} onClose={handleCloseSnackbar}>{message as string}</Alert>
         </Snackbar>
     </>)
 }

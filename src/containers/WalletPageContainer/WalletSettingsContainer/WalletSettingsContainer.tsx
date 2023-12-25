@@ -1,10 +1,12 @@
 import { IOption } from "@/common/interfaces/base";
+import { ICurrency } from "@/common/interfaces/currency";
 import { accountService, currencyService } from "@/common/services/firestore";
+import { AppSnackbar } from "@/components";
 import { RootState } from "@/store/store";
-import { Box, Button, Grid, ListItemText, MenuItem, MenuList, TextField, Typography } from "@mui/material";
+import { Box, Button, Grid, ListItemText, MenuItem, MenuList, Tab, Tabs, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { FC, useCallback, useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useSelector } from "react-redux";
 import * as yup from 'yup';
 
@@ -24,83 +26,104 @@ const validationSchema = yup.object().shape({
     note: yup.string(),
 })
 
-const initialForm: WalletSubmitForm = {
-    name: '',
-    amount: 0,
-    currencyId: 'none',
-    note: ''
-}
-
 const WalletSettingsContainer: FC<WalletSettingsContainerProps> = ({ }) => {
     const router = useRouter();
-    const { control, setValue } = useForm<WalletSubmitForm>({
-        defaultValues: initialForm
-    });
     const [tabIndex, setTabIndex] = useState<number>(1);
+    const [currencyOptions, setCurrencyOptions] = useState<IOption[] | null>(null);
+
+    const [error, setError] = useState<any>(null);
+
+    const { control, setValue, getValues, watch, formState: { isDirty }, handleSubmit } = useForm<WalletSubmitForm>();
+
+    const [isUpdated, setIsUpdated] = useState<boolean>(false);
 
     const fetch = useCallback(async () => {
         try {
             const wallet = await accountService.getAccountById(router.query.id as string);
             if (wallet) {
-                const currency = await currencyService.convertCurrency(wallet.currencyId as string);
+                const options = await currencyService.getCurrencies();
+                if (options) {
+                    setCurrencyOptions(options);
+                }
                 setValue("name", wallet.name);
                 setValue("amount", wallet.amount);
                 setValue("note", wallet?.note as string);
-                if (currency) {
-                    setValue("currencyId", currency);
-                }
+                setValue("currencyId", wallet?.currencyId as string);
             }
         } catch (error) {
             console.log(error);
         }
-    }, [setValue])
+    }, [setValue]);
+
+    const updateSettings = async (data: WalletSubmitForm) => {
+        try {
+            const response = await accountService.updateAccount(router.query.id as string, {
+                ...data
+            })
+            setIsUpdated(true);
+        } catch (error) {
+            setIsUpdated(false);
+            throw error;
+        }
+    }
+
+    const handleClose = () => {
+        setIsUpdated(false);
+    }
 
     const MainSettingsTemplate = () => (
-        <div>
+        <form onSubmit={handleSubmit(updateSettings)}>
             <Typography variant="body1" fontWeight={600} mb={3}>General information</Typography>
-            <form>
-                <Grid container spacing={4}>
-                    <Grid item xs={12} md={12}>
-                        <Controller control={control} name="name"
-                            render={({ field }) => <TextField {...field} label="Name" size="small" sx={{ background: "white" }} fullWidth />} />
-                    </Grid>
-                    <Grid item xs={12} md={12}>
-                        <Box component="form" sx={{ display: "flex", gap: 2 }}>
-                            <Controller control={control} name="amount"
-                                render={({ field }) => <TextField {...field} label="Initial Balance" size="small" fullWidth sx={{ background: "white", flexGrow: 1 }} />} />
-                            <TextField select label="Currency" size="small" disabled={true} sx={{ width: 150, background: "white" }}>
+            <Grid container spacing={4}>
+                <Grid item xs={12} md={12}>
+                    <Controller control={control} name="name"
+                        render={({ field }) => <TextField {...field} label="Name" size="small" sx={{ background: "white" }} fullWidth />} />
+                </Grid>
+                <Grid item xs={12} md={12}>
+                    <Box sx={{ display: "flex", gap: 2 }} >
+                        <Controller control={control} name="amount"
+                            render={({ field }) => <TextField {...field} label="Initial Balance" size="small" fullWidth sx={{ background: "white", flexGrow: 1 }} />} />
+                        <Controller control={control} name="currencyId"
+                            render={({ field }) => (<TextField {...field} select label="Currency" size="small" disabled={true} sx={{ width: 150, background: "white" }}>
                                 <MenuItem key="none" value="none">
                                     None
                                 </MenuItem>
-                            </TextField>
-                        </Box>
-                    </Grid>
-                    <Grid item xs={12} md={12}>
-                        <Controller control={control} name="note"
-                            render={({ field }) => <TextField {...field} label="Note" size="small" sx={{ background: "white" }} fullWidth />} />
-                    </Grid>
-                    <Grid item container justifyContent="end">
-                        <Box sx={{ display: "flex", gap: 4 }}>
-                            <Button variant="contained" color="inherit" size="small">Update settings</Button>
-                            <Button variant="contained" color="error" size="small">Delete wallet</Button>
-                        </Box>
-                    </Grid>
+                                {
+                                    currencyOptions?.map((option: IOption) => (
+                                        <MenuItem key={option.value} value={option.value}>
+                                            <span className="tw-uppercase"> {option.prop} </span>
+                                        </MenuItem>
+                                    ))
+                                }
+                            </TextField>)}
+                        />
+                    </Box>
                 </Grid>
-            </form>
-        </div>
+                <Grid item xs={12} md={12}>
+                    <Controller control={control} name="note"
+                        render={({ field }) => <TextField {...field} label="Note" size="small" sx={{ background: "white" }} fullWidth />} />
+                </Grid>
+                <Grid item container justifyContent={{ xs: "center", sm: "end", md: "end" }}>
+                    <Box sx={{ display: "flex", gap: 4 }}>
+                        <Button type="submit" variant="contained" color="inherit" size="small">Update settings</Button>
+                        <Button type="button" variant="contained" color="error" size="small" disabled={true}>Delete wallet</Button>
+                    </Box>
+                </Grid>
+            </Grid>
+        </form>
     )
 
     const CaterogiesSettingsTemplate = () => (<div>
-        <Typography variant="body1" fontWeight={600} mb={3}>General information</Typography>
+        <Typography variant="body1" fontWeight={600} mb={3}>Category List</Typography>
     </div>)
 
     useEffect(() => {
-
         fetch();
+    }, [fetch, getValues]);
 
-    }, [fetch])
 
     return <>
+        <AppSnackbar open={isUpdated} message="Successfully updated" handleClose={handleClose}/>
         <div className="tw-mb-4">
             <Typography variant="h6">Wallet Settings</Typography>
         </div>
@@ -117,7 +140,7 @@ const WalletSettingsContainer: FC<WalletSettingsContainerProps> = ({ }) => {
             </Grid>
             <Grid item container xs={12} md={9}>
                 <Grid item xs={12} md={12}>
-                    <Box sx={{ px: 20, py: 10, background: "white", minHeight: 400 }}>
+                    <Box sx={{ px: { xs: 4, md: 20 }, py: 10, background: "white", minHeight: 400 }}>
                         {tabIndex === 1 ? <MainSettingsTemplate /> : <CaterogiesSettingsTemplate />}
                     </Box>
                 </Grid>

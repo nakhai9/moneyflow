@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { _db, auth, storage } from "../configs/firebaseConfig";
 import { log } from "console";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { IBase } from "../interfaces/base";
+import { IBase, IOption } from "../interfaces/base";
 import { FirestoreCollections } from "../enums/firestore-collections";
 import { IUpdateUser, IUserSignIn, IUserSignUp } from "../interfaces/user";
 import { UserGender, UserRole } from "../enums/user";
@@ -20,13 +20,13 @@ const base: IBase = {
 }
 
 export const firestoreService = {
-    getDocs: async (collectionName: FirestoreCollections) => {
+    getDocs: async <T>(collectionName: FirestoreCollections) => {
         try {
             const _query = query(collection(_db, collectionName), orderBy('createdAt', 'desc'));
             const snapshotDocuments = await getDocs(_query);
-            const result: any = [];
+            const result: (T & IBase)[] = [];
             snapshotDocuments.docs.forEach((doc) => {
-                result.push({ id: doc.id, ...doc.data() });
+                result.push({ id: doc.id, ...doc.data() } as (T & IBase));
             });
 
             return result;
@@ -70,10 +70,9 @@ export const firestoreService = {
         const docRef = doc(_db, collectionName, id);
         try {
             const payload = { ...data, updatedAt: Timestamp.now() }
-            return await updateDoc(docRef, payload)
+            return await updateDoc(docRef, payload);
         } catch (error) {
             console.log(error);
-
         }
     },
 }
@@ -81,12 +80,11 @@ export const firestoreService = {
 export const authService = {
     signIn: async (user: IUserSignIn) => {
         let userCredential = null, error = null;
-
         try {
             const { email, password } = user;
             userCredential = await signInWithEmailAndPassword(auth, email, password);
-        } catch (error) {
-            error = error;
+        } catch (e) {
+            error = e;
         }
         return { userCredential, error };
     },
@@ -151,12 +149,12 @@ export const accountService = {
         try {
             const _query = query(collection(_db, FirestoreCollections.WALLETS), where('userId', '==', userId));
             const snapshotDocuments = await getDocs(_query);
-            const result: any = [];
+            const result: (IAccount & IBase)[] = [];
             snapshotDocuments.docs.forEach((doc) => {
-                result.push({ id: doc.id, ...doc.data() });
+                result.push({ id: doc.id, ...doc.data() } as (IAccount & IBase));
             });
 
-            return result;
+            return result as (IAccount & IBase)[]; 
         } catch (error) {
             console.log(error);
         }
@@ -167,6 +165,19 @@ export const accountService = {
         } catch (error) {
             throw error;
         }
+    },
+    updateAccount: async (accountId: string, changedData: any) => {
+        let response: any = {}
+        try {
+            const docRef = await firestoreService.updateDoc(FirestoreCollections.WALLETS, accountId, changedData);
+            console.log(docRef);
+        } catch (error) {
+            console.log(error)
+            response["status"] = false;
+            response["error"] = error;
+        }
+        return response;
+
     }
 }
 
@@ -216,20 +227,31 @@ export const transactionService = {
 export const currencyService = {
     getCurrencies: async () => {
         try {
-            const result = await firestoreService.getDocs(FirestoreCollections.CURRENCIES);
-            return result;
+            let options: IOption[] = [];
+            const currencies = await firestoreService.getDocs<ICurrency>(FirestoreCollections.CURRENCIES);
+            if (currencies) {
+                options = currencies.map((c) => {
+                    return {
+                        id: c.id,
+                        prop: c.code,
+                        value: c.id
+                    }
+                })
+            }
+            return options;
         } catch (error) {
             console.log(error);
         }
     },
     convertCurrency: async (currencyId: string) => {
         try {
-            const currency = await firestoreService.getDocById<ICurrency & IBase>(FirestoreCollections.CURRENCIES, currencyId);
+            const currency = await firestoreService.getDocById<ICurrency>(FirestoreCollections.CURRENCIES, currencyId);
+            
             return currency?.code;
         } catch (error) {
             console.log(error)
         }
-    }
+    },
 }
 
 export const categoryService = {

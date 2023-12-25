@@ -1,15 +1,20 @@
 import { AddIcon } from "@/common/constants/icons";
 import { IAccount } from "@/common/interfaces/account";
-import { IBase, IOption } from "@/common/interfaces/base";
+import { IBase } from "@/common/interfaces/base";
 import { accountService, currencyService } from "@/common/services/firestore";
+import { AppWalletPanel } from "@/components";
 import WalletModal from "@/components/Modals/WalletModal";
 import useModal from "@/hooks/useModal";
-import { setCurrencyOptions, toggleFormSubmited } from "@/store/features/global/globalSlice";
+import { toggleFormSubmited } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
 import { Box, Button, Grid, Paper, Typography } from "@mui/material";
+import { PieChart } from '@mui/x-charts/PieChart';
 import { useRouter } from "next/router";
 import { FC, useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { BarChart } from '@mui/x-charts/BarChart';
+
+
 
 type DashboardPageContainer = {}
 const DashboardPageContainer: FC<DashboardPageContainer> = ({ }) => {
@@ -17,13 +22,9 @@ const DashboardPageContainer: FC<DashboardPageContainer> = ({ }) => {
     const router = useRouter();
     const dispatch = useDispatch();
     const { open, onOpen, onClose } = useModal();
+    const [wallets, setWallets] = useState<(IAccount & IBase)[] | null>(null);
     const { user } = useSelector((state: RootState) => state.auth);
-    const [walletsOnFirestore, setWalletsOnFirestore] = useState<(IAccount & IBase)[] | null>(null);
-    const { formSubmited, currencyOptions } = useSelector((state: RootState) => state.global);
-
-    const openWallet = (id: string) => {
-        router.push(`wallet/${id}`);
-    }
+    const { formSubmited } = useSelector((state: RootState) => state.global);
 
     const closeModal = () => {
         onClose();
@@ -33,28 +34,41 @@ const DashboardPageContainer: FC<DashboardPageContainer> = ({ }) => {
         onOpen();
     }
 
-    const fetchDataOnFirestore = useCallback(async () => {
+    const handleClickWalletPanel = (walletId: string) => {
+        router.push(`wallet/${walletId}`);
+    }
+
+
+
+    const fetchWallets = useCallback(async () => {
         if (formSubmited) {
             dispatch(toggleFormSubmited(false));
         }
         try {
             const wallets = await accountService.getAccountsByUserId((user && user.id) ? user.id : '');
-            setWalletsOnFirestore(wallets);
-            const currencies = await currencyService.getCurrencies();
-            dispatch(setCurrencyOptions(currencies));
+            if (wallets) {
+                if (wallets) {
+                    const _wallets = await Promise.all(
+                        wallets.map(async (wallet) => {
+                            const currency = await currencyService.convertCurrency(wallet.currencyId as string);
+                            if (currency) {
+                                wallet["currency"] = currency;
+                            }
+                            return wallet;
+                        })
+                    )
+                    setWallets(_wallets);
+                }
+            }
         } catch (error) {
             console.log(error);
         }
 
-    }, [dispatch, user, formSubmited])
-
-    const getCurrencyCode = (currencyId: string) => {
-        return currencyOptions?.find((currency: IOption) => currency.id === currencyId)?.prop.toUpperCase() ?? "XXX";
-    }
+    }, [dispatch, user, formSubmited]);
 
     useEffect(() => {
-        fetchDataOnFirestore();
-    }, [fetchDataOnFirestore]);
+        fetchWallets();
+    }, [fetchWallets]);
 
     return (
         <>
@@ -65,23 +79,15 @@ const DashboardPageContainer: FC<DashboardPageContainer> = ({ }) => {
                 </div>
                 <Grid container spacing={4}>
                     {
-                        walletsOnFirestore && walletsOnFirestore.map((item, index: number) => (
+                        wallets && wallets.map((item, index: number) => (
                             <Grid key={index} item xs={6} sm={4} md={3}>
-                                <Paper elevation={4} onClick={() => { openWallet(item.id!) }} className="tw-flex tw-h-24 tw-bg-white tw-rounded tw-cursor-pointer tw-font-thin tw-overflow-hidden hover:tw-shadow-lg">
-                                    <div className="tw-w-5 tw-bg-blue-500"></div>
-                                    <div className="tw-flex tw-flex-col tw-justify-center tw-pl-4">
-                                        <div className="tw-text-xl">{item.name}</div>
-                                        <div className="tw-capitalize tw-text-xs">{item.type}</div>
-                                        <div className="tw-text-xl tw-text-blue-500 tw-font-thin">{item.amount.toLocaleString() + ".00"} <span>{getCurrencyCode(item.currencyId!)}</span></div>
-                                    </div>
-                                </Paper>
+                                <AppWalletPanel onClick={() => { handleClickWalletPanel(item.id!) }} item={item} />
                             </Grid>
                         ))
                     }
                     <Grid item xs={6} sm={4} md={3}>
                         <Box className="tw-flex tw-flex-col tw-gap-4">
                             <Button type="button" fullWidth className="tw-normal-case tw-shadow-lg tw-bg-white" startIcon={<AddIcon />} onClick={openModal}>Add wallet</Button>
-                            <Button type="button" fullWidth className="tw-normal-case tw-shadow-lg tw-bg-white">Connect a Bank Account</Button>
                         </Box>
                     </Grid>
                 </Grid>
@@ -91,10 +97,23 @@ const DashboardPageContainer: FC<DashboardPageContainer> = ({ }) => {
                 <Grid container spacing={4}>
                     <Grid item xs={12} md={6}>
                         <Paper sx={{ py: 4 }}>
+                            <PieChart
+                                series={[
+                                    {
+                                        data: [
+                                            { id: 0, value: 10, label: 'series A' },
+                                            { id: 1, value: 15, label: 'series B' },
+                                            { id: 2, value: 20, label: 'series C' },
+                                        ],
+                                    },
+                                ]}
+                                height={250}
+                            />
                         </Paper>
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Paper sx={{ py: 4 }}>
+                          
                         </Paper>
                     </Grid>
                 </Grid>

@@ -9,3 +9,4 @@ export interface IAccount {
     userId?: string;
     currencyId?: string;
 }
+

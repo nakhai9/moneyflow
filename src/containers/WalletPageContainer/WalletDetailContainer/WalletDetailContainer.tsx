@@ -1,10 +1,12 @@
+"use client";
+
 import { AddIcon, DeleteIcon, ErrorOutlineIcon, FileDownloadIcon, SettingsIcon } from "@/common/constants/icons";
 import { ModalAction } from "@/common/enums/modal";
 import { TransactionType } from "@/common/enums/transaction";
 import { IAccount } from "@/common/interfaces/account";
 import { IBase } from "@/common/interfaces/base";
 import { ITransaction } from "@/common/interfaces/transaction";
-import { accountService, transactionService } from "@/common/services/firestore";
+import { accountService, currencyService, transactionService } from "@/common/services/firestore";
 import { FormatDate, formatTimestampToDateString } from "@/common/utils/date";
 import { ConfirmModal, TransactionModal } from "@/components";
 import { Modal } from "@/components/Modals/modal";
@@ -38,6 +40,13 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
     const { formSubmited } = useSelector((state: RootState) => state.global);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
+    const [totalPeriodExpense, setTotalPeriodExpense] = useState<number>(0);
+    const [totalPeriodIncome, setTotalPeriodIncome] = useState<number>(0);
+    const [currentBalance, setCurrentBalance] = useState<number>(0);
+
+
+    const [total, setTotal] = useState<number>(0);
+
     const openAddTransactionModal = () => {
         onOpen();
         setModal(Modal.TRANSACTION);
@@ -56,11 +65,20 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
         if (formSubmited) {
             dispatch(toggleFormSubmited(false));
         }
-        const wallet = await accountService.getAccountById(id as string);
-        if (wallet) {
-            setCurrentWallet(wallet);
-            const snapshotTransactions = await transactionService.getTransactions(undefined, wallet.id);
-            setTransactions(snapshotTransactions)
+        const snapshotWallet = await accountService.getAccountById(id as string);
+        if (snapshotWallet) {
+            setCurrentWallet(snapshotWallet);
+            const [snapshotCurrency, snapshotTransactions] = await Promise.all([
+                currencyService.convertCurrency(snapshotWallet.currencyId as string),
+                transactionService.getTransactions(undefined, id, undefined)
+            ])
+            snapshotCurrency && setCurrency(snapshotCurrency);
+            setTransactions(snapshotTransactions);
+
+            setTotalPeriodExpense(getTotalPeriodExpenseValue(snapshotTransactions));
+            setTotalPeriodIncome(getTotalPeriodIncomeValue(snapshotTransactions));
+            console.log(snapshotWallet.amount, totalPeriodExpense, totalPeriodIncome)
+            setCurrentBalance(snapshotWallet?.amount + (totalPeriodIncome - totalPeriodExpense));
         }
         setIsLoading(false);
 
@@ -93,7 +111,7 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
     useEffect(() => {
         fetch();
     }, [fetch])
-    
+
     return <>
         <TransactionModal open={open && modal === Modal.TRANSACTION} action={modalAction} onClose={onClose} transaction={transaction} />
         <ConfirmModal
@@ -137,7 +155,8 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
                     <Paper className="tw-p-4 tw-cursor-pointer">
                         <Typography variant="body2" className="tw-font-semibold">Current Wallet Balance</Typography>
                         <Typography variant="h6" color="primary">
-                            {transactions && (currentWallet?.amount as number + (getTotalPeriodIncomeValue(transactions) - getTotalPeriodExpenseValue(transactions))).toLocaleString('en-US')} <span className="tw-uppercase">{currency}</span>
+                            {currentWallet?.amount ? currentWallet?.amount.toLocaleString('en-US'): "0"}<span className="tw-uppercase">.00 {currency}</span>
+                            {/* {transactions && (currentWallet?.amount as number + (getTotalPeriodIncomeValue(transactions) - getTotalPeriodExpenseValue(transactions))).toLocaleString('en-US')} <span className="tw-uppercase">{currency}</span> */}
                         </Typography>
                     </Paper>
                 </Grid>
@@ -146,7 +165,8 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
                         <Typography variant="body2" className="tw-font-semibold">Total Period Change</Typography>
                         <div>
                             <Typography variant="h6" color="primary">
-                                {transactions && (getTotalPeriodIncomeValue(transactions) - getTotalPeriodExpenseValue(transactions)).toLocaleString('en-US')} <span className="tw-uppercase">{currency}</span>
+                                0.00 <span className="tw-uppercase">{currency}</span>
+                                {/* {transactions && (getTotalPeriodIncomeValue(transactions) - getTotalPeriodExpenseValue(transactions)).toLocaleString('en-US')} <span className="tw-uppercase">{currency}</span> */}
                             </Typography>
                         </div>
                     </Paper>
@@ -155,7 +175,9 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
                     <Paper className="tw-p-4 tw-cursor-pointer" >
                         <Typography variant="body2" className="tw-font-semibold">Total Period Expenses</Typography>
                         <div>
-                            <Typography variant="h6" color="primary">{transactions && getTotalPeriodExpenseValue(transactions).toLocaleString('en-US')} <span className="tw-uppercase">{currency}</span></Typography>
+                            <Typography variant="h6" color="primary">
+                                {totalPeriodExpense.toLocaleString('en-US')}<span className="tw-uppercase">.00 {currency}</span>
+                            </Typography>
                         </div>
                     </Paper>
                 </Grid>
@@ -163,7 +185,9 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
                     <Paper className="tw-p-4 tw-cursor-pointer" >
                         <Typography variant="body2" className="tw-font-semibold">Total Period Income</Typography>
                         <div>
-                            <Typography variant="h6" color="primary">{transactions && getTotalPeriodIncomeValue(transactions).toLocaleString('en-US')} <span className="tw-uppercase">{currency}</span></Typography>
+                            <Typography variant="h6" color="primary">
+                                {totalPeriodIncome.toLocaleString('en-US')}<span className="tw-uppercase">.00 {currency}</span>
+                            </Typography>
                         </div>
                     </Paper>
                 </Grid>
@@ -195,10 +219,7 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
                             }
                             {
                                 transactions && transactions?.map((item, index) => {
-                                    return <TableRow key={index} className="tw-cursor-pointer hover:tw-bg-[#F4F6F8]"
-                                        onDoubleClick={() => { openEditTransactionModal(item) }}
-                                    // onTouchStart={() => { handleEditTransaction(item) }} onTouchEnd={(e) => e.preventDefault()}
-                                    >
+                                    return <TableRow key={index} className="tw-cursor-pointer hover:tw-bg-[#F4F6F8]" onDoubleClick={() => { openEditTransactionModal(item) }}>
                                         <TableCell component="td" className="tw-border-none">{index + 1}</TableCell>
                                         <TableCell component="td" className="tw-border-none">{item.category}</TableCell>
                                         <TableCell component="td" className="tw-border-none">{item.description}</TableCell>
