@@ -170,7 +170,6 @@ export const accountService = {
         let response: any = {}
         try {
             const docRef = await firestoreService.updateDoc(FirestoreCollections.WALLETS, accountId, changedData);
-            console.log(docRef);
         } catch (error) {
             console.log(error)
             response["status"] = false;

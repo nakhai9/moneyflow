@@ -42,9 +42,8 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
 
     const [totalPeriodExpense, setTotalPeriodExpense] = useState<number>(0);
     const [totalPeriodIncome, setTotalPeriodIncome] = useState<number>(0);
+    const [totalPeriodChange, setTotalPeriodChange] = useState<number>(0);
     const [currentBalance, setCurrentBalance] = useState<number>(0);
-
-
     const [total, setTotal] = useState<number>(0);
 
     const openAddTransactionModal = () => {
@@ -68,6 +67,7 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
         const snapshotWallet = await accountService.getAccountById(id as string);
         if (snapshotWallet) {
             setCurrentWallet(snapshotWallet);
+            setCurrentBalance(snapshotWallet.amount);
             const [snapshotCurrency, snapshotTransactions] = await Promise.all([
                 currencyService.convertCurrency(snapshotWallet.currencyId as string),
                 transactionService.getTransactions(undefined, id, undefined)
@@ -75,10 +75,8 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
             snapshotCurrency && setCurrency(snapshotCurrency);
             setTransactions(snapshotTransactions);
 
-            setTotalPeriodExpense(getTotalPeriodExpenseValue(snapshotTransactions));
             setTotalPeriodIncome(getTotalPeriodIncomeValue(snapshotTransactions));
-            console.log(snapshotWallet.amount, totalPeriodExpense, totalPeriodIncome)
-            setCurrentBalance(snapshotWallet?.amount + (totalPeriodIncome - totalPeriodExpense));
+            setTotalPeriodExpense(getTotalPeriodExpenseValue(snapshotTransactions));
         }
         setIsLoading(false);
 
@@ -155,8 +153,7 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
                     <Paper className="tw-p-4 tw-cursor-pointer">
                         <Typography variant="body2" className="tw-font-semibold">Current Wallet Balance</Typography>
                         <Typography variant="h6" color="primary">
-                            {currentWallet?.amount ? currentWallet?.amount.toLocaleString('en-US'): "0"}<span className="tw-uppercase">.00 {currency}</span>
-                            {/* {transactions && (currentWallet?.amount as number + (getTotalPeriodIncomeValue(transactions) - getTotalPeriodExpenseValue(transactions))).toLocaleString('en-US')} <span className="tw-uppercase">{currency}</span> */}
+                            {currentBalance ? currentBalance.toLocaleString('en-US') : "0"}<span className="tw-uppercase">.00 {currency}</span>
                         </Typography>
                     </Paper>
                 </Grid>
@@ -165,8 +162,7 @@ const WalletDetailContainer: FC<WalletDetailContainerProps> = ({ }) => {
                         <Typography variant="body2" className="tw-font-semibold">Total Period Change</Typography>
                         <div>
                             <Typography variant="h6" color="primary">
-                                0.00 <span className="tw-uppercase">{currency}</span>
-                                {/* {transactions && (getTotalPeriodIncomeValue(transactions) - getTotalPeriodExpenseValue(transactions)).toLocaleString('en-US')} <span className="tw-uppercase">{currency}</span> */}
+                                {(totalPeriodIncome - totalPeriodExpense).toLocaleString('en-US')}<span className="tw-uppercase">.00 {currency}</span>
                             </Typography>
                         </div>
                     </Paper>

@@ -1,13 +1,10 @@
 import { IOption } from "@/common/interfaces/base";
-import { ICurrency } from "@/common/interfaces/currency";
 import { accountService, currencyService } from "@/common/services/firestore";
 import { AppSnackbar } from "@/components";
-import { RootState } from "@/store/store";
-import { Box, Button, Grid, ListItemText, MenuItem, MenuList, Tab, Tabs, TextField, Typography } from "@mui/material";
+import { Box, Button, Grid, MenuItem, MenuList, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { FC, useCallback, useEffect, useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
-import { useSelector } from "react-redux";
+import { Controller, useForm } from "react-hook-form";
 import * as yup from 'yup';
 
 type WalletSettingsContainerProps = {}

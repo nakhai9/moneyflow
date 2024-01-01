@@ -5,6 +5,7 @@ import AppWalletPanel from "./AppWalletPanel/AppWalletPanel";
 import WalletModal from "./Modals/WalletModal";
 import ConfirmModal from "./Modals/ConfirmModal";
 import TransactionModal from "./Modals/TransactionModal";
+import AppBackdrop from "./AppBackdrop/AppBackdrop";
 
 export {
     AppToolbar,
@@ -13,5 +14,6 @@ export {
     AppWalletPanel,
     WalletModal,
     ConfirmModal,
-    TransactionModal
+    TransactionModal,
+    AppBackdrop
 }

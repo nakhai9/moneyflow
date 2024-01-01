@@ -3,11 +3,11 @@ import { auth } from "@/common/configs/firebaseConfig";
 import { FirestoreCollections } from "@/common/enums/firestore-collections";
 import { IUser } from "@/common/interfaces/user";
 import { firestoreService } from "@/common/services/firestore";
-import { AppToolbar } from "@/components";
+import { AppBackdrop, AppSnackbar, AppToolbar } from "@/components";
 import { setCurrentUser } from "@/store/features/auth/authSlice";
 import { togglePageLoading } from "@/store/features/global/globalSlice";
 import { RootState } from "@/store/store";
-import { Backdrop, Box, CircularProgress, Container } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from 'react';
@@ -60,7 +60,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
 
   return <>
     {
-      pageLoading ? <Backdrop className="tw-z-50" sx={{ background: 'white' }} open={pageLoading}><CircularProgress color="primary" /></Backdrop> : (<Box className="tw-flex-1 tw-w-100"><AppToolbar user={user} logout={logout} />
+      pageLoading ? <AppBackdrop loading={pageLoading} /> : (<Box className="tw-flex-1 tw-w-100"><AppToolbar user={user} logout={logout} />
         <main className='tw-overflow-auto'>
           <Container>
             <Box py={4}>

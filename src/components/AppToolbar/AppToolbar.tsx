@@ -25,6 +25,8 @@ const AppToolbar: React.FC<AppToolbarProps> = ({ user, logout }) => {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
+    const [appName] = React.useState<string>("MoneyFlow");
+
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElNav(event.currentTarget);
     };
@@ -45,6 +47,7 @@ const AppToolbar: React.FC<AppToolbarProps> = ({ user, logout }) => {
             <Container>
                 <Toolbar disableGutters>
                     <Typography
+                        className='logo-font'
                         variant="h6"
                         noWrap
                         component="a"
@@ -54,9 +57,10 @@ const AppToolbar: React.FC<AppToolbarProps> = ({ user, logout }) => {
                             display: { xs: 'none', md: 'flex' },
                             color: 'inherit',
                             textDecoration: 'none',
+                            fontSize: 28
                         }}
                     >
-                        $pendee
+                        {appName}
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
                         <IconButton
@@ -97,6 +101,7 @@ const AppToolbar: React.FC<AppToolbarProps> = ({ user, logout }) => {
                     <Typography
                         variant="h5"
                         noWrap
+                        className='logo-font'
                         component="a"
                         href="/dashboard"
                         sx={{
@@ -105,9 +110,10 @@ const AppToolbar: React.FC<AppToolbarProps> = ({ user, logout }) => {
                             flexGrow: 1,
                             color: 'inherit',
                             textDecoration: 'none',
+                            fontSize: 24
                         }}
                     >
-                        $pendee
+                        {appName}
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: { md: 4 } }}>
                         {PAGES.map((page) => (

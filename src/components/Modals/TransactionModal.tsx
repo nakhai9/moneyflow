@@ -27,7 +27,7 @@ type TransactionModalProps = {
 type TransactionSubmitForm = {
     description: string,
     transactionType: TransactionType,
-    category: Category,
+    category: Category | "none",
     excutedAt: Timestamp | string,
     paymentMethod: PaymentMethod
     amount: number,
@@ -39,7 +39,7 @@ type TransactionSubmitForm = {
 const validationSchema = yup.object().shape({
     description: yup.string().required("Field is required"),
     transactionType: yup.mixed<TransactionType>().oneOf(Object.values(TransactionType), "Invalid type").required("Type is required"),
-    category: yup.mixed<Category>().notOneOf([Category.NONE], "Invalid category").required("Category is required"),
+    category: yup.mixed<Category | "none">().notOneOf(["none"], "Invalid category").required("Category is required"),
     excutedAt: yup.string().required("Field is required"),
     paymentMethod: yup.mixed<PaymentMethod>().oneOf(Object.values(PaymentMethod), "Invalid type").required("Payment method is required"),
     amount: yup.number().positive('Amount must be a positive number').required('Amount is required'),
@@ -55,13 +55,14 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
     const id = router.query.id as string;
     const dispatch = useDispatch();
     const { user } = useSelector((state: RootState) => state.auth);
+    const { formSubmited } = useSelector((state: RootState) => state.global);
     const [wallets, setWallets] = useState<(IBase & IAccount)[]>()
     const [maxWidth, setMaxWidth] = useState<DialogProps['maxWidth']>('lg');
     const [currentType, setCurrentType] = useState<TransactionType>(TransactionType.DEFAULT);
     const [initialForm] = useState<TransactionSubmitForm>({
         amount: 0,
         transactionType: TransactionType.EXPENSE,
-        category: Category.NONE,
+        category: "none",
         excutedAt: "2020-01-13",
         paymentMethod: PaymentMethod.CASH,
         description: '',
@@ -83,7 +84,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
         try {
             const newTransaction: ITransaction = {
                 type: currentType,
-                category: data.category,
+                category: data.category as Category,
                 description: data.description,
                 excutedAt: Timestamp.fromDate(new Date(data.excutedAt as string)),
                 amount: parseInt(data.amount.toString(), 10),
@@ -94,14 +95,28 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
                 isPaid: data.category === Category.LOAN || data.category === Category.DEBT ? false : true
             }
             if (action === ModalAction.ADD) {
-                const response = await transactionService.addNewTransaction(newTransaction);
+                let id: string = '';
+                let newAmount: number = 0;
+                const wallet = wallets?.find(x => data.walletId === x.id);
+                if (wallet) {
+                    id = wallet?.id as string;
+                    const walletAmount = wallet.amount;
+                    const transactionAmount = parseInt(data.amount.toString(), 10)
+                    newAmount = currentType === TransactionType.EXPENSE ? walletAmount - transactionAmount : walletAmount + transactionAmount;
+                }
+                await Promise.all([
+                    transactionService.addNewTransaction(newTransaction),
+                    accountService.updateAccount(id, { amount: newAmount })
+                ]);
             } else {
                 const transactionId = transaction?.id as string;
-                const response = await transactionService.updateTransaction(transactionId, newTransaction);
+                // const response = await transactionService.updateTransaction(transactionId, newTransaction);
+                console.log(newTransaction);
             }
         } catch (error) {
             console.log(error);
         } finally {
+            setCurrentType(TransactionType.DEFAULT);
             reset(initialForm);
             dispatch(toggleFormSubmited(true));
         }
@@ -126,11 +141,23 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
         } catch (error) {
             console.log(error);
         }
-    }, [user?.id])
+    }, [user?.id, formSubmited])
 
-    const deleteTransaction = async (id: string) => {
+    const deleteTransaction = async (transaction: (ITransaction & IBase)) => {
         try {
-            await transactionService.deleteTransaction(id);
+            if (transaction) {
+                const id = transaction.id as string;
+                const wallet = wallets?.find(x => transaction.walletId === x.id);
+                if (wallet) {
+                    const id = wallet?.id as string;
+                    const walletAmount = wallet.amount;
+                    const transactionAmount = transaction.amount;
+                    // await Promise.all([
+                    //     transactionService.deleteTransaction(id),
+                    //     accountService.updateAccount(id, { amount: transaction.type === TransactionType.EXPENSE ? walletAmount + transactionAmount : walletAmount - transactionAmount })
+                    // ]);
+                }
+            }
         } catch (error) {
             console.log(error);
         }
@@ -352,7 +379,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({ open, action, trans
                     {
                         action === ModalAction.ADD ? <Button type="submit" variant="contained" color="primary">Create</Button> :
                             <>
-                                <Button type="button" variant="contained" color="error" onClick={() => { deleteTransaction(transaction?.id as string) }}>Delete</Button>
+                                <Button type="button" variant="contained" color="error" onClick={() => { transaction && deleteTransaction(transaction) }}>Delete</Button>
                                 <Button type="submit" variant="contained" color="primary">Save</Button>
                             </>
                     }
